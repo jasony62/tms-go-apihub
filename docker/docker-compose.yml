@@ -1,0 +1,19 @@
+version: '3.7'
+services:
+  tms-gah-broker:
+    build:
+      context: ../broker
+      dockerfile: Dockerfile
+    image: tms/gah-broker:latest
+    container_name: tms-gah-broker
+    # ports:
+    #   - '8080:8080'
+    # environment:
+    # - TGAH_HOST=0.0.0.0
+    # - TGAH_PORT=8080
+    # - TGAH_BUCKET_ENABLE=no
+    # - TGAH_API_DEF_PATH= # API定义文件存放位置
+    # - TGAH_FLOW_DEF_PATH= # FLOW定义文件存放位置
+    # volumes:
+    #   - ../example:/home/tms-gah/example
+    command: ['/home/tms-gah/broker/startup.sh']
