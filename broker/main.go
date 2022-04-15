@@ -18,11 +18,12 @@ import (
 
 // 应用的基本信息
 type App struct {
-	host         string
-	port         int
-	bucketEnable bool
-	apiDefPath   string
-	flowDefPath  string
+	host           string
+	port           int
+	bucketEnable   bool
+	apiDefPath     string
+	privateDefPath string
+	flowDefPath    string
 }
 
 // 1次请求的上下文
@@ -34,6 +35,7 @@ func (app App) newStack(c *gin.Context) *hub.Stack {
 	stack := new(hub.Stack)
 	stack.BucketEnable = app.bucketEnable
 	stack.ApiDefPath = app.apiDefPath
+	stack.PrivateDefPath = app.privateDefPath
 	stack.FlowDefPath = app.flowDefPath
 	stack.GinContext = c
 	stack.RequestBody = inReqData
@@ -139,13 +141,34 @@ func main() {
 
 	app.apiDefPath = os.Getenv("TGAH_API_DEF_PATH")
 	if app.apiDefPath == "" {
-		log.Fatal("没有通过环境变量[TGAH_API_DEF_PATH]指定API定义文件存放位置")
+		log.Println("没有通过环境变量[TGAH_API_DEF_PATH]指定API定义文件存放位置")
 	} else {
 		if ok, _ := pathExists(app.apiDefPath); ok {
 			log.Println("API定义文件存放位置 ", app.apiDefPath)
 		} else {
-			log.Fatalf("通过环境变量[TGAH_API_DEF_PATH]指定的API定义文件存放位置[%s]不存在\n", app.apiDefPath)
+			log.Printf("通过环境变量[TGAH_API_DEF_PATH]指定的API定义文件存放位置[%s]不存在\n", app.apiDefPath)
+			app.apiDefPath = ""
 		}
+	}
+	if app.apiDefPath == "" {
+		app.apiDefPath = "./conf/apis"
+		log.Println("使用默认API定义文件存放位置 ", app.apiDefPath)
+	}
+
+	app.privateDefPath = os.Getenv("TGAH_PRIVATE_DEF_PATH")
+	if app.privateDefPath == "" {
+		log.Println("没有通过环境变量[TGAH_PRIVATE_DEF_PATH]指定API定义文件存放位置")
+	} else {
+		if ok, _ := pathExists(app.privateDefPath); ok {
+			log.Println("PRIVATE定义文件存放位置 ", app.privateDefPath)
+		} else {
+			log.Printf("通过环境变量[TGAH_PRIVATE_DEF_PATH]指定的API定义文件存放位置[%s]不存在\n", app.privateDefPath)
+			app.privateDefPath = ""
+		}
+	}
+	if app.privateDefPath == "" {
+		app.privateDefPath = "./conf/privates"
+		log.Println("使用默认PRIVATE定义文件存放位置 ", app.privateDefPath)
 	}
 
 	app.flowDefPath = os.Getenv("TGAH_FLOW_DEF_PATH")
@@ -155,8 +178,13 @@ func main() {
 		if ok, _ := pathExists(app.flowDefPath); ok {
 			log.Println("FLOW定义文件存放位置 ", app.flowDefPath)
 		} else {
-			log.Fatalf("通过环境变量[TGAH_FLOW_DEF_PATH]指定FLOW定义文件存放位置[%s]不存在\n", app.flowDefPath)
+			log.Printf("通过环境变量[TGAH_FLOW_DEF_PATH]指定FLOW定义文件存放位置[%s]不存在\n", app.flowDefPath)
+			app.flowDefPath = ""
 		}
+	}
+	if app.flowDefPath == "" {
+		app.flowDefPath = "./conf/flows"
+		log.Println("使用默认PRIVATE定义文件存放位置 ", app.privateDefPath)
 	}
 
 	router := gin.Default()

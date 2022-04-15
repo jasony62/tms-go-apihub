@@ -1,0 +1,37 @@
+{
+  "id": "amap_weather",
+  "url": "https://restapi.amap.com/v3/weather/weatherInfo",
+  "private": "common",
+  "method": "GET",
+  "parameters": [
+    {
+      "in": "query",
+      "name": "key",
+      "from": {
+        "in": "private",
+        "name": "amap_key1"
+      }
+    },
+    {
+      "in": "query",
+      "name": "city",
+      "from": {
+        "in": "query",
+        "name": "city"
+      }
+    }
+  ],
+  "response": {
+    "json": {
+      "errCode": "{{.status}}",
+      "data": {
+        "region": "{{(index .lives 0).province}}",
+        "weather": "{{(index .lives 0).weather}}",
+        "temperature": "{{(index .lives 0).temperature}}",
+        "winddirection": "{{(index .lives 0).winddirection}}",
+        "windpower": "{{(index .lives 0).windpower}}",
+        "humidity": "{{(index .lives 0).humidity}}"
+      }
+    }
+  }
+}
