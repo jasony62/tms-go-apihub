@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/jasony62/tms-go-apihub/hub"
+	"github.com/jasony62/tms-go-apihub/unit"
 	"github.com/jasony62/tms-go-apihub/util"
 )
 
@@ -29,28 +30,24 @@ func Relay(stack *hub.Stack, resultKey string) (interface{}, int) {
 		q := outReqURL.Query()
 		for _, param := range *outReqParamRules {
 			if len(param.Name) > 0 {
+				var value string
+
+				if len(param.Value) > 0 {
+					// 定义中指定的值
+					value = param.Value
+				} else if param.From != nil && len(param.From.Name) > 0 {
+					if param.From.In == "query" {
+						// 从查询参数中获取值
+						value = stack.Query(param.From.Name)
+					} else if param.From.In == "private" {
+						value = unit.FindPrivateValue(stack.ApiDef, param.From.Name)
+					}
+				}
+
 				if param.In == "query" {
-					if len(param.Value) > 0 {
-						// 定义中指定的值
-						q.Set(param.Name, param.Value)
-					} else if param.From != nil {
-						if param.From.In == "query" && len(param.From.Name) > 0 {
-							// 从查询参数中获取值
-							v := stack.Query(param.From.Name)
-							q.Set(param.Name, v)
-						}
-					}
+					q.Set(param.Name, value)
 				} else if param.In == "header" {
-					if len(param.Value) > 0 {
-						// 定义中指定的值
-						outReq.Header.Set(param.Name, param.Value)
-					} else if param.From != nil {
-						if param.From.In == "query" && len(param.From.Name) > 0 {
-							// 从查询参数中获取值
-							v := stack.Query(param.From.Name)
-							outReq.Header.Set(param.Name, v)
-						}
-					}
+					outReq.Header.Set(param.Name, value)
 				}
 			}
 		}
@@ -101,6 +98,7 @@ func Relay(stack *hub.Stack, resultKey string) (interface{}, int) {
 	resp, err := client.Do(outReq)
 	if err != nil {
 		fmt.Println("err", err)
+		return nil, 500
 	}
 	defer resp.Body.Close()
 	returnBody, _ := io.ReadAll(resp.Body)

@@ -74,6 +74,7 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 | ------------- | ----------------------------------------------------------------------------------------------------- | -------- | ---- |
 | id            | API 定义的标识。                                                                                      | string   | 是   |
 | url           | API 的目标地址。不包括任何查询参数。                                                                  | string   | 是   |
+| private       | API 秘钥文件名。                                                                                      | string   | 是   |
 | description   | API 的描述。                                                                                          | string   |      |
 | method        | HTTP 请求方法，支持`POST`和`GET`。                                                                    | string   | 是   |
 |               |                                                                                                       |          |      |
@@ -81,8 +82,8 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 | --in          | 参数位置。支持`query`和`header`。                                                                     | string   | 是   |
 | --name        | 参数名称。                                                                                            | string   | 是   |
 | --value       | 参数的值。                                                                                            | string   | 否   |
-| --from        | 指定参数值的获取位置。支持`query`。                                                                   | object   | 否   |
-| ----in        | 获取参数值的位置。                                                                                    |          |      |
+| --from        | 指定参数值的获取位置。                                                                                | object   | 否   |
+| ----in        | 获取参数值的位置,支持`query`和`private`。                                                             |          |      |
 | ----name      | 参数值所在位置的名称。                                                                                |          |      |
 |               |                                                                                                       |          |      |
 | requestBody   | 发送给被调用方的内容。如果不指定，直接转发调用方发送的内容。                                          | any      | 否   |
