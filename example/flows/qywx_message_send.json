@@ -1,0 +1,32 @@
+{
+  "name": "qywx_message_send",
+  "description": "给企业微信用户发送消息",
+  "steps": [
+    {
+      "name": "gettoken",
+      "description": "获得access_token",
+      "resultKey": "tokenResult",
+      "api": {
+        "id": "qywx_gettoken"
+      }
+    },
+    {
+      "name": "message_send",
+      "description": "查询城市的区域码",
+      "resultKey": "sendResult",
+      "api": {
+        "id": "qywx_message_send",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "access_token",
+            "from": {
+              "in": "StepResult",
+              "name": "{{.tokenResult.access_token}}"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

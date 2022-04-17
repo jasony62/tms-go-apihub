@@ -1,0 +1,20 @@
+{
+  "id": "qywx_message_send",
+  "url": "https://qyapi.weixin.qq.com/cgi-bin/message/send",
+  "method": "POST",
+  "parameters": [
+    {
+      "in": "query",
+      "name": "access_token",
+      "value": ""
+    }
+  ],
+  "requestBody": {
+    "content": {
+      "touser": "{{.touser}}",
+      "msgtype": "{{.msgtype}}",
+      "agentid": "{{.agentid}}",
+      "text": { "content": "{{.text.content}}" }
+    }
+  }
+}

@@ -14,11 +14,16 @@ func Run(stack *hub.Stack) (interface{}, int) {
 	flowDef := stack.FlowDef
 	for _, step := range flowDef.Steps {
 		stack.CurrentStep = &step
-		if step.Api != nil {
+		if step.Api != nil && len(step.Api.Id) > 0 {
 			// 执行API并记录结果
 			apiDef, _ := unit.FindApiDef(stack, "", step.Api.Id)
+			// 根据flow的定义改写api定义
+			if step.Api.Parameters != nil && len(*step.Api.Parameters) > 0 {
+				unit.RewriteApiDefInFlow(apiDef, step.Api)
+			}
 			// 调用api
 			stack.ApiDef = apiDef
+
 			api.Relay(stack, step.ResultKey)
 		} else if step.Response != nil {
 			// 处理响应结果

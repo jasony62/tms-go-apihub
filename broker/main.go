@@ -157,12 +157,12 @@ func main() {
 
 	app.privateDefPath = os.Getenv("TGAH_PRIVATE_DEF_PATH")
 	if app.privateDefPath == "" {
-		log.Println("没有通过环境变量[TGAH_PRIVATE_DEF_PATH]指定API定义文件存放位置")
+		log.Println("没有通过环境变量[TGAH_PRIVATE_DEF_PATH]指定API定义使用的私有数据存放位置")
 	} else {
 		if ok, _ := pathExists(app.privateDefPath); ok {
 			log.Println("PRIVATE定义文件存放位置 ", app.privateDefPath)
 		} else {
-			log.Printf("通过环境变量[TGAH_PRIVATE_DEF_PATH]指定的API定义文件存放位置[%s]不存在\n", app.privateDefPath)
+			log.Printf("通过环境变量[TGAH_PRIVATE_DEF_PATH]指定的API定义使用的私有数据存放位置[%s]不存在\n", app.privateDefPath)
 			app.privateDefPath = ""
 		}
 	}

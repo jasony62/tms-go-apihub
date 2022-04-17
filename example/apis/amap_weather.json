@@ -1,15 +1,15 @@
 {
   "id": "amap_weather",
   "url": "https://restapi.amap.com/v3/weather/weatherInfo",
-  "private": "common",
   "method": "GET",
+  "private": "amap_keys",
   "parameters": [
     {
       "in": "query",
       "name": "key",
       "from": {
         "in": "private",
-        "name": "amap_key1"
+        "name": "key1"
       }
     },
     {

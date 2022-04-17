@@ -1,0 +1,37 @@
+{
+  "id": "kdxf_nlp_ke",
+  "description": "科大讯飞自然语言处理，提取关键词。",
+  "url": "https://ltpapi.xfyun.cn/v1/ke",
+  "method": "POST",
+  "private": "kdxf_keys",
+  "plugins": [{ "path": "../plugins/kdxfnlp/kdxfnlp.so" }],
+  "parameters": [
+    {
+      "in": "header",
+      "name": "X-Appid",
+      "from": {
+        "in": "private",
+        "name": "appid"
+      }
+    },
+    {
+      "in": "header",
+      "name": "X-CurTime",
+      "value": ""
+    },
+    {
+      "in": "header",
+      "name": "X-Param",
+      "value": "eyJ0eXBlIjoiZGVwZW5kZW50In0="
+    },
+    {
+      "in": "header",
+      "name": "X-CheckSum",
+      "value": ""
+    }
+  ],
+  "requestBody": {
+    "contentType": "application/x-www-form-urlencoded",
+    "content": "text={{.content}}"
+  }
+}

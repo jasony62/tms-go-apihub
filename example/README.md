@@ -12,6 +12,8 @@ curl "http://localhost:8080/api/amap_district?city=北京"
 curl "http://localhost:8080/api/amap_weather?city=110100"
 ```
 
+通过编排实现直接指定城市名称获得天气数据
+
 ```
 curl "http://localhost:8080/flow/amap_city_weather?city=北京"
 ```
@@ -56,4 +58,57 @@ curl "http://localhost:8080/api/qywx_gettoken"
 
 ```
 curl -X POST -d '{"touser": "YangYue","msgtype": "text","agentid": "1000002","text": { "content": "试试企业微信" }}' "http://localhost:8080/flow/qywx_message_send"
+```
+
+# 私有数据
+
+API 调用设计使用与鉴权相关的私有数据，需要将这些数据放置在单独的文件中。
+
+## 高德地图
+
+`amap_keys.json`
+
+```json
+{
+  "privates": [
+    {
+      "name": "key1",
+      "value": "替换为实际值"
+    }
+  ]
+}
+```
+
+## 科大讯飞
+
+`kdxf_keys.json`
+
+```json
+{
+  "privates": [
+    {
+      "name": "appid",
+      "value": "替换为实际值"
+    }
+  ]
+}
+```
+
+## 企业微信
+
+`qywx_keys.json`
+
+```json
+{
+  "privates": [
+    {
+      "name": "corpid",
+      "value": "替换为实际值"
+    },
+    {
+      "name": "corpsecret",
+      "value": "替换为实际值"
+    }
+  ]
+}
 ```

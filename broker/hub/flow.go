@@ -1,8 +1,8 @@
 package hub
 
 type FlowStepApiDef struct {
-	Id         string        `json:"id"`
-	Parameters []ApiDefParam `json:"parameters"`
+	Id         string         `json:"id"`
+	Parameters *[]ApiDefParam `json:"parameters"`
 }
 
 type FlowStepResponseDef struct {

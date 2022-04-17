@@ -4,13 +4,14 @@
 
 ## 环境变量
 
-| 环境变量           | 用途                           | 默认值  |
-| ------------------ | ------------------------------ | ------- |
-| TGAH_HOST          | 服务的主机名                   | 0.0.0.0 |
-| TGAH_PORT          | 服务的端口号                   | 8080    |
-| TGAH_BUCKET_ENABLE | API 和 FLOW 是否按 bucket 隔离 | no      |
-| TGAH_API_DEF_PATH  | API 定义文件存放位置           | -       |
-| TGAH_FLOW_DEF_PATH | 编排定义文件存放位置           | -       |
+| 环境变量              | 用途                             | 默认值  |
+| --------------------- | -------------------------------- | ------- |
+| TGAH_HOST             | 服务的主机名                     | 0.0.0.0 |
+| TGAH_PORT             | 服务的端口号                     | 8080    |
+| TGAH_BUCKET_ENABLE    | API 和 FLOW 是否按 bucket 隔离   | no      |
+| TGAH_API_DEF_PATH     | API 定义文件存放位置             | -       |
+| TGAH_FLOW_DEF_PATH    | 编排定义文件存放位置             | -       |
+| TGAH_PRIVATE_DEF_PATH | API 定义中使用的私有数据存放位置 | -       |
 
 ## 命令行
 

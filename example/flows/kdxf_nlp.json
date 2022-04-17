@@ -1,0 +1,40 @@
+{
+  "name": "kdxf_nlp",
+  "description": "处理用户输入文本",
+  "steps": [
+    {
+      "name": "input_cws",
+      "description": "对输入内容进行分词",
+      "resultKey": "cws",
+      "api": {
+        "id": "kdxf_nlp_cws"
+      }
+    },
+    {
+      "name": "input_pos",
+      "description": "对输入内容标注词性",
+      "resultKey": "pos",
+      "api": {
+        "id": "kdxf_nlp_pos"
+      }
+    },
+    {
+      "name": "merge_result",
+      "description": "合并收到的结果",
+      "resultKey": "merged",
+      "response": {
+        "json": {
+          "errCode": "{{.pos.errCode}}",
+          "data": {
+            "word": [
+              "{{range $index,$elem := .cws.data.word}}{{if $index}},{{end}}\"{{.}}\"{{end}}"
+            ],
+            "pos": [
+              "{{range $index,$elem := .pos.data.pos}}{{if $index}},{{end}}\"{{.}}\"{{end}}"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

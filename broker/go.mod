@@ -23,3 +23,5 @@ require (
 	golang.org/x/sys v0.0.0-20220405210540-1e041c57c461 // indirect
 	gopkg.in/yaml.v2 v2.2.8 // indirect
 )
+
+replace tgah => ../broker

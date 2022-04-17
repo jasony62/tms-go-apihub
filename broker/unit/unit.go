@@ -101,3 +101,18 @@ func FindPrivateValue(api *hub.ApiDef, name string) string {
 	}
 	return ""
 }
+
+// 在调用流中根据规则改写api定义
+func RewriteApiDefInFlow(api *hub.ApiDef, flowApi *hub.FlowStepApiDef) error {
+	if len(*flowApi.Parameters) > 0 {
+		for _, newParam := range *flowApi.Parameters {
+			for i, oldParam := range *api.Parameters {
+				if newParam.Name == oldParam.Name {
+					(*api.Parameters)[i] = newParam
+				}
+			}
+		}
+	}
+
+	return nil
+}

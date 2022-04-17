@@ -37,9 +37,13 @@ func Relay(stack *hub.Stack, resultKey string) (interface{}, int) {
 					value = param.Value
 				} else if param.From != nil && len(param.From.Name) > 0 {
 					if param.From.In == "query" {
-						// 从查询参数中获取值
+						// 从调用上下文中获取参数值
 						value = stack.Query(param.From.Name)
+					} else if param.From.In == "StepResult" {
+						// 从调用上下文中获取参数值
+						value = stack.QueryFromStepResult(param.From.Name)
 					} else if param.From.In == "private" {
+						// 从私有数据中获取参数值
 						value = unit.FindPrivateValue(stack.ApiDef, param.From.Name)
 					}
 				}
