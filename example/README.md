@@ -18,6 +18,10 @@ curl "http://localhost:8080/api/amap_weather?city=110100"
 curl "http://localhost:8080/flow/amap_city_weather?city=北京"
 ```
 
+入参为json的版本
+curl -H "Content-Type: application/json" -d '{"city":"北京"}' "http://localhost:8080/api/amap_district"
+curl -H "Content-Type: application/json" -d '{"city":"北京"}' "http://localhost:8080/flow/amap_city_weather_json"
+
 # 科大讯飞 NLP
 
 对输入内容进行分词

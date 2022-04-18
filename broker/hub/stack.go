@@ -15,7 +15,6 @@ type Stack struct {
 	ApiDef         *ApiDef
 	FlowDef        *FlowDef
 	GinContext     *gin.Context
-	RequestBody    *interface{}
 	StepResult     map[string]interface{}
 	CurrentStep    *FlowStepDef
 }
@@ -31,6 +30,5 @@ func (stack Stack) QueryFromStepResult(name string) string {
 	tmpl, _ := template.New("key").Parse(name)
 	buf := new(bytes.Buffer)
 	tmpl.Execute(buf, stack.StepResult)
-
 	return buf.String()
 }

@@ -1,6 +1,7 @@
 package flow
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/jasony62/tms-go-apihub/api"
@@ -16,7 +17,11 @@ func Run(stack *hub.Stack) (interface{}, int) {
 		stack.CurrentStep = &step
 		if step.Api != nil && len(step.Api.Id) > 0 {
 			// 执行API并记录结果
-			apiDef, _ := unit.FindApiDef(stack, "", step.Api.Id)
+			apiDef, err := unit.FindApiDef(stack, "", step.Api.Id)
+
+			if apiDef == nil {
+				log.Panic("获得API", step.Api.Id, "定义失败：", err)
+			}
 			// 根据flow的定义改写api定义
 			if step.Api.Parameters != nil && len(*step.Api.Parameters) > 0 {
 				unit.RewriteApiDefInFlow(apiDef, step.Api)
@@ -35,8 +40,5 @@ func Run(stack *hub.Stack) (interface{}, int) {
 		lastResultKey = step.ResultKey
 	}
 
-	/*获得最后一个任务的结果*/
-	jsonOutBody := stack.StepResult[lastResultKey]
-
-	return jsonOutBody, http.StatusOK
+	return stack.StepResult[lastResultKey], http.StatusOK
 }
