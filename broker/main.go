@@ -38,8 +38,9 @@ func (app App) newStack(c *gin.Context) *hub.Stack {
 	stack.PrivateDefPath = app.privateDefPath
 	stack.FlowDefPath = app.flowDefPath
 	stack.GinContext = c
-	stack.RequestBody = inReqData
 
+	stack.StepResult = make(map[string]interface{})
+	stack.StepResult["origin"] = *inReqData
 	return stack
 }
 
@@ -55,12 +56,16 @@ func doRelay(c *gin.Context) {
 	if app.bucketEnable {
 		bucket = c.Param(`bucket`)
 	}
-	apiDef, _ := unit.FindApiDef(stack, bucket, apiId)
+	apiDef, err := unit.FindApiDef(stack, bucket, apiId)
+
+	if apiDef == nil {
+		log.Panic("获得API定义失败：", err)
+		return
+	}
 
 	// 收到的数据
-	inReqData := new(interface{})
-	c.BindJSON(&inReqData)
-
+	//inReqData := new(interface{})
+	//c.BindJSON(&inReqData)
 	stack.ApiDef = apiDef
 
 	// 调用api
@@ -82,7 +87,6 @@ func runFlow(c *gin.Context) {
 	flowDef, _ := unit.FindFlowDef(stack, bucket, flowId)
 
 	stack.FlowDef = flowDef
-	stack.StepResult = make(map[string]interface{})
 
 	// 执行编排
 	result, status := flow.Run(stack)

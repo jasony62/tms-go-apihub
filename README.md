@@ -84,7 +84,7 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 | --name        | 参数名称。                                                                                            | string   | 是   |
 | --value       | 参数的值。                                                                                            | string   | 否   |
 | --from        | 指定参数值的获取位置。                                                                                | object   | 否   |
-| ----in        | 获取参数值的位置,支持`query`和`private`。                                                             |          |      |
+| ----in        | 获取参数值的位置,支持`query`,`private`(从秘钥文件读取),`origin`(原始报文body中的json)。               |          |      |
 | ----name      | 参数值所在位置的名称。                                                                                |          |      |
 |               |                                                                                                       |          |      |
 | requestBody   | 发送给被调用方的内容。如果不指定，直接转发调用方发送的内容。                                          | any      | 否   |
@@ -108,7 +108,7 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 | steps          | 调用流执行的步骤。每个步骤对应 1 个 API 的调用。API 必须是已定义。                                                                       | object[] | 是   |
 | --name         | 步骤的名称。                                                                                                                             | string   | 是   |
 | --description  | 步骤的描述。                                                                                                                             | string   | 是   |
-| --resultKey    | 在上下文中 API 执行结果对应的名称。                                                                                                      | string   | 是   |
+| --resultKey    | 在上下文中 API 执行结果对应的名称，origin保留为原始报文输入的json。                                                                      | string   | 是   |
 | --api          | 步骤对应的 API 定义。                                                                                                                    | object   | 是   |
 | ----id         | API 定义的 ID。                                                                                                                          | string   | 是   |
 | ----parameters | API 的参数定义，这里可以覆盖 API 定义中的参数定义。`from.in`可以指定为`StepResult`，代表从之前执行步骤的结果（和 resultKey）中提取数据。 | object[] | 否   |
