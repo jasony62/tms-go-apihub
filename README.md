@@ -78,18 +78,16 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 | private       | API 秘钥文件名。                                                                                      | string   | 是   |
 | description   | API 的描述。                                                                                          | string   |      |
 | method        | HTTP 请求方法，支持`POST`和`GET`。                                                                    | string   | 是   |
+|requestContentType | json映射为`application/json`，form映射为`application/x-www-form-urlencoded`，origin为取输入报文的ContentType，并直接转发输入报文的http body，none表示没有body,其他值则直接写入ContentType|string |是|
 |               |                                                                                                       |          |      |
 | parameters    | HTTP 请求的参数。                                                                                     | string[] |      |
-| --in          | 参数位置。支持`query`和`header`。                                                                     | string   | 是   |
+| --in          | 参数位置。支持`query`，`header`和`body`。                                                                     | string   | 是   |
 | --name        | 参数名称。                                                                                            | string   | 是   |
 | --value       | 参数的值。                                                                                            | string   | 否   |
 | --from        | 指定参数值的获取位置。                                                                                | object   | 否   |
-| ----in        | 获取参数值的位置,支持`query`,`private`(从秘钥文件读取),`origin`(原始报文body中的json)。               |          |      |
+| ----from      | 获取参数值的位置,支持`query`,`private`(从秘钥文件读取),`origin`(原始报文body中的json),StepResult(从原始报文和处理结果获取)，JsonTemplate(根据template生成json格式的内容)，Template(据template生成)。               |          |      |
 | ----name      | 参数值所在位置的名称。                                                                                |          |      |
-|               |                                                                                                       |          |      |
-| requestBody   | 发送给被调用方的内容。如果不指定，直接转发调用方发送的内容。                                          | any      | 否   |
-| --contentType | 默认为`application/json`，还支持`"application/x-www-form-urlencoded`。                                | string   | 否   |
-| --content     | 发送给目标 API 的内容模板（mustache）。                                                               |          |      |
+| ----template  | JsonTemplate和Template时，模仿的位置。                                                                                |          |      |
 |               |                                                                                                       |          |      |
 | response      | 返回给调用方的内容。返回的内容统一为`application/json`格式。如果不指定，直接转发目标 API 返回的内容。 | object   | 否   |
 | --json        | 返回调用方内容的模板（mustache），数组或对象。支持从被调用方返回的结果进行映射。                      | any      | 是   |

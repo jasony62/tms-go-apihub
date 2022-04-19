@@ -4,13 +4,14 @@
   "url": "https://ltpapi.xfyun.cn/v1/ke",
   "method": "POST",
   "private": "kdxf_keys",
-  "plugins": [{ "path": "../plugins/kdxfnlp/kdxfnlp.so" }],
+  "plugins": [{ "path": "./plugins/kdxfnlp/kdxfnlp.so" }],
+  "requestContentType": "form",
   "parameters": [
     {
       "in": "header",
       "name": "X-Appid",
       "from": {
-        "in": "private",
+        "from": "private",
         "name": "appid"
       }
     },
@@ -28,10 +29,14 @@
       "in": "header",
       "name": "X-CheckSum",
       "value": ""
+    },
+    {
+      "in": "body",
+      "name": "text",
+      "from": {
+        "from": "origin",
+        "name": "content"
+      }
     }
-  ],
-  "requestBody": {
-    "contentType": "application/x-www-form-urlencoded",
-    "content": "text={{.content}}"
-  }
+  ]
 }

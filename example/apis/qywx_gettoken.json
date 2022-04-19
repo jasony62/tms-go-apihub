@@ -8,7 +8,7 @@
       "in": "query",
       "name": "corpid",
       "from": {
-        "in": "private",
+        "from": "private",
         "name": "corpid"
       }
     },
@@ -16,7 +16,7 @@
       "in": "query",
       "name": "corpsecret",
       "from": {
-        "in": "private",
+        "from": "private",
         "name": "corpsecret"
       }
     }

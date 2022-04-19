@@ -21,8 +21,8 @@
             "in": "query",
             "name": "access_token",
             "from": {
-              "in": "StepResult",
-              "name": "{{.tokenResult.access_token}}"
+              "from": "StepResult",
+              "name": "tokenResult.access_token"
             }
           }
         ]

@@ -7,7 +7,17 @@
       "description": "查询城市的区域码",
       "resultKey": "adcodeResult",
       "api": {
-        "id": "amap_district_json"
+        "id": "amap_district",
+        "parameters": [
+           {
+             "in": "query",
+             "name": "keywords",
+             "from": {
+             "from": "origin",
+             "name": "city"
+           }
+         }
+       ]
       }
     },
     {
@@ -21,8 +31,8 @@
             "in": "query",
             "name": "city",
             "from": {
-              "in": "StepResult",
-              "name": "{{.adcodeResult.data.adcode}}"
+              "from": "StepResult",
+              "name": "adcodeResult.data.adcode"
             }
           }
         ]

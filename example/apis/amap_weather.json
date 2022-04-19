@@ -8,7 +8,7 @@
       "in": "query",
       "name": "key",
       "from": {
-        "in": "private",
+        "from": "private",
         "name": "key1"
       }
     },
@@ -16,7 +16,7 @@
       "in": "query",
       "name": "city",
       "from": {
-        "in": "query",
+        "from": "query",
         "name": "city"
       }
     }
