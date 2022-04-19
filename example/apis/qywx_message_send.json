@@ -2,19 +2,25 @@
   "id": "qywx_message_send",
   "url": "https://qyapi.weixin.qq.com/cgi-bin/message/send",
   "method": "POST",
+  "requestContentType": "json",
   "parameters": [
     {
       "in": "query",
       "name": "access_token",
       "value": ""
+    },
+    {
+      "in": "body",
+      "name": "body",
+      "from": {
+        "from": "JsonTemplate",
+        "template": {
+          "touser": "{{.origin.touser}}",
+          "msgtype": "{{.origin.msgtype}}",
+          "agentid": "{{.origin.agentid}}",
+          "text": { "content": "{{.origin.text.content}}" }
+        }
+      }
     }
-  ],
-  "requestBody": {
-    "content": {
-      "touser": "{{.touser}}",
-      "msgtype": "{{.msgtype}}",
-      "agentid": "{{.agentid}}",
-      "text": { "content": "{{.text.content}}" }
-    }
-  }
+  ]
 }

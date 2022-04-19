@@ -9,7 +9,7 @@
       "in": "query",
       "name": "key",
       "from": {
-        "in": "private",
+        "from": "private",
         "name": "key1"
       }
     },
@@ -22,7 +22,7 @@
       "in": "query",
       "name": "keywords",
       "from": {
-        "in": "query",
+        "from": "query",
         "name": "city"
       }
     }

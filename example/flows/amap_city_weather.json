@@ -21,8 +21,8 @@
             "in": "query",
             "name": "city",
             "from": {
-              "in": "StepResult",
-              "name": "{{.adcodeResult.data.adcode}}"
+              "from": "StepResult",
+              "name": "adcodeResult.data.adcode"
             }
           }
         ]

@@ -18,9 +18,31 @@ import (
 // 转发API调用
 func Relay(stack *hub.Stack, resultKey string) (interface{}, int) {
 	apiDef := stack.ApiDef
+	var formBody *http.Request
+	var outBody string
+	var err error
+	var hasBody bool
 
 	// 要发送的请求
 	outReq, _ := http.NewRequest(apiDef.Method, "", nil)
+	hasBody = len(apiDef.RequestContentType) > 0 && apiDef.RequestContentType != "none"
+	if hasBody {
+		if apiDef.RequestContentType == "form" {
+			outReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+			formBody = new(http.Request)
+			formBody.ParseForm()
+		} else if apiDef.RequestContentType == "json" {
+			outReq.Header.Set("Content-Type", "application/json")
+		} else if apiDef.RequestContentType == "origin" {
+			contentType := stack.GinContext.Request.Header.Get("Content-Type")
+			outReq.Header.Set("Content-Type", contentType)
+			// 收到的请求中的数据
+			inData, _ := json.Marshal(stack.StepResult["origin"])
+			outBody = string(inData)
+		} else {
+			outReq.Header.Set("Content-Type", apiDef.RequestContentType)
+		}
+	}
 
 	// 发出请求的URL
 	outReqURL, _ := url.Parse(apiDef.Url)
@@ -32,18 +54,24 @@ func Relay(stack *hub.Stack, resultKey string) (interface{}, int) {
 		for _, param := range *outReqParamRules {
 			if len(param.Name) > 0 {
 				if len(param.Value) == 0 {
-					if param.From != nil && len(param.From.Name) > 0 {
-						if param.From.In == "query" {
+					if param.From != nil {
+						if param.From.From == "query" {
 							// 从调用上下文中获取参数值
 							param.Value = stack.Query(param.From.Name)
-						} else if param.From.In == "origin" {
+						} else if param.From.From == "origin" {
 							// 从调用上下文中获取参数值
 							param.Value = stack.QueryFromStepResult("{{.origin." + param.From.Name + "}}")
-						} else if param.From.In == "private" {
+						} else if param.From.From == "private" {
 							// 从私有数据中获取参数值
 							param.Value = unit.FindPrivateValue(stack.ApiDef, param.From.Name)
-						} else if param.From.In == "StepResult" {
-							param.Value = stack.QueryFromStepResult(param.From.Name)
+						} else if param.From.From == "StepResult" {
+							param.Value = stack.QueryFromStepResult("{{." + param.From.Name + "}}")
+						} else if param.From.From == "JsonTemplate" {
+							jsonOutBody := util.Json2Json(stack.StepResult, param.From.Template)
+							byteJson, _ := json.Marshal(jsonOutBody)
+							param.Value = string(byteJson)
+						} else if param.From.From == "Template" {
+							param.Value = util.HandleTemplate(stack.StepResult, param.From.Template)
 						}
 					}
 				}
@@ -52,49 +80,36 @@ func Relay(stack *hub.Stack, resultKey string) (interface{}, int) {
 					q.Set(param.Name, param.Value)
 				} else if param.In == "header" {
 					outReq.Header.Set(param.Name, param.Value)
+				} else if param.In == "body" {
+					if hasBody && apiDef.RequestContentType != "origin" {
+						if apiDef.RequestContentType == "form" {
+							formBody.Form.Add(param.Name, param.Value)
+						} else {
+							if len(outBody) == 0 {
+								outBody = param.Value
+							} else {
+								log.Println("Double content body :\r\n", outBody, "\r\nVS\r\n", param.Value)
+							}
+						}
+					} else {
+						log.Println("Refuse to set body :", apiDef.RequestContentType, "VS\r\n", param.Value)
+					}
 				}
 				log.Println("设置入参，位置", param.In, "名字", param.Name, "值", param.Value)
 			}
 		}
 		outReqURL.RawQuery = q.Encode()
 	}
+
 	outReq.URL = outReqURL
 
 	// 处理要发送的消息体
 	if apiDef.Method == "POST" {
-		if apiDef.RequestBody != nil {
-			// 指定了发送内容的映射规则
-			contentType := apiDef.RequestBody.ContentType
-			if len(contentType) > 0 {
-				outReq.Header.Set("Content-Type", contentType)
-			} else {
-				outReq.Header.Set("Content-Type", "application/json")
+		if apiDef.RequestContentType != "none" {
+			if apiDef.RequestContentType == "form" {
+				outBody = formBody.Form.Encode()
 			}
-			var outBody string
-			if apiDef.RequestBody.Content != nil {
-				// 收到的请求中的数据
-				inData := stack.StepResult["origin"]
-				// 根据映射规则生成数据
-				jsonOutBody := util.Json2Json(inData, apiDef.RequestBody.Content)
-				// 要求输出的表单形式数据
-				if contentType == "application/x-www-form-urlencoded" {
-					formData, _ := url.ParseQuery(jsonOutBody.(string))
-					outBody = formData.Encode()
-				} else { // 默认用JSON发送数据
-					byteJson, _ := json.Marshal(jsonOutBody)
-					outBody = string(byteJson)
-				}
-			}
-			outReqBody := ioutil.NopCloser(strings.NewReader(outBody))
-			outReq.Body = outReqBody
-		} else {
-			// 直接转发收到的数据
-			contentType := stack.GinContext.Request.Header.Get("Content-Type")
-			outReq.Header.Set("Content-Type", contentType)
-			// 收到的请求中的数据
-			inData, _ := json.Marshal(stack.StepResult["origin"])
-			outReqBody := ioutil.NopCloser(strings.NewReader(string(inData)))
-			outReq.Body = outReqBody
+			outReq.Body = ioutil.NopCloser(strings.NewReader(outBody))
 		}
 	}
 
