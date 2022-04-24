@@ -14,10 +14,11 @@ func Run(stack *hub.Stack) (interface{}, int) {
 	var lastResultKey string
 	flowDef := stack.FlowDef
 	for _, step := range flowDef.Steps {
-		stack.CurrentStep = &step
+		//stack.CurrentStep = &step
 		if step.Api != nil && len(step.Api.Id) > 0 {
 			// 执行API并记录结果
-			apiDef, err := unit.FindApiDef(stack, "", step.Api.Id)
+			//apiDef, err := unit.FindApiDef(stack, "", step.Api.Id)
+			apiDef, err := unit.FindApiDef(stack, step.Api.Id)
 
 			if apiDef == nil {
 				log.Panic("获得API", step.Api.Id, "定义失败：", err)

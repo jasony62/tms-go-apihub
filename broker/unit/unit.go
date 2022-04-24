@@ -8,6 +8,7 @@ import (
 
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/jasony62/tms-go-apihub/plugin"
+	"github.com/jasony62/tms-go-apihub/util"
 )
 
 func loadPrivateData(path string, bucket string, name string) (*hub.PrivateArray, error) {
@@ -30,12 +31,16 @@ func loadPrivateData(path string, bucket string, name string) (*hub.PrivateArray
 	return result, nil
 }
 
-func FindApiDef(stack *hub.Stack, bucket string, id string) (*hub.ApiDef, error) {
+func FindApiDef(stack *hub.Stack, id string) (*hub.ApiDef, error) {
 	var filePath string
+	var bucket string
+	if hub.DefaultApp.BucketEnable {
+		bucket = stack.GinContext.Param(`bucket`)
+	}
 	if bucket != "" {
-		filePath = fmt.Sprintf("%s/%s/%s.json", stack.ApiDefPath, bucket, id)
+		filePath = fmt.Sprintf("%s/%s/%s.json", hub.DefaultApp.ApiDefPath, bucket, id)
 	} else {
-		filePath = fmt.Sprintf("%s/%s.json", stack.ApiDefPath, id)
+		filePath = fmt.Sprintf("%s/%s.json", hub.DefaultApp.ApiDefPath, id)
 	}
 	filePtr, err := os.Open(filePath)
 	if err != nil {
@@ -50,7 +55,7 @@ func FindApiDef(stack *hub.Stack, bucket string, id string) (*hub.ApiDef, error)
 
 	if len(apiDef.PrivateName) > 0 {
 		//需要load秘钥
-		apiDef.Privates, err = loadPrivateData(stack.PrivateDefPath, bucket, apiDef.PrivateName)
+		apiDef.Privates, err = loadPrivateData(hub.DefaultApp.PrivateDefPath, bucket, apiDef.PrivateName)
 		if err != nil {
 			log.Panic("获得Private数据失败：", err)
 			return nil, err
@@ -72,16 +77,22 @@ func FindApiDef(stack *hub.Stack, bucket string, id string) (*hub.ApiDef, error)
 	return apiDef, nil
 }
 
-func FindFlowDef(stack *hub.Stack, bucket string, id string) (*hub.FlowDef, error) {
+func FindFlowDef(stack *hub.Stack, id string) (*hub.FlowDef, error) {
 	var filePath string
+
+	var bucket string
+	if hub.DefaultApp.BucketEnable {
+		bucket = stack.GinContext.Param(`bucket`)
+	}
+
 	if bucket != "" {
-		filePath = fmt.Sprintf("%s/%s/%s.json", stack.FlowDefPath, bucket, id)
+		filePath = fmt.Sprintf("%s/%s/%s.json", hub.DefaultApp.FlowDefPath, bucket, id)
 	} else {
-		filePath = fmt.Sprintf("%s/%s.json", stack.FlowDefPath, id)
+		filePath = fmt.Sprintf("%s/%s.json", hub.DefaultApp.FlowDefPath, id)
 	}
 	filePtr, err := os.Open(filePath)
 	if err != nil {
-		log.Panic("获得Flow定义失败", err)
+		log.Panic("获得Flow定义失败", filePath, "due to", err)
 		return nil, err
 	}
 	defer filePtr.Close()
@@ -91,6 +102,33 @@ func FindFlowDef(stack *hub.Stack, bucket string, id string) (*hub.FlowDef, erro
 	decoder.Decode(&flowDef)
 
 	return flowDef, nil
+}
+
+func FindScheduleDef(stack *hub.Stack, id string) (*hub.ScheduleDef, error) {
+	var filePath string
+	var bucket string
+
+	if hub.DefaultApp.BucketEnable {
+		bucket = stack.GinContext.Param(`bucket`)
+	}
+
+	if bucket != "" {
+		filePath = fmt.Sprintf("%s/%s/%s.json", hub.DefaultApp.ScheduleDefPath, bucket, id)
+	} else {
+		filePath = fmt.Sprintf("%s/%s.json", hub.DefaultApp.ScheduleDefPath, id)
+	}
+	filePtr, err := os.Open(filePath)
+	if err != nil {
+		log.Panic("获得Schedule定义失败", err)
+		return nil, err
+	}
+	defer filePtr.Close()
+
+	scheduleDef := new(hub.ScheduleDef)
+	decoder := json.NewDecoder(filePtr)
+	decoder.Decode(&scheduleDef)
+
+	return scheduleDef, nil
 }
 
 func FindPrivateValue(api *hub.ApiDef, name string) string {
@@ -115,4 +153,25 @@ func RewriteApiDefInFlow(api *hub.ApiDef, flowApi *hub.FlowStepApiDef) error {
 	}
 
 	return nil
+}
+
+func GetParameterValue(stack *hub.Stack, from string, name string, template *interface{}) string {
+	var value string
+	switch from {
+	case "query":
+		value = stack.Query(name)
+	case "origin":
+		value = stack.QueryFromStepResult("{{.origin." + name + "}}")
+	case "private":
+		value = FindPrivateValue(stack.ApiDef, name)
+	case "template":
+		value = stack.QueryFromStepResult(name)
+	case "StepResult":
+		value = stack.QueryFromStepResult("{{." + name + "}}")
+	case "JsonTemplate":
+		jsonOutBody := util.Json2Json(stack.StepResult, template)
+		byteJson, _ := json.Marshal(jsonOutBody)
+		value = string(byteJson)
+	}
+	return value
 }

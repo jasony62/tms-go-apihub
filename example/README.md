@@ -61,7 +61,7 @@ curl "http://localhost:8080/api/qywx_gettoken"
 先获取 access_token 再发送消息
 
 ```
-curl -X POST -d '{"touser": "YangYue","msgtype": "text","agentid": "1000002","text": { "content": "试试企业微信" }}' "http://localhost:8080/flow/qywx_message_send"
+curl -X POST -d '{"touser": "YangYue","msgtype": "text","agentid": "1000002", "content": "试试企业微信"}' "http://localhost:8080/flow/qywx_message_send"
 ```
 
 # 私有数据

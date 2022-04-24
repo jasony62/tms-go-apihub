@@ -18,7 +18,7 @@
           "touser": "{{.origin.touser}}",
           "msgtype": "{{.origin.msgtype}}",
           "agentid": "{{.origin.agentid}}",
-          "text": { "content": "{{.origin.text.content}}" }
+          "text": { "content": "{{.origin.content}}" }
         }
       }
     }
