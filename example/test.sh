@@ -30,6 +30,8 @@ echo "\r\n获得 access_token:\r\n"
 curl "http://localhost:8080/api/qywx_gettoken"
 
 echo "\r\n发送文本消息\r\n"
-curl -X POST -d '{"touser": "YangYue","msgtype": "text","agentid": "1000002","text": { "content": "试试企业微信" }}' "http://localhost:8080/flow/qywx_message_send"
+curl -X POST -d '{"touser": "YangYue","msgtype": "text","agentid": "1000002", "content": "试试企业微信" }' "http://localhost:8080/flow/qywx_message_send"
 
+echo "\r\n查询天气并发送企业微信"
+curl -H "Content-Type: application/json" -d '{"city":"sh"}' "http://localhost:8080/schedule/amap_qywx"
 

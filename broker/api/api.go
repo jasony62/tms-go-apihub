@@ -55,24 +55,7 @@ func Relay(stack *hub.Stack, resultKey string) (interface{}, int) {
 			if len(param.Name) > 0 {
 				if len(param.Value) == 0 {
 					if param.From != nil {
-						if param.From.From == "query" {
-							// 从调用上下文中获取参数值
-							param.Value = stack.Query(param.From.Name)
-						} else if param.From.From == "origin" {
-							// 从调用上下文中获取参数值
-							param.Value = stack.QueryFromStepResult("{{.origin." + param.From.Name + "}}")
-						} else if param.From.From == "private" {
-							// 从私有数据中获取参数值
-							param.Value = unit.FindPrivateValue(stack.ApiDef, param.From.Name)
-						} else if param.From.From == "StepResult" {
-							param.Value = stack.QueryFromStepResult("{{." + param.From.Name + "}}")
-						} else if param.From.From == "JsonTemplate" {
-							jsonOutBody := util.Json2Json(stack.StepResult, param.From.Template)
-							byteJson, _ := json.Marshal(jsonOutBody)
-							param.Value = string(byteJson)
-						} else if param.From.From == "Template" {
-							param.Value = util.HandleTemplate(stack.StepResult, param.From.Template)
-						}
+						param.Value = unit.GetParameterValue(stack, param.From.From, param.From.Name, param.From.Template)
 					}
 				}
 

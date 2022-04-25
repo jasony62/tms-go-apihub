@@ -109,7 +109,7 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 | --resultKey    | 在上下文中 API 执行结果对应的名称，origin保留为原始报文输入的json。                                                                      | string   | 是   |
 | --api          | 步骤对应的 API 定义。                                                                                                                    | object   | 是   |
 | ----id         | API 定义的 ID。                                                                                                                          | string   | 是   |
-| ----parameters | API 的参数定义，这里可以覆盖 API 定义中的参数定义。`from.in`可以指定为`StepResult`，代表从之前执行步骤的结果（和 resultKey）中提取数据。 | object[] | 否   |
+| ----parameters | API 的参数定义，这里可以覆盖 API 定义中的参数定义。`from.from`可以指定为`StepResult`，代表从之前执行步骤的结果（和 resultKey）中提取数据。 | object[] | 否   |
 |                |                                                                                                                                          |          |      |
 | --response     | 定义返回结果的模板。                                                                                                                     | object   | 否   |
 | ----json       | 统一返回 JSON 格式的内容。                                                                                                               | any      | 是   |

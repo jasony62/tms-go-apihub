@@ -31,7 +31,7 @@ func Json2Json(source interface{}, rules interface{}) interface{} {
 	return target
 }
 
-func HandleTemplate(source interface{}, rules interface{}) string {
-	buf := executeTemplate(source, rules, false)
-	return buf.String()
-}
+//func HandleTemplate(source interface{}, rules interface{}) string {
+///	buf := executeTemplate(source, rules, false)
+//	return buf.String()
+//}

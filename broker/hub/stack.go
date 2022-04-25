@@ -8,15 +8,12 @@ import (
 )
 
 type Stack struct {
-	BucketEnable   bool
-	ApiDefPath     string
-	PrivateDefPath string
-	FlowDefPath    string
-	ApiDef         *ApiDef
-	FlowDef        *FlowDef
-	GinContext     *gin.Context
-	StepResult     map[string]interface{}
-	CurrentStep    *FlowStepDef
+	ApiDef      *ApiDef
+	FlowDef     *FlowDef
+	ScheduleDef *ScheduleDef
+	GinContext  *gin.Context
+	StepResult  map[string]interface{}
+	//CurrentStep *FlowStepDef
 }
 
 // 从请求参数中获取查询参数
