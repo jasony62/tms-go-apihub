@@ -1,0 +1,37 @@
+{
+  "id": "svc_nlp_rest",
+  "url": "http://10.128.86.64:8000/serviceAgent/rest/hx/txt2/nlpemotion",
+  "private": "svc_nlp_rest_keys",
+  "method": "POST",
+  "requestContentType": "json",
+  "parameters": [
+    {
+      "in": "header",
+      "name": "X-APP-ID",
+      "from": {
+        "from": "private",
+        "name": "xappid"
+      }
+    },
+    {
+      "in": "header",
+      "name": "X-APP-KEY",
+      "from": {
+        "from": "private",
+        "name": "xappkey"
+      }
+    },
+    {
+      "in": "body",
+      "name": "body",
+      "from": {
+        "from": "JsonTemplate",
+        "template": {
+          "text": "{{.origin.text}}",
+          "seqid": "{{.origin.seqid}}",
+          "timestamp": "{{.origin.timestamp}}"
+        }
+      }
+    }
+  ]
+}
