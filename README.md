@@ -161,7 +161,6 @@ curl "http://localhost:8080/flow/amap_city_weather?city=北京"
 * 支持func获取value
     * 支持无输入参数 utc，uuid   
     * 支持有输入参数 md5sum，timeStamp，base64，base64 decode
-    * 支持在模板中使用自定义函数
     * 支持template使用func（FuncMap）
     * 支持从.so动态注册函数
 * 支持从远端ftp/http下载压缩包，解压作为conf，支持压缩包密码
@@ -179,9 +178,10 @@ curl "http://localhost:8080/flow/amap_city_weather?city=北京"
 * 支持单API并发限制，令牌桶限制
 * 支持对private文件秘钥加解密
 * 支持在parameters中引用之前的http错误码
-* 性能提升，使用fasthttp，fastjson等
+* 性能提升，使用fasthttp，fastjson/json-iterator等
 * 支持json文件动态下载并reload（全更新）
 * go async pool
+* graceful shutdown
 ## 需要考虑
 * Opentracing，Skywalking
 * 多SSL证书
