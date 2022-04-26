@@ -1,4 +1,6 @@
-通过编排能力简化对 API 的调用。
+# 特性
+APIHUB是一款基于 Golang 开发的微服务网关，能够实现基于JSON定义的灵活的编排能力和高性能 HTTP API的转发能力。
+未来可以对接低代码平台，大大简化对API调用的管理。
 
 # 启动
 
@@ -68,6 +70,7 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 ```
 
 # 基础
+建议所有输入，输出参数都定义为非嵌套的JSON格式，方便引用。
 
 ## 定义 API
 
@@ -83,9 +86,9 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 | parameters    | HTTP 请求的参数。                                                                                     | string[] |      |
 | --in          | 参数位置。支持`query`，`header`和`body`。                                                                     | string   | 是   |
 | --name        | 参数名称。                                                                                            | string   | 是   |
-| --value       | 参数的值。                                                                                            | string   | 否   |
+| --value       | 固定值，当不存在固定值时，则从下面的from获取。                                                                                            | string   | 否   |
 | --from        | 指定参数值的获取位置。                                                                                | object   | 否   |
-| ----from      | 获取参数值的位置,支持`query`,`private`(从秘钥文件读取),`origin`(原始报文body中的json),StepResult(从原始报文和处理结果获取)，JsonTemplate(根据template生成json格式的内容)，Template(据template生成)。               |          |      |
+| ----from      | 获取参数值的位置,支持`query`,`header`,`private`(从秘钥文件读取),`origin`(原始报文body中的json),StepResult(从原始报文和处理结果获取)，JsonTemplate(根据template生成json格式的内容)，Template(据template生成)。               |          |      |
 | ----name      | 参数值所在位置的名称。                                                                                |          |      |
 | ----template  | JsonTemplate和Template时，模仿的位置。                                                                                |          |      |
 |               |                                                                                                       |          |      |
@@ -150,6 +153,36 @@ curl "http://localhost:8080/flow/amap_city_weather?city=北京"
 
 使用`bucket`进行数据隔离。
 
+# 开发计划
+## 近期
+* 支持WHILE循环命令
+* 支持func获取value
+    * 支持无输入参数 utc，uuid   
+    * 支持有输入参数 md5sum，base64，base64 decode
+    * 支持从.so动态注册函数
+* 支持从远端ftp/http下载压缩包，解压作为conf，支持压缩包密码
+## 中期
+* 支持异步，循环加异步
+* 在JSON，HTTP处理错误时能够返回HTTP错误给调用方
+* 支持http请求retry，timeout
+* 增加plugin框架，并支持Prometheus，本地log，基于kafka的JSON输出
+## 任务池
+* 暴露管理API，动态日志等级
+* json文件load一次，反复使用
+* 支持token缓存
+* 支持单API并发限制，令牌桶限制
+* 支持对private文件秘钥加解密
+* 支持在parameters中引用之前的http错误码
+* 性能提升，使用fasthttp，fastjson等
+* 支持json文件动态下载并reload（全更新）
+## 需要考虑
+* Opentracing，Skywalking
+* 多SSL证书
+* 熔断，降级
+* API健康检查
+* 支持websocket，gRPC，Dubbo
+* Open API ：支持使用open api配置网关
+* URL Scheme
 # 参考
 
 [OpenAPI Specification](https://swagger.io/specification/)
