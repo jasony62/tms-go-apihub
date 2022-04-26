@@ -1,5 +1,5 @@
 # 特性
-APIHUB是一款基于 Golang 开发的微服务网关，能够实现基于JSON定义的灵活的编排能力和高性能 HTTP API的转发能力。
+APIHUB是一款基于 Golang 开发的微服务网关，能够实现基于JSON定义的灵活的编排能力和高性能 HTTP API的转发能力。   
 未来可以对接低代码平台，大大简化对API调用的管理。
 
 # 启动
@@ -88,9 +88,9 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 | --name        | 参数名称。                                                                                            | string   | 是   |
 | --value       | 固定值，当不存在固定值时，则从下面的from获取。                                                                                            | string   | 否   |
 | --from        | 指定参数值的获取位置。                                                                                | object   | 否   |
-| ----from      | 获取参数值的位置,支持`query`,`header`,`private`(从秘钥文件读取),`origin`(原始报文body中的json),StepResult(从原始报文和处理结果获取)，JsonTemplate(根据template生成json格式的内容)，Template(据template生成)。               |          |      |
-| ----name      | 参数值所在位置的名称。                                                                                |          |      |
-| ----template  | JsonTemplate和Template时，模仿的位置。                                                                                |          |      |
+| ----from      | 获取参数值的位置,支持`query`,`header`,`private`(从秘钥文件读取),`origin`(原始报文body中的json),StepResult(从原始报文和处理结果获取)，JsonTemplate(根据template生成json格式的内容)，template(跟据template生成)。               |          |      |
+| ----name      | 参数值所在位置的名称，或者template时的内容。                                                                                |          |      |
+| ----template  | JsonTemplate的输入值。                                                                                |          |      |
 |               |                                                                                                       |          |      |
 | response      | 返回给调用方的内容。返回的内容统一为`application/json`格式。如果不指定，直接转发目标 API 返回的内容。 | object   | 否   |
 | --json        | 返回调用方内容的模板（mustache），数组或对象。支持从被调用方返回的结果进行映射。                      | any      | 是   |
@@ -156,16 +156,22 @@ curl "http://localhost:8080/flow/amap_city_weather?city=北京"
 # 开发计划
 ## 近期
 * 支持WHILE循环命令
+* 扩展stepResult，支持在模板中使用private变量
+* 扩展stepResult， 支持在模板中使用parameters中的值
 * 支持func获取value
     * 支持无输入参数 utc，uuid   
-    * 支持有输入参数 md5sum，base64，base64 decode
+    * 支持有输入参数 md5sum，timeStamp，base64，base64 decode
+    * 支持在模板中使用自定义函数
+    * 支持template使用func（FuncMap）
     * 支持从.so动态注册函数
 * 支持从远端ftp/http下载压缩包，解压作为conf，支持压缩包密码
+* 支持在http response中访问origin中的值
 ## 中期
+* 开发测试http server，postman或者apifox的测试脚本
 * 支持异步，循环加异步
 * 在JSON，HTTP处理错误时能够返回HTTP错误给调用方
 * 支持http请求retry，timeout
-* 增加plugin框架，并支持Prometheus，本地log，基于kafka的JSON输出
+* 增加plugin框架，并支持Prometheus，本地log，本地file log，基于kafka的JSON输出
 ## 任务池
 * 暴露管理API，动态日志等级
 * json文件load一次，反复使用
@@ -175,6 +181,7 @@ curl "http://localhost:8080/flow/amap_city_weather?city=北京"
 * 支持在parameters中引用之前的http错误码
 * 性能提升，使用fasthttp，fastjson等
 * 支持json文件动态下载并reload（全更新）
+* go async pool
 ## 需要考虑
 * Opentracing，Skywalking
 * 多SSL证书

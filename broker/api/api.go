@@ -50,35 +50,39 @@ func Relay(stack *hub.Stack, resultKey string) (interface{}, int) {
 	// 设置请求参数
 	outReqParamRules := apiDef.Parameters
 	if outReqParamRules != nil && len(*outReqParamRules) > 0 {
+		var value string
 		q := outReqURL.Query()
+
 		for _, param := range *outReqParamRules {
 			if len(param.Name) > 0 {
 				if len(param.Value) == 0 {
 					if param.From != nil {
-						param.Value = unit.GetParameterValue(stack, param.From.From, param.From.Name, param.From.Template)
+						value = unit.GetParameterValue(stack, param.From)
 					}
+				} else {
+					value = param.Value
 				}
 
 				if param.In == "query" {
-					q.Set(param.Name, param.Value)
+					q.Set(param.Name, value)
 				} else if param.In == "header" {
-					outReq.Header.Set(param.Name, param.Value)
+					outReq.Header.Set(param.Name, value)
 				} else if param.In == "body" {
 					if hasBody && apiDef.RequestContentType != "origin" {
 						if apiDef.RequestContentType == "form" {
-							formBody.Form.Add(param.Name, param.Value)
+							formBody.Form.Add(param.Name, value)
 						} else {
 							if len(outBody) == 0 {
-								outBody = param.Value
+								outBody = value
 							} else {
-								log.Println("Double content body :\r\n", outBody, "\r\nVS\r\n", param.Value)
+								log.Println("Double content body :\r\n", outBody, "\r\nVS\r\n", value)
 							}
 						}
 					} else {
-						log.Println("Refuse to set body :", apiDef.RequestContentType, "VS\r\n", param.Value)
+						log.Println("Refuse to set body :", apiDef.RequestContentType, "VS\r\n", value)
 					}
 				}
-				log.Println("设置入参，位置", param.In, "名字", param.Name, "值", param.Value)
+				log.Println("设置入参，位置", param.In, "名字", param.Name, "值", value)
 			}
 		}
 		outReqURL.RawQuery = q.Encode()
@@ -113,8 +117,7 @@ func Relay(stack *hub.Stack, resultKey string) (interface{}, int) {
 
 	// 构造发送的响应内容
 	if apiDef.Response != nil && apiDef.Response.Json != nil {
-		outRspBodyRules := apiDef.Response.Json
-		jsonOutRspBody = util.Json2Json(jsonInRspBody, outRspBodyRules)
+		jsonOutRspBody = util.Json2Json(jsonInRspBody, apiDef.Response.Json)
 	} else {
 		// 直接转发返回的结果
 		jsonOutRspBody = jsonInRspBody

@@ -23,10 +23,9 @@ func newStack(c *gin.Context) *hub.Stack {
 	inReqData := new(interface{})
 	c.ShouldBindJSON(&inReqData)
 
-	stack := new(hub.Stack)
-	stack.GinContext = c
-
-	stack.StepResult = make(map[string]interface{})
+	stack := &hub.Stack{GinContext: c,
+		StepResult: make(map[string]interface{}),
+	}
 	stack.StepResult["origin"] = *inReqData
 	return stack
 }
