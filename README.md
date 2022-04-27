@@ -180,6 +180,7 @@ curl "http://localhost:8080/flow/amap_city_weather?city=北京"
 * 支持json文件动态下载并reload（全更新）
 * go async pool
 * graceful shutdown
+* 参数有效性检查
 ## 需要考虑
 * Opentracing，Skywalking
 * 多SSL证书
@@ -188,6 +189,9 @@ curl "http://localhost:8080/flow/amap_city_weather?city=北京"
 * 支持websocket，gRPC，Dubbo
 * Open API ：支持使用open api配置网关
 * URL Scheme
+* 是否考虑集成进
+    * https://github.com/go-kratos/kratos
+    * https://github.com/eolinker/apinto
 # 参考
 
 [OpenAPI Specification](https://swagger.io/specification/)
