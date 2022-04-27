@@ -33,9 +33,7 @@ func Run(stack *hub.Stack) (interface{}, int) {
 			api.Relay(stack, step.ResultKey)
 		} else if step.Response != nil {
 			// 处理响应结果
-			outBodyRules := step.Response.Json
-			jsonRspBody := util.Json2Json(stack.StepResult, outBodyRules)
-			stack.StepResult[step.ResultKey] = jsonRspBody
+			stack.StepResult[step.ResultKey] = util.Json2Json(stack.StepResult, step.Response.Json)
 		}
 
 		lastResultKey = step.ResultKey

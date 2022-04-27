@@ -155,21 +155,21 @@ func RewriteApiDefInFlow(api *hub.ApiDef, flowApi *hub.FlowStepApiDef) error {
 	return nil
 }
 
-func GetParameterValue(stack *hub.Stack, from string, name string, template *interface{}) string {
+func GetParameterValue(stack *hub.Stack, from *hub.ApiDefParamFrom) string {
 	var value string
-	switch from {
+	switch from.From {
 	case "query":
-		value = stack.Query(name)
+		value = stack.Query(from.Name)
 	case "origin":
-		value = stack.QueryFromStepResult("{{.origin." + name + "}}")
+		value = stack.QueryFromStepResult("{{.origin." + from.Name + "}}")
 	case "private":
-		value = FindPrivateValue(stack.ApiDef, name)
+		value = FindPrivateValue(stack.ApiDef, from.Name)
 	case "template":
-		value = stack.QueryFromStepResult(name)
+		value = stack.QueryFromStepResult(from.Name)
 	case "StepResult":
-		value = stack.QueryFromStepResult("{{." + name + "}}")
+		value = stack.QueryFromStepResult("{{." + from.Name + "}}")
 	case "JsonTemplate":
-		jsonOutBody := util.Json2Json(stack.StepResult, template)
+		jsonOutBody := util.Json2Json(stack.StepResult, from.Template)
 		byteJson, _ := json.Marshal(jsonOutBody)
 		value = string(byteJson)
 	}

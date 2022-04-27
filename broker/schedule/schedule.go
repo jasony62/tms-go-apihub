@@ -1,8 +1,6 @@
 package schedule
 
 import (
-	"bytes"
-	"encoding/json"
 	"log"
 
 	"github.com/jasony62/tms-go-apihub/flow"
@@ -11,15 +9,13 @@ import (
 )
 
 func copyStack(src *hub.Stack) *hub.Stack {
-	// 收到的数据
-	stack := new(hub.Stack)
-	stack.GinContext = src.GinContext
-	stack.StepResult = make(map[string]interface{})
-	return stack
+	return &hub.Stack{GinContext: src.GinContext,
+		StepResult: make(map[string]interface{}),
+	}
 }
 
 func handleSwitchTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{}, int) {
-	key := unit.GetParameterValue(stack, task.Key.From, task.Key.Name, task.Key.Template)
+	key := unit.GetParameterValue(stack, &task.Key)
 
 	if len(key) == 0 {
 		log.Panic("invalid switch key")
@@ -47,36 +43,18 @@ func handleControlTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{}
 	return nil, 500
 }
 
-func generateOrigin(stack *hub.Stack, parameters *[]hub.ScheduleDefParam) interface{} {
-	var b bytes.Buffer
+func generateStepResult(stack *hub.Stack, parameters *[]hub.ScheduleDefParam) interface{} {
 	var value string
-	count := 0
-	b.Grow(len(*parameters) * 64)
-	b.WriteString("{")
+	result := make(map[string]string, len(*parameters))
 	for _, parameter := range *parameters {
-		if count > 0 {
-			b.WriteString(",")
-		}
-		count++
-		b.WriteString("\"")
-		b.WriteString(parameter.Name)
-		b.WriteString("\":\"")
 		if len(parameter.Value) > 0 {
 			value = parameter.Value
 		} else {
-			value = unit.GetParameterValue(stack, parameter.From.From, parameter.From.Name, parameter.From.Template)
+			value = unit.GetParameterValue(stack, parameter.From)
 		}
-		b.WriteString(value)
-		b.WriteString("\"")
+		result[parameter.Name] = value
 	}
-	b.WriteString("}")
-
-	var v interface{}
-	err := json.Unmarshal(b.Bytes(), &v)
-	if err != nil {
-		log.Panic("fail to generate new origin ", err)
-	}
-	return v
+	return result
 }
 
 func handleFlowTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (result interface{}, status int) {
@@ -90,7 +68,7 @@ func handleFlowTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (result interfa
 	}
 
 	if task.Parameters != nil {
-		tmpStack.StepResult["origin"] = generateOrigin(stack, task.Parameters)
+		tmpStack.StepResult["origin"] = generateStepResult(stack, task.Parameters)
 	} else {
 		tmpStack.StepResult["origin"] = stack.StepResult["origin"]
 	}

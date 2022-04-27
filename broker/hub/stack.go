@@ -8,11 +8,11 @@ import (
 )
 
 type Stack struct {
+	GinContext  *gin.Context
+	StepResult  map[string]interface{}
 	ApiDef      *ApiDef
 	FlowDef     *FlowDef
 	ScheduleDef *ScheduleDef
-	GinContext  *gin.Context
-	StepResult  map[string]interface{}
 	//CurrentStep *FlowStepDef
 }
 
