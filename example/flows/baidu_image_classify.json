@@ -1,0 +1,32 @@
+{
+  "name": "baidu_image_classify",
+  "description": "百度图片动物分类",
+  "steps": [
+    {
+      "name": "gettoken",
+      "description": "获得access_token",
+      "resultKey": "tokenResult",
+      "api": {
+        "id": "baidu_image_classify_token"
+      }
+    },
+    {
+      "name": "getlist",
+      "description": "获得动物图片列表",
+      "resultKey": "listResult",
+      "api": {
+        "id": "baidu_image_classify_list",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "access_token",
+            "from": {
+              "from": "StepResult",
+              "name": "tokenResult.access_token"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -39,3 +39,9 @@ curl -X POST -d '{"touser": "YangYue","msgtype": "text","agentid": "1000002", "c
 echo "\r\n查询天气并发送企业微信"
 curl -H "Content-Type: application/json" -d '{"city":"sh"}' "http://localhost:8080/schedule/amap_qywx"
 
+
+echo "\r\n查询百度图片分类token"
+curl  "http://localhost:8080/api/baidu_image_classify_token"
+
+echo "\r\n通过编排从百度获得相关图片分类"
+curl -X POST -d '{"content": "https://img.zcool.cn/community/01ff2059770a25a8012193a37c7695.jpg"}'  "http://localhost:8080/flow/baidu_image_classify"
