@@ -27,19 +27,20 @@ func Relay(stack *hub.Stack, resultKey string) (interface{}, int) {
 	outReq, _ := http.NewRequest(apiDef.Method, "", nil)
 	hasBody = len(apiDef.RequestContentType) > 0 && apiDef.RequestContentType != "none"
 	if hasBody {
-		if apiDef.RequestContentType == "form" {
+		switch apiDef.RequestContentType {
+		case "form":
 			outReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 			formBody = new(http.Request)
 			formBody.ParseForm()
-		} else if apiDef.RequestContentType == "json" {
+		case "json":
 			outReq.Header.Set("Content-Type", "application/json")
-		} else if apiDef.RequestContentType == "origin" {
+		case "origin":
 			contentType := stack.GinContext.Request.Header.Get("Content-Type")
 			outReq.Header.Set("Content-Type", contentType)
 			// 收到的请求中的数据
 			inData, _ := json.Marshal(stack.StepResult["origin"])
 			outBody = string(inData)
-		} else {
+		default:
 			outReq.Header.Set("Content-Type", apiDef.RequestContentType)
 		}
 	}
@@ -49,9 +50,13 @@ func Relay(stack *hub.Stack, resultKey string) (interface{}, int) {
 
 	// 设置请求参数
 	outReqParamRules := apiDef.Parameters
-	if outReqParamRules != nil && len(*outReqParamRules) > 0 {
+	paramLen := len(*outReqParamRules)
+	if outReqParamRules != nil && paramLen > 0 {
 		var value string
 		q := outReqURL.Query()
+		vars := make(map[string]string, paramLen)
+		stack.StepResult["vars"] = vars
+		defer func() { stack.StepResult["vars"] = nil }()
 
 		for _, param := range *outReqParamRules {
 			if len(param.Name) > 0 {
@@ -63,11 +68,12 @@ func Relay(stack *hub.Stack, resultKey string) (interface{}, int) {
 					value = param.Value
 				}
 
-				if param.In == "query" {
+				switch param.In {
+				case "query":
 					q.Set(param.Name, value)
-				} else if param.In == "header" {
+				case "header":
 					outReq.Header.Set(param.Name, value)
-				} else if param.In == "body" {
+				case "body":
 					if hasBody && apiDef.RequestContentType != "origin" {
 						if apiDef.RequestContentType == "form" {
 							formBody.Form.Add(param.Name, value)
@@ -81,7 +87,11 @@ func Relay(stack *hub.Stack, resultKey string) (interface{}, int) {
 					} else {
 						log.Println("Refuse to set body :", apiDef.RequestContentType, "VS\r\n", value)
 					}
+				case "var":
+				default:
+					log.Println("Invalid in:", param.In, "名字", param.Name, "值", value)
 				}
+				vars[param.Name] = value
 				log.Println("设置入参，位置", param.In, "名字", param.Name, "值", value)
 			}
 		}

@@ -45,7 +45,7 @@ func handleControlTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{}
 
 func generateStepResult(stack *hub.Stack, parameters *[]hub.ScheduleDefParam) interface{} {
 	var value string
-	result := make(map[string]interface{}, len(*parameters))
+	result := make(map[string]string, len(*parameters))
 	for _, parameter := range *parameters {
 		if len(parameter.Value) > 0 {
 			value = parameter.Value

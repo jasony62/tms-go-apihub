@@ -84,13 +84,13 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 |requestContentType | json映射为`application/json`，form映射为`application/x-www-form-urlencoded`，origin为取输入报文的ContentType，并直接转发输入报文的http body，none表示没有body,其他值则直接写入ContentType|string |是|
 |               |                                                                                                       |          |      |
 | parameters    | HTTP 请求的参数。                                                                                     | string[] |      |
-| --in          | 参数位置。支持`query`，`header`和`body`。                                                                     | string   | 是   |
+| --in          | 参数位置。支持`query`，`header`,`body`, `var`。前三者的值除了会放到发送报文里，还可以在模板通过.vars.访问，var表示只进入.vars问，                                                             | string   | 是   |
 | --name        | 参数名称。                                                                                            | string   | 是   |
 | --value       | 固定值，当不存在固定值时，则从下面的from获取。                                                                                            | string   | 否   |
 | --from        | 指定参数值的获取位置。                                                                                | object   | 否   |
 | ----from      | 获取参数值的位置,支持`query`,`header`,`private`(从秘钥文件读取),`origin`(原始报文body中的json),StepResult(从原始报文和处理结果获取)，JsonTemplate(根据template生成json格式的内容)，template(跟据template生成)。               |          |      |
 | ----name      | 参数值所在位置的名称，或者template时的内容。                                                                                |          |      |
-| ----template  | JsonTemplate的输入值。                                                                                |          |      |
+| ----template  | JsonTemplate的输入值,支持.origin.访问输入json，.var.访问在parameters定义的值。                                                                                |          |      |
 |               |                                                                                                       |          |      |
 | response      | 返回给调用方的内容。返回的内容统一为`application/json`格式。如果不指定，直接转发目标 API 返回的内容。 | object   | 否   |
 | --json        | 返回调用方内容的模板（mustache），数组或对象。支持从被调用方返回的结果进行映射。                      | any      | 是   |
@@ -156,8 +156,6 @@ curl "http://localhost:8080/flow/amap_city_weather?city=北京"
 # 开发计划
 ## 近期
 * 支持WHILE循环命令
-* 扩展stepResult，支持在模板中使用private变量
-* 扩展stepResult， 支持在模板中使用parameters中的值
 * 支持func获取value
     * 支持无输入参数 utc，uuid   
     * 支持有输入参数 md5sum，timeStamp，base64，base64 decode
