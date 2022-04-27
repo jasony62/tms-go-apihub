@@ -1,0 +1,22 @@
+{
+  "id": "baidu_image_classify_list",
+  "url": "https://aip.baidubce.com/rest/2.0/image-classify/v1/animal",
+  "private": "baidu_image_classify_key",
+  "method": "POST",
+  "requestContentType": "form",
+  "parameters": [
+    {
+      "in": "query",
+      "name": "access_token",
+      "value": ""
+    },
+    {
+      "in": "body",
+      "name": "imgUrl",
+      "from": {
+        "from": "origin",
+        "name": "content"
+      }
+    }
+  ]
+}

@@ -64,6 +64,26 @@ curl "http://localhost:8080/api/qywx_gettoken"
 curl -X POST -d '{"touser": "YangYue","msgtype": "text","agentid": "1000002", "content": "试试企业微信"}' "http://localhost:8080/flow/qywx_message_send"
 ```
 
+
+
+# 百度图片分类匹配查询
+
+## 获得 access_token
+
+```
+curl "http://localhost:8080/api/baidu_image_classify_token"
+```
+
+## 发送图片匹配请求
+
+先获取 access_token 再发送消息
+
+```
+curl-X POST -d '{"content": "https://img.zcool.cn/community/01ff2059770a25a8012193a37c7695.jpg"}'  "http://locahhost:8080/flow/baidu_image_classify"
+```
+
+
+
 # 私有数据
 
 API 调用设计使用与鉴权相关的私有数据，需要将这些数据放置在单独的文件中。
@@ -116,3 +136,28 @@ API 调用设计使用与鉴权相关的私有数据，需要将这些数据放�
   ]
 }
 ```
+
+## 百度图片
+
+`baidu_image_classify_key.json`
+
+```json
+{
+  "privates": [
+    {
+      "name": "xappkey",
+      "value": "iih1Zs1Vn0xCICICCfduxI0O"
+    },
+	{
+      "name": "xsecret",
+      "value": "r32evIieR4IumIlvUQnlwDyVP8jIeTvU"
+    },
+	{
+      "name": "xgranttype",
+      "value": "client_credentials"
+    }
+  ]
+}
+```
+
+## 
