@@ -14,6 +14,7 @@ import (
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/jasony62/tms-go-apihub/schedule"
 	"github.com/jasony62/tms-go-apihub/unit"
+	"github.com/jasony62/tms-go-apihub/util"
 	"github.com/joho/godotenv"
 )
 
@@ -126,6 +127,39 @@ func loadPath(env string, inDefault string) string {
 	return result
 }
 
+func loadConf() bool {
+	downUrl := os.Getenv("TGAH_REMOTE_CONF_DOWNLOAD")
+
+	if downUrl == "1" {
+		//从远端下载conf
+		confUrl := os.Getenv("TGAH_REMOTE_CONF_URL")
+		filename, err := util.DownloadFile(confUrl)
+		if err != nil {
+			log.Println("Download conf file err: ", err)
+			return false
+		} else {
+			//解压缩
+			//filename = os.Getenv("TGAH_REMOTE_CONF_NAME")
+			confStoreFolder := os.Getenv("TGAH_REMOTE_CONF_STORE_FOLDER")
+			confUnzipPwd := os.Getenv("TGAH_REMOTE_CONF_UNZIP_PWD")
+			log.Println("filename: ", filename)
+			log.Println("confStoreFolder: ", confStoreFolder)
+			log.Println("confUnzipPwd: ", confUnzipPwd)
+
+			err = util.DeCompressZip(filename, confStoreFolder, confUnzipPwd, nil, 0)
+			if err != nil {
+				log.Println(err)
+				return false
+			}
+		}
+	} else {
+		log.Println("TGAH_REMOTE_CONF_DOWNLOAD not 1, use local conf!")
+		return false
+	}
+
+	return true
+}
+
 func main() {
 	flag.Parse()
 
@@ -156,6 +190,10 @@ func main() {
 	re := regexp.MustCompile(`(?i)yes|true`)
 	hub.DefaultApp.BucketEnable = re.MatchString(BucketEnable)
 	klog.Infoln("bucket enable ", hub.DefaultApp.BucketEnable)
+
+	if loadConf() == true {
+		log.Println("Download conf zip package from remote url OK")
+	}
 
 	hub.DefaultApp.ApiDefPath = loadPath("TGAH_API_DEF_PATH", "./conf/apis")
 	hub.DefaultApp.PrivateDefPath = loadPath("TGAH_PRIVATE_DEF_PATH", "./conf/privates")
