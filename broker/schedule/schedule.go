@@ -1,7 +1,7 @@
 package schedule
 
 import (
-	"log"
+	klog "k8s.io/klog/v2"
 
 	"github.com/jasony62/tms-go-apihub/flow"
 	"github.com/jasony62/tms-go-apihub/hub"
@@ -18,7 +18,9 @@ func handleSwitchTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{},
 	key := unit.GetParameterValue(stack, &task.Key)
 
 	if len(key) == 0 {
-		log.Panic("invalid switch key")
+		err := "invalid switch key"
+		klog.Errorln(err)
+		panic(err)
 	}
 
 	for _, item := range *task.Cases {
@@ -35,12 +37,15 @@ func handleControlTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{}
 		if task.Cases != nil {
 			return handleSwitchTask(stack, task)
 		} else {
-			log.Panic("No switch cases")
+			err := "No switch cases"
+			klog.Errorln(err)
+			panic(err)
 		}
 	default:
-		log.Panic("don't support command ", task.Type)
+		err := "don't support command " + task.Type
+		klog.Errorln(err)
+		panic(err)
 	}
-	return nil, 500
 }
 
 func generateStepResult(stack *hub.Stack, parameters *[]hub.ScheduleDefParam) interface{} {
@@ -63,8 +68,9 @@ func handleFlowTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (result interfa
 	tmpStack.FlowDef, err = unit.FindFlowDef(stack, task.Commond)
 
 	if tmpStack.FlowDef == nil {
-		log.Panic("获得Flow定义失败：", err)
-		return nil, 500
+		str := "获得Flow定义失败：" + err.Error()
+		klog.Errorln(str)
+		panic(str)
 	}
 
 	if task.Parameters != nil {
@@ -91,9 +97,13 @@ func handleTasks(stack *hub.Stack, tasks []hub.ScheduleTaskDef) (result interfac
 			case "flow":
 				result, status = handleFlowTask(stack, &task)
 			case "api":
-				log.Panic("don't support api")
+				err := "don't support api"
+				klog.Errorln(err)
+				panic(err)
 			default:
-				log.Panic("don't support type ", task.Type)
+				err := "don't support type " + task.Type
+				klog.Errorln(err)
+				panic(err)
 			}
 		}
 	}

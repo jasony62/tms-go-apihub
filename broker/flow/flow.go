@@ -1,7 +1,7 @@
 package flow
 
 import (
-	"log"
+	klog "k8s.io/klog/v2"
 	"net/http"
 
 	"github.com/jasony62/tms-go-apihub/api"
@@ -21,7 +21,9 @@ func Run(stack *hub.Stack) (interface{}, int) {
 			apiDef, err := unit.FindApiDef(stack, step.Api.Id)
 
 			if apiDef == nil {
-				log.Panic("获得API", step.Api.Id, "定义失败：", err)
+				str := "获得API" + step.Api.Id + "定义失败：" + err.Error()
+				klog.Errorln(str)
+				panic(str)
 			}
 			// 根据flow的定义改写api定义
 			if step.Api.Parameters != nil && len(*step.Api.Parameters) > 0 {
