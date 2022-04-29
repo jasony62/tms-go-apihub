@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
+	klog "k8s.io/klog/v2"
 	"os"
 	"regexp"
 	"strconv"
@@ -40,8 +40,8 @@ func runApi(c *gin.Context) {
 	stack.ApiDef, err = unit.FindApiDef(stack, c.Param(`apiId`))
 
 	if stack.ApiDef == nil {
-		log.Panic("获得API定义失败：", err)
-		return
+		klog.Errorln("获得API定义失败：", err)
+		panic(err)
 	}
 
 	// 收到的数据
@@ -62,8 +62,8 @@ func runFlow(c *gin.Context) {
 	stack.FlowDef, err = unit.FindFlowDef(stack, c.Param(`flowId`))
 
 	if stack.FlowDef == nil {
-		log.Panic("获得Flow定义失败：", err)
-		return
+		klog.Errorln("获得Flow定义失败：", err)
+		panic(err)
 	}
 
 	// 执行编排
@@ -80,8 +80,8 @@ func runSchedule(c *gin.Context) {
 
 	stack.ScheduleDef, err = unit.FindScheduleDef(stack, c.Param(`scheduleId`))
 	if stack.ScheduleDef == nil {
-		log.Panic("获得Schedule定义失败：", err)
-		return
+		klog.Errorln("获得Schedule定义失败：", err)
+		panic(err)
 	}
 
 	// 执行编排
@@ -111,18 +111,18 @@ func init() {
 func loadPath(env string, inDefault string) string {
 	result := os.Getenv(env)
 	if result == "" {
-		log.Println("没有通过环境变量", env, "指定API定义文件存放位置")
+		klog.Infoln("没有通过环境变量", env, "指定API定义文件存放位置")
 	} else {
 		if ok, _ := pathExists(result); ok {
-			log.Println("API定义文件存放位置 ", result)
+			klog.Infoln("API定义文件存放位置 ", result)
 		} else {
-			log.Printf("通过环境变量[TGAH_API_DEF_PATH]指定的API定义文件存放位置[%s]不存在\n", result)
+			klog.Infof("通过环境变量[TGAH_API_DEF_PATH]指定的API定义文件存放位置[%s]不存在\n", result)
 			result = ""
 		}
 	}
 	if result == "" {
 		result = inDefault
-		log.Println("使用默认API定义文件存放位置 ", result)
+		klog.Infoln("使用默认API定义文件存放位置 ", result)
 	}
 	return result
 }
@@ -166,7 +166,7 @@ func main() {
 	if envfile != "" {
 		err := godotenv.Load(envfile)
 		if err != nil {
-			log.Fatal(err)
+			klog.Fatal(err)
 		}
 	}
 
@@ -176,7 +176,7 @@ func main() {
 	} else {
 		hub.DefaultApp.Host = host
 	}
-	log.Println("host: ", hub.DefaultApp.Host)
+	klog.Infoln("host: ", hub.DefaultApp.Host)
 
 	port := os.Getenv("TGAH_PORT")
 	if port == "" {
@@ -184,12 +184,12 @@ func main() {
 	} else {
 		hub.DefaultApp.Port, _ = strconv.Atoi(port)
 	}
-	log.Println("port ", hub.DefaultApp.Port)
+	klog.Infoln("port ", hub.DefaultApp.Port)
 
 	BucketEnable := os.Getenv("TGAH_BUCKET_ENABLE")
 	re := regexp.MustCompile(`(?i)yes|true`)
 	hub.DefaultApp.BucketEnable = re.MatchString(BucketEnable)
-	log.Println("bucket enable ", hub.DefaultApp.BucketEnable)
+	klog.Infoln("bucket enable ", hub.DefaultApp.BucketEnable)
 
 	if loadConf() == true {
 		log.Println("Download conf zip package from remote url OK")

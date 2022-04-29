@@ -3,7 +3,7 @@ package unit
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	klog "k8s.io/klog/v2"
 	"os"
 
 	"github.com/jasony62/tms-go-apihub/hub"
@@ -20,8 +20,9 @@ func loadPrivateData(path string, bucket string, name string) (*hub.PrivateArray
 	}
 	filePtr, err := os.Open(filePath)
 	if err != nil {
-		log.Panic("获得API定义失败：", err)
-		return nil, err
+		str := "获得API定义失败：" + err.Error()
+		klog.Errorln(str)
+		panic(str)
 	}
 	defer filePtr.Close()
 
@@ -44,8 +45,9 @@ func FindApiDef(stack *hub.Stack, id string) (*hub.ApiDef, error) {
 	}
 	filePtr, err := os.Open(filePath)
 	if err != nil {
-		log.Panic("获得API定义失败：", err)
-		return nil, err
+		str := "获得API定义失败：" + err.Error()
+		klog.Errorln(str)
+		panic(str)
 	}
 	defer filePtr.Close()
 
@@ -57,8 +59,9 @@ func FindApiDef(stack *hub.Stack, id string) (*hub.ApiDef, error) {
 		//需要load秘钥
 		apiDef.Privates, err = loadPrivateData(hub.DefaultApp.PrivateDefPath, bucket, apiDef.PrivateName)
 		if err != nil {
-			log.Panic("获得Private数据失败：", err)
-			return nil, err
+			str := "获得Private数据失败：" + err.Error()
+			klog.Errorln(str)
+			panic(str)
 		}
 	}
 
@@ -92,8 +95,9 @@ func FindFlowDef(stack *hub.Stack, id string) (*hub.FlowDef, error) {
 	}
 	filePtr, err := os.Open(filePath)
 	if err != nil {
-		log.Panic("获得Flow定义失败", filePath, "due to", err)
-		return nil, err
+		str := "获得Flow定义失败：" + filePath + "due to" + err.Error()
+		klog.Errorln(str)
+		panic(str)
 	}
 	defer filePtr.Close()
 
@@ -119,8 +123,9 @@ func FindScheduleDef(stack *hub.Stack, id string) (*hub.ScheduleDef, error) {
 	}
 	filePtr, err := os.Open(filePath)
 	if err != nil {
-		log.Panic("获得Schedule定义失败", err)
-		return nil, err
+		str := "获得Schedule定义失败：" + err.Error()
+		klog.Errorln(str)
+		panic(str)
 	}
 	defer filePtr.Close()
 

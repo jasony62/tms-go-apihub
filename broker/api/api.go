@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
+	klog "k8s.io/klog/v2"
 	"net/http"
 	"net/url"
 	"strings"
@@ -81,18 +81,18 @@ func Relay(stack *hub.Stack, resultKey string) (interface{}, int) {
 							if len(outBody) == 0 {
 								outBody = value
 							} else {
-								log.Println("Double content body :\r\n", outBody, "\r\nVS\r\n", value)
+								klog.Infoln("Double content body :\r\n", outBody, "\r\nVS\r\n", value)
 							}
 						}
 					} else {
-						log.Println("Refuse to set body :", apiDef.RequestContentType, "VS\r\n", value)
+						klog.Infoln("Refuse to set body :", apiDef.RequestContentType, "VS\r\n", value)
 					}
 				case "var":
 				default:
-					log.Println("Invalid in:", param.In, "名字", param.Name, "值", value)
+					klog.Infoln("Invalid in:", param.In, "名字", param.Name, "值", value)
 				}
 				vars[param.Name] = value
-				log.Println("设置入参，位置", param.In, "名字", param.Name, "值", value)
+				klog.Infoln("设置入参，位置", param.In, "名字", param.Name, "值", value)
 			}
 		}
 		outReqURL.RawQuery = q.Encode()
@@ -137,7 +137,7 @@ func Relay(stack *hub.Stack, resultKey string) (interface{}, int) {
 	if len(resultKey) > 0 {
 		stack.StepResult[resultKey] = jsonOutRspBody
 	}
-	log.Println("处理", apiDef.Url, ":", http.StatusOK, "\r\n返回结果(原始)：", jsonInRspBody,
+	klog.Infoln("处理", apiDef.Url, ":", http.StatusOK, "\r\n返回结果(原始)：", jsonInRspBody,
 		"\r\n返回结果(修改后)：", jsonOutRspBody)
 	return jsonOutRspBody, http.StatusOK
 }
