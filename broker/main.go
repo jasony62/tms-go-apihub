@@ -3,10 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
-	klog "k8s.io/klog/v2"
 	"os"
 	"regexp"
 	"strconv"
+
+	klog "k8s.io/klog/v2"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jasony62/tms-go-apihub/api"
@@ -135,25 +136,25 @@ func loadConf() bool {
 		confUrl := os.Getenv("TGAH_REMOTE_CONF_URL")
 		filename, err := util.DownloadFile(confUrl)
 		if err != nil {
-			log.Println("Download conf file err: ", err)
+			klog.Errorln("Download conf file err: ", err)
 			return false
 		} else {
 			//解压缩
 			//filename = os.Getenv("TGAH_REMOTE_CONF_NAME")
 			confStoreFolder := os.Getenv("TGAH_REMOTE_CONF_STORE_FOLDER")
 			confUnzipPwd := os.Getenv("TGAH_REMOTE_CONF_UNZIP_PWD")
-			log.Println("filename: ", filename)
-			log.Println("confStoreFolder: ", confStoreFolder)
-			log.Println("confUnzipPwd: ", confUnzipPwd)
+			klog.Infoln("filename: ", filename)
+			klog.Infoln("confStoreFolder: ", confStoreFolder)
+			klog.Infoln("confUnzipPwd: ", confUnzipPwd)
 
 			err = util.DeCompressZip(filename, confStoreFolder, confUnzipPwd, nil, 0)
 			if err != nil {
-				log.Println(err)
+				klog.Errorln(err)
 				return false
 			}
 		}
 	} else {
-		log.Println("TGAH_REMOTE_CONF_DOWNLOAD not 1, use local conf!")
+		klog.Warningln("TGAH_REMOTE_CONF_DOWNLOAD not 1, use local conf!")
 		return false
 	}
 
@@ -192,7 +193,7 @@ func main() {
 	klog.Infoln("bucket enable ", hub.DefaultApp.BucketEnable)
 
 	if loadConf() == true {
-		log.Println("Download conf zip package from remote url OK")
+		klog.Infoln("Download conf zip package from remote url OK")
 	}
 
 	hub.DefaultApp.ApiDefPath = loadPath("TGAH_API_DEF_PATH", "./conf/apis")

@@ -2,13 +2,13 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
-	klog "k8s.io/klog/v2"
 	"net/http"
 	"net/url"
 	"strings"
+
+	klog "k8s.io/klog/v2"
 
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/jasony62/tms-go-apihub/unit"
@@ -114,7 +114,7 @@ func Relay(stack *hub.Stack, resultKey string) (interface{}, int) {
 	client := &http.Client{}
 	resp, err := client.Do(outReq)
 	if err != nil {
-		fmt.Println("err", err)
+		klog.Errorln("err", err)
 		return nil, 500
 	}
 	defer resp.Body.Close()
