@@ -1,7 +1,7 @@
 {
-  "id": "svc_nlp_rest",
+  "id": "yznl_nlp_motion",
   "url": "http://10.128.86.64:8000/serviceAgent/rest/hx/txt2/nlpemotion",
-  "private": "svc_nlp_rest_keys",
+  "private": "yznl_nlp_motion_keys",
   "method": "POST",
   "requestContentType": "json",
   "parameters": [
@@ -22,6 +22,14 @@
       }
     },
     {
+      "in": "vars",
+      "name": "utc",
+      "from": {
+        "from": "func",
+        "name": "utc"
+      }
+    },
+    {
       "in": "body",
       "name": "body",
       "from": {
@@ -29,7 +37,7 @@
         "template": {
           "text": "{{.origin.text}}",
           "seqid": "{{.origin.seqid}}",
-          "timestamp": "{{.origin.timestamp}}"
+          "timestamp": "{{.vars.utc}}"
         }
       }
     }

@@ -87,7 +87,7 @@ func Relay(stack *hub.Stack, resultKey string) (interface{}, int) {
 					} else {
 						klog.Infoln("Refuse to set body :", apiDef.RequestContentType, "VS\r\n", value)
 					}
-				case "var":
+				case "vars":
 				default:
 					klog.Infoln("Invalid in:", param.In, "名字", param.Name, "值", value)
 				}
