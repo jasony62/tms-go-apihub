@@ -44,4 +44,4 @@ echo "\r\n通过编排从百度获得相关图片分类"
 curl -X POST -d '{"content": "https://img.zcool.cn/community/01ff2059770a25a8012193a37c7695.jpg"}'  "http://localhost:8080/flow/baidu_image_classify"
 
 echo "\r\n原子能力:对话情绪识别\r\n"
-curl -i  -X POST -H "Content-Type: application/json" -d '{"text": "hello!", "seqid": "c7574913-5a4f-4622-989c-455f9bd20640", "timestamp": "1606806097"}' "http://localhost:8080/api/yznl_nlp_motion"
+curl -i  -X POST -H "Content-Type: application/json" -d '{"text": "hello!", "seqid": "c7574913-5a4f-4622-989c-455f9bd20640"}' "http://localhost:8080/api/yznl_nlp_motion"

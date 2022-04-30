@@ -177,6 +177,16 @@ func GetParameterValue(stack *hub.Stack, from *hub.ApiDefParamFrom) string {
 		jsonOutBody := util.Json2Json(stack.StepResult, from.Template)
 		byteJson, _ := json.Marshal(jsonOutBody)
 		value = string(byteJson)
+	case "func":
+		function := funcMap[from.Name]
+		if function != nil {
+			value = function()
+		} else {
+			str := "获取function定义失败："
+			klog.Errorln(str)
+			panic(str)
+		}
+
 	}
 	return value
 }
