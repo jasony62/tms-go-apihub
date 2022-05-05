@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"errors"
 	"io"
-	"log"
 	"math"
 	"net/http"
 	"net/url"
@@ -12,6 +11,8 @@ import (
 	"path"
 	"strconv"
 	"time"
+
+	klog "k8s.io/klog/v2"
 )
 
 const (
@@ -20,27 +21,27 @@ const (
 
 func DownloadFile(fileUrl string) (string, error) {
 
-	log.Println("DownloadFile url: ", fileUrl)
+	klog.Infoln("DownloadFile url: ", fileUrl)
 	url, err := url.ParseRequestURI(fileUrl)
 	if err != nil {
-		log.Println("DownloadFile url invalid: ", err)
+		klog.Errorln("DownloadFile url invalid: ", err)
 		return "", err
 	}
 
 	filename := path.Base(url.Path)
-	log.Println("DownloadFile name: ", filename)
+	klog.Infoln("DownloadFile name: ", filename)
 
 	client := http.DefaultClient
 	client.Timeout = time.Second * 600
 
 	resp, err := client.Get(fileUrl)
 	if err != nil {
-		log.Println(err)
+		klog.Errorln(err)
 		return "", err
 	}
 
 	if resp.ContentLength <= 0 {
-		log.Println("DownloadFile: server response length error")
+		klog.Errorln("DownloadFile: server response length error")
 		return "", errors.New("DownloadFile: server response length error")
 	}
 
@@ -59,7 +60,7 @@ func DownloadFile(fileUrl string) (string, error) {
 		select {
 		case <-ticker.C:
 			speed := written - lastWtn
-			log.Printf("[DownloadFile] Speed %s / %s \n", bytesToSize(speed), spaceTime.String())
+			klog.Infof("[DownloadFile] Speed %s / %s \n", bytesToSize(speed), spaceTime.String())
 			if written-lastWtn == 0 {
 				ticker.Stop()
 				stop = true
@@ -72,18 +73,18 @@ func DownloadFile(fileUrl string) (string, error) {
 		}
 	}
 
-	log.Println("DownloadFile OK: ", filename)
+	klog.Infoln("DownloadFile OK: ", filename)
 	return filename, nil
 }
 
 //下载远端url文件
 func copyFileContent(raw io.ReadCloser, filename string, written *int) error {
-	log.Println("Download url file starting!")
+	klog.Infoln("Download url file starting!")
 	reader := bufio.NewReaderSize(raw, FILE_READ_MAX_SIZE)
 
 	file, err := os.Create(filename)
 	if err != nil {
-		log.Println("copyFileContent create file error:", err)
+		klog.Errorln("copyFileContent create file error:", err)
 		return err
 	}
 	writer := bufio.NewWriter(file)
@@ -115,7 +116,7 @@ func copyFileContent(raw io.ReadCloser, filename string, written *int) error {
 	}
 
 	if err != nil {
-		log.Println("copyFileContent read or write error:", err)
+		klog.Errorln("copyFileContent read or write error:", err)
 		return err
 	}
 
