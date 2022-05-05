@@ -41,20 +41,22 @@ func Run(stack *hub.Stack) (interface{}, int) {
 	}
 
 	for _, step := range flowDef.Steps {
-		//stack.CurrentStep = &step
 		if step.Api != nil && len(step.Api.Id) > 0 {
-			// 根据flow的定义改写api定义
+
 			if step.Api.Parameters != nil && len(*step.Api.Parameters) > 0 {
+				// 根据flow的定义改写origin
 				fillOrigin(stack, step.Api.Parameters)
 			}
+
 			// 调用api
 			stack.Name = step.Api.Id
 			jsonOutRspBody, _ := api.Run(stack)
+
 			// 在上下文中保存结果
 			if len(step.ResultKey) > 0 {
 				stack.StepResult[step.ResultKey] = jsonOutRspBody
 			}
-		} else if step.Response != nil {
+		} else if step.Response != nil && len(step.ResultKey) > 0 {
 			// 处理响应结果
 			stack.StepResult[step.ResultKey] = util.Json2Json(stack.StepResult, step.Response.Json)
 		}
