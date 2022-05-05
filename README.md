@@ -63,6 +63,7 @@ c7=>condition: 超过重试次数
 c8=>condition: 需要改写http response
 c9=>condition: 遍历结束
 
+opa=>operation: 获取api定义
 op0=>operation: 设置HTTP method
 op1=>operation: 设置HTTP content type
 op2=>operation: 载入秘钥信息
@@ -73,7 +74,7 @@ op6=>operation: 设置http request timeout
 op7=>operation: 将最终报文发送到url
 op8=>operation: 改写http response
 
-st->c0(yes)->c1(yes)->c2(no)->op3->c3(yes,right)->op5->c9(yes)->c4(yes)->op6->op7->c5(yes)->c8(no)->e1
+st->opa->c0(yes)->c1(yes)->c2(no)->op3->c3(yes,right)->op5->c9(yes)->c4(yes)->op6->op7->c5(yes)->c8(no)->e1
 c9(no)->op3
 c0(no)->e2
 c1(no)->e2
@@ -113,7 +114,7 @@ cstep结束=>condition: 遍历steps结束
 capi=>condition: 有api字段
 cResponse=>condition: 有Response字段
 
-
+op定义=>operation: 获取flow定义
 op遍历=>operation: 遍历steps列表
 op查找=>operation: 根据api.id查找api定义
 op遍历参数=>operation: parameters
@@ -123,7 +124,7 @@ op生成入参=>operation: 生成API的入参
 op存入结果=>operation: 将返回的json存入StepResult
 op改写=>operation: 生成一个新的response
 
-st->c0(yes)->c1(yes)->op遍历->op查找->capi(yes)->c参数(yes)->op遍历参数->op生成入参->c参数结束(yes)->op执行->c成功(yes)->cresultKey(yes)->op存入结果->cstep结束(yes)->e1
+st->op定义->c0(yes)->c1(yes)->op遍历->op查找->capi(yes)->c参数(yes)->op遍历参数->op生成入参->c参数结束(yes)->op执行->c成功(yes)->cresultKey(yes)->op存入结果->cstep结束(yes)->e1
 c0(no)->e2
 c1(no)->e2
 c参数结束(no)->op遍历参数
@@ -138,6 +139,7 @@ cResponse(no)->cresultKey
 ```mermaid
 graph TB
    client(http schedule调用)
+   定义(获取schedule定义)
    递归(递归调用任务列表)
    style client fill:#f9f
    style 递归 fill:#A52A2A
@@ -165,7 +167,7 @@ graph TB
    循环接收{遍历任务列表结束}
    判断递归{是递归调用}   
    
-   client-->执行1-->判断2
+   client-->定义-->执行1-->判断2
    递归-->执行1
    判断2--control-->判断3
    判断2--flow-->执行2-->判断6
@@ -292,7 +294,7 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 | --resultKey    | 在上下文中 API 执行结果对应的名称，origin保留为原始报文输入的json。                                                                      | string   | 是   |
 | --api          | 步骤对应的 API 定义。                                                                                                                    | object   | 是   |
 | ----id         | API 定义的 ID。                                                                                                                          | string   | 是   |
-| ----parameters | API 的参数定义，这里可以覆盖 API 定义中的参数定义。`from.from`可以指定为`StepResult`，代表从之前执行步骤的结果（和 resultKey）中提取数据。 | object[] | 否   |
+| ----parameters | 放在这里的定义会补充或者覆盖输入报文里的json参数。`from.from`可以指定为`StepResult`，代表从之前执行步骤的结果（和 resultKey）中提取数据。 | object[] | 否   |
 |                |                                                                                                                                          |          |      |
 | --response     | 定义返回结果的模板。                                                                                                                     | object   | 否   |
 | ----json       | 统一返回 JSON 格式的内容。                                                                                                               | any      | 是   |

@@ -3,8 +3,9 @@ package unit
 import (
 	"encoding/json"
 	"fmt"
-	klog "k8s.io/klog/v2"
 	"os"
+
+	klog "k8s.io/klog/v2"
 
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/jasony62/tms-go-apihub/plugin"
@@ -136,8 +137,8 @@ func FindScheduleDef(stack *hub.Stack, id string) (*hub.ScheduleDef, error) {
 	return scheduleDef, nil
 }
 
-func FindPrivateValue(api *hub.ApiDef, name string) string {
-	for _, pair := range *api.Privates.Pairs {
+func FindPrivateValue(private *hub.PrivateArray, name string) string {
+	for _, pair := range *private.Pairs {
 		if pair.Name == name {
 			return pair.Value
 		}
@@ -145,30 +146,15 @@ func FindPrivateValue(api *hub.ApiDef, name string) string {
 	return ""
 }
 
-// 在调用流中根据规则改写api定义
-func RewriteApiDefInFlow(api *hub.ApiDef, flowApi *hub.FlowStepApiDef) error {
-	if len(*flowApi.Parameters) > 0 {
-		for _, newParam := range *flowApi.Parameters {
-			for i, oldParam := range *api.Parameters {
-				if newParam.Name == oldParam.Name {
-					(*api.Parameters)[i] = newParam
-				}
-			}
-		}
-	}
-
-	return nil
-}
-
-func GetParameterValue(stack *hub.Stack, from *hub.ApiDefParamFrom) string {
+func GetParameterValue(stack *hub.Stack, private *hub.PrivateArray, from *hub.ApiDefParamFrom) string {
 	var value string
 	switch from.From {
 	case "query":
 		value = stack.Query(from.Name)
-	case "origin":
+	case hub.OriginName:
 		value = stack.QueryFromStepResult("{{.origin." + from.Name + "}}")
 	case "private":
-		value = FindPrivateValue(stack.ApiDef, from.Name)
+		value = FindPrivateValue(private, from.Name)
 	case "template":
 		value = stack.QueryFromStepResult(from.Name)
 	case "StepResult":
@@ -186,7 +172,6 @@ func GetParameterValue(stack *hub.Stack, from *hub.ApiDefParamFrom) string {
 			klog.Errorln(str)
 			panic(str)
 		}
-
 	}
 	return value
 }

@@ -12,3 +12,5 @@ type App struct {
 }
 
 var DefaultApp App
+
+const OriginName = "origin"
