@@ -1,8 +1,9 @@
 package flow
 
 import (
-	klog "k8s.io/klog/v2"
 	"net/http"
+
+	klog "k8s.io/klog/v2"
 
 	"github.com/jasony62/tms-go-apihub/api"
 	"github.com/jasony62/tms-go-apihub/hub"
@@ -10,29 +11,49 @@ import (
 	"github.com/jasony62/tms-go-apihub/util"
 )
 
+func fillOrigin(stack *hub.Stack, parameters *[]hub.OriginDefParam) {
+	var value string
+	origin := stack.StepResult[hub.OriginName].(map[string]interface{})
+
+	for _, parameter := range *parameters {
+		if len(parameter.Value) > 0 {
+			value = parameter.Value
+		} else {
+			value = unit.GetParameterValue(stack, nil, parameter.From)
+		}
+
+		oldValue, isOk := origin[parameter.Name]
+		if isOk {
+			klog.Infoln("replace ", parameter.Name, " from ", oldValue, " to ", value)
+		}
+		origin[parameter.Name] = value
+	}
+}
+
 func Run(stack *hub.Stack) (interface{}, int) {
 	var lastResultKey string
-	flowDef := stack.FlowDef
+	var flowName = stack.Name
+	flowDef, err := unit.FindFlowDef(stack, stack.Name)
+
+	if flowDef == nil {
+		klog.Errorln("获得Flow定义失败：", err)
+		panic(err)
+	}
+
 	for _, step := range flowDef.Steps {
 		//stack.CurrentStep = &step
 		if step.Api != nil && len(step.Api.Id) > 0 {
-			// 执行API并记录结果
-			//apiDef, err := unit.FindApiDef(stack, "", step.Api.Id)
-			apiDef, err := unit.FindApiDef(stack, step.Api.Id)
-
-			if apiDef == nil {
-				str := "获得API" + step.Api.Id + "定义失败：" + err.Error()
-				klog.Errorln(str)
-				panic(str)
-			}
 			// 根据flow的定义改写api定义
 			if step.Api.Parameters != nil && len(*step.Api.Parameters) > 0 {
-				unit.RewriteApiDefInFlow(apiDef, step.Api)
+				fillOrigin(stack, step.Api.Parameters)
 			}
 			// 调用api
-			stack.ApiDef = apiDef
-
-			api.Relay(stack, step.ResultKey)
+			stack.Name = step.Api.Id
+			jsonOutRspBody, _ := api.Run(stack)
+			// 在上下文中保存结果
+			if len(step.ResultKey) > 0 {
+				stack.StepResult[step.ResultKey] = jsonOutRspBody
+			}
 		} else if step.Response != nil {
 			// 处理响应结果
 			stack.StepResult[step.ResultKey] = util.Json2Json(stack.StepResult, step.Response.Json)
@@ -41,5 +62,6 @@ func Run(stack *hub.Stack) (interface{}, int) {
 		lastResultKey = step.ResultKey
 	}
 
+	stack.Name = flowName
 	return stack.StepResult[lastResultKey], http.StatusOK
 }

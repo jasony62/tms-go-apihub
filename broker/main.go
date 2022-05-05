@@ -14,7 +14,6 @@ import (
 	"github.com/jasony62/tms-go-apihub/flow"
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/jasony62/tms-go-apihub/schedule"
-	"github.com/jasony62/tms-go-apihub/unit"
 	"github.com/jasony62/tms-go-apihub/util"
 	"github.com/joho/godotenv"
 )
@@ -22,71 +21,41 @@ import (
 // 1次请求的上下文
 func newStack(c *gin.Context) *hub.Stack {
 	// 收到的数据
+	var value interface{}
 	inReqData := new(interface{})
 	c.ShouldBindJSON(&inReqData)
-
-	stack := &hub.Stack{GinContext: c,
-		StepResult: make(map[string]interface{}),
+	if *inReqData == nil {
+		value = make(map[string]interface{})
+	} else {
+		value = *inReqData
 	}
-	stack.StepResult["origin"] = *inReqData
-	return stack
+
+	return &hub.Stack{GinContext: c,
+		StepResult: map[string]interface{}{hub.OriginName: value},
+		Name:       c.Param(`Id`),
+	}
 }
 
 // 执行1个API调用
 func runApi(c *gin.Context) {
-	// 构造运行上下文
-	var err error
-	stack := newStack(c)
-
-	stack.ApiDef, err = unit.FindApiDef(stack, c.Param(`apiId`))
-
-	if stack.ApiDef == nil {
-		klog.Errorln("获得API定义失败：", err)
-		panic(err)
-	}
-
-	// 收到的数据
-	//inReqData := new(interface{})
-	//c.BindJSON(&inReqData)
-
 	// 调用api
-	result, status := api.Relay(stack, "")
+	result, status := api.Run(newStack(c))
 
 	c.IndentedJSON(status, result)
 }
 
 // 执行一个调用流程
 func runFlow(c *gin.Context) {
-	// 构造运行上下文
-	var err error
-	stack := newStack(c)
-	stack.FlowDef, err = unit.FindFlowDef(stack, c.Param(`flowId`))
-
-	if stack.FlowDef == nil {
-		klog.Errorln("获得Flow定义失败：", err)
-		panic(err)
-	}
-
 	// 执行编排
-	result, status := flow.Run(stack)
+	result, status := flow.Run(newStack(c))
 
 	c.IndentedJSON(status, result)
 }
 
 // 执行一个计划流程
 func runSchedule(c *gin.Context) {
-	var err error
-	// 构造运行上下文
-	stack := newStack(c)
-
-	stack.ScheduleDef, err = unit.FindScheduleDef(stack, c.Param(`scheduleId`))
-	if stack.ScheduleDef == nil {
-		klog.Errorln("获得Schedule定义失败：", err)
-		panic(err)
-	}
-
 	// 执行编排
-	result, status := schedule.Run(stack)
+	result, status := schedule.Run(newStack(c))
 
 	c.IndentedJSON(status, result)
 }
@@ -203,13 +172,13 @@ func main() {
 
 	router := gin.Default()
 	if hub.DefaultApp.BucketEnable {
-		router.Any("/api/:bucket/:apiId", runApi)
-		router.Any("/flow:bucket/:flowId", runFlow)
-		router.Any("/schedule:bucket/:scheduleId", runSchedule)
+		router.Any("/api/:bucket/:Id", runApi)
+		router.Any("/flow:bucket/:Id", runFlow)
+		router.Any("/schedule:bucket/:Id", runSchedule)
 	} else {
-		router.Any("/api/:apiId", runApi)
-		router.Any("/flow/:flowId", runFlow)
-		router.Any("/schedule/:scheduleId", runSchedule)
+		router.Any("/api/:Id", runApi)
+		router.Any("/flow/:Id", runFlow)
+		router.Any("/schedule/:Id", runSchedule)
 	}
 
 	if hub.DefaultApp.Port > 0 {

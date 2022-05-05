@@ -16,12 +16,17 @@ import (
 )
 
 // 转发API调用
-func Relay(stack *hub.Stack, resultKey string) (interface{}, int) {
-	apiDef := stack.ApiDef
+func Run(stack *hub.Stack) (interface{}, int) {
 	var formBody *http.Request
 	var outBody string
 	var err error
 	var hasBody bool
+	apiDef, err := unit.FindApiDef(stack, stack.Name)
+
+	if apiDef == nil {
+		klog.Errorln("获得API定义失败：", err)
+		panic(err)
+	}
 
 	// 要发送的请求
 	outReq, _ := http.NewRequest(apiDef.Method, "", nil)
@@ -34,11 +39,11 @@ func Relay(stack *hub.Stack, resultKey string) (interface{}, int) {
 			formBody.ParseForm()
 		case "json":
 			outReq.Header.Set("Content-Type", "application/json")
-		case "origin":
+		case hub.OriginName:
 			contentType := stack.GinContext.Request.Header.Get("Content-Type")
 			outReq.Header.Set("Content-Type", contentType)
 			// 收到的请求中的数据
-			inData, _ := json.Marshal(stack.StepResult["origin"])
+			inData, _ := json.Marshal(stack.StepResult[hub.OriginName])
 			outBody = string(inData)
 		default:
 			outReq.Header.Set("Content-Type", apiDef.RequestContentType)
@@ -62,7 +67,7 @@ func Relay(stack *hub.Stack, resultKey string) (interface{}, int) {
 			if len(param.Name) > 0 {
 				if len(param.Value) == 0 {
 					if param.From != nil {
-						value = unit.GetParameterValue(stack, param.From)
+						value = unit.GetParameterValue(stack, apiDef.Privates, param.From)
 					}
 				} else {
 					value = param.Value
@@ -74,7 +79,7 @@ func Relay(stack *hub.Stack, resultKey string) (interface{}, int) {
 				case "header":
 					outReq.Header.Set(param.Name, value)
 				case "body":
-					if hasBody && apiDef.RequestContentType != "origin" {
+					if hasBody && apiDef.RequestContentType != hub.OriginName {
 						if apiDef.RequestContentType == "form" {
 							formBody.Form.Add(param.Name, value)
 						} else {
@@ -133,10 +138,6 @@ func Relay(stack *hub.Stack, resultKey string) (interface{}, int) {
 		jsonOutRspBody = jsonInRspBody
 	}
 
-	// 在上下文中保存结果
-	if len(resultKey) > 0 {
-		stack.StepResult[resultKey] = jsonOutRspBody
-	}
 	klog.Infoln("处理", apiDef.Url, ":", http.StatusOK, "\r\n返回结果(原始)：", jsonInRspBody,
 		"\r\n返回结果(修改后)：", jsonOutRspBody)
 	return jsonOutRspBody, http.StatusOK

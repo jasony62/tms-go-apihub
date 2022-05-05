@@ -18,8 +18,7 @@
         "id": "baidu_image_classify_list",
         "parameters": [
           {
-            "in": "query",
-            "name": "access_token",
+            "name": "token",
             "from": {
               "from": "StepResult",
               "name": "tokenResult.access_token"

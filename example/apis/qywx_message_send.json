@@ -7,7 +7,11 @@
     {
       "in": "query",
       "name": "access_token",
-      "value": ""
+      "from": {
+        "from": "origin",
+        "name": "token"
+      }
+
     },
     {
       "in": "body",

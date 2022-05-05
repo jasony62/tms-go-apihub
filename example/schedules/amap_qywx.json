@@ -17,7 +17,7 @@
                         {
                             "type": "flow",
                             "name": "amap_city_weather_sh",
-                            "command": "amap_city_weather_json",
+                            "command": "amap_city_weather",
                             "resultKey": "weather",
                             "parameters": [
                                 {
@@ -34,7 +34,7 @@
                         {
                             "type": "flow",
                             "name": "amap_city_weather_bj",
-                            "command": "amap_city_weather_json",
+                            "command": "amap_city_weather",
                             "resultKey": "weather",
                             "parameters": [
                                 {

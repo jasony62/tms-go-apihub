@@ -18,7 +18,6 @@
         "id": "amap_weather",
         "parameters": [
           {
-            "in": "query",
             "name": "city",
             "from": {
               "from": "StepResult",

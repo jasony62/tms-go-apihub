@@ -5,12 +5,6 @@ type ScheduleSwitchCaseDef struct {
 	Tasks *[]ScheduleTaskDef `json:"tasks"`
 }
 
-type ScheduleDefParam struct {
-	Name  string           `json:"name"`
-	Value string           `json:"value,omitempty"`
-	From  *ApiDefParamFrom `json:"from,omitempty"`
-}
-
 type ScheduleTaskDef struct {
 	Type        string          `json:"type"`
 	Name        string          `json:"name"`
@@ -20,7 +14,7 @@ type ScheduleTaskDef struct {
 	Key         ApiDefParamFrom `json:"key"`
 	//用于switch
 	Cases      *[]ScheduleSwitchCaseDef `json:"cases"`
-	Parameters *[]ScheduleDefParam
+	Parameters *[]OriginDefParam
 }
 
 type ScheduleDef struct {
