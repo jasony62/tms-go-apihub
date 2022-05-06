@@ -138,7 +138,6 @@ func Run(stack *hub.Stack) (interface{}, int) {
 		jsonOutRspBody = jsonInRspBody
 	}
 
-	klog.Infoln("处理", apiDef.Url, ":", http.StatusOK, "\r\n返回结果(原始)：", jsonInRspBody,
-		"\r\n返回结果(修改后)：", jsonOutRspBody)
+	klog.Infoln("处理", apiDef.Url, ":", http.StatusOK, "\r\n返回结果：", jsonOutRspBody)
 	return jsonOutRspBody, http.StatusOK
 }
