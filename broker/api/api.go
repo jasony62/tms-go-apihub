@@ -60,8 +60,8 @@ func Run(stack *hub.Stack) (interface{}, int) {
 		var value string
 		q := outReqURL.Query()
 		vars := make(map[string]string, paramLen)
-		stack.StepResult["vars"] = vars
-		defer func() { stack.StepResult["vars"] = nil }()
+		stack.StepResult[hub.VarsName] = vars
+		defer func() { stack.StepResult[hub.VarsName] = nil }()
 
 		for _, param := range *outReqParamRules {
 			if len(param.Name) > 0 {
@@ -92,7 +92,7 @@ func Run(stack *hub.Stack) (interface{}, int) {
 					} else {
 						klog.Infoln("Refuse to set body :", apiDef.RequestContentType, "VS\r\n", value)
 					}
-				case "vars":
+				case hub.VarsName:
 				default:
 					klog.Infoln("Invalid in:", param.In, "名字", param.Name, "值", value)
 				}

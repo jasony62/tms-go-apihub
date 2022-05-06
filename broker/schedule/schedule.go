@@ -24,15 +24,16 @@ func generateStepResult(stack *hub.Stack, parameters *[]hub.OriginDefParam) inte
 }
 
 func copyStack(src *hub.Stack, task *hub.ScheduleTaskDef) *hub.Stack {
-	var value interface{}
+	var value map[string]interface{}
 	if task.Parameters != nil {
-		value = generateStepResult(src, task.Parameters)
+		value = map[string]interface{}{hub.OriginName: generateStepResult(src, task.Parameters)}
 	} else {
-		value = src.StepResult[hub.OriginName]
+		value = map[string]interface{}{hub.OriginName: src.StepResult[hub.OriginName]}
 	}
 
-	return &hub.Stack{GinContext: src.GinContext,
-		StepResult: map[string]interface{}{hub.OriginName: value},
+	return &hub.Stack{
+		GinContext: src.GinContext,
+		StepResult: value,
 		Name:       task.Commond,
 	}
 }

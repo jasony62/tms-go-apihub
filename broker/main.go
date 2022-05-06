@@ -30,7 +30,8 @@ func newStack(c *gin.Context) *hub.Stack {
 		value = *inReqData
 	}
 
-	return &hub.Stack{GinContext: c,
+	return &hub.Stack{
+		GinContext: c,
 		StepResult: map[string]interface{}{hub.OriginName: value},
 		Name:       c.Param(`Id`),
 	}
@@ -40,7 +41,6 @@ func newStack(c *gin.Context) *hub.Stack {
 func runApi(c *gin.Context) {
 	// 调用api
 	result, status := api.Run(newStack(c))
-
 	c.IndentedJSON(status, result)
 }
 
@@ -48,7 +48,6 @@ func runApi(c *gin.Context) {
 func runFlow(c *gin.Context) {
 	// 执行编排
 	result, status := flow.Run(newStack(c))
-
 	c.IndentedJSON(status, result)
 }
 
@@ -56,7 +55,6 @@ func runFlow(c *gin.Context) {
 func runSchedule(c *gin.Context) {
 	// 执行编排
 	result, status := schedule.Run(newStack(c))
-
 	c.IndentedJSON(status, result)
 }
 
