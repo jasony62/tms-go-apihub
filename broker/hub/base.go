@@ -9,6 +9,10 @@ type App struct {
 	PrivateDefPath  string
 	FlowDefPath     string
 	ScheduleDefPath string
+	ApiMap          map[string]ApiDef
+	PrivateMap      map[string]PrivateArray
+	FlowMap         map[string]FlowDef
+	ScheduleMap     map[string]ScheduleDef
 }
 
 var DefaultApp App

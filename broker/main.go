@@ -14,6 +14,7 @@ import (
 	"github.com/jasony62/tms-go-apihub/flow"
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/jasony62/tms-go-apihub/schedule"
+	"github.com/jasony62/tms-go-apihub/unit"
 	"github.com/jasony62/tms-go-apihub/util"
 	"github.com/joho/godotenv"
 )
@@ -159,7 +160,7 @@ func main() {
 	hub.DefaultApp.BucketEnable = re.MatchString(BucketEnable)
 	klog.Infoln("bucket enable ", hub.DefaultApp.BucketEnable)
 
-	if loadConf() == true {
+	if loadConf() {
 		klog.Infoln("Download conf zip package from remote url OK")
 	}
 
@@ -167,6 +168,8 @@ func main() {
 	hub.DefaultApp.PrivateDefPath = loadPath("TGAH_PRIVATE_DEF_PATH", "./conf/privates")
 	hub.DefaultApp.FlowDefPath = loadPath("TGAH_FLOW_DEF_PATH", "./conf/flows")
 	hub.DefaultApp.ScheduleDefPath = loadPath("TGAH_SCHEDULE_DEF_PATH", "./conf/schedules")
+
+	unit.LoadConfigJsonData()
 
 	router := gin.Default()
 	if hub.DefaultApp.BucketEnable {
