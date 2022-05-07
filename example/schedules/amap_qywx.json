@@ -3,74 +3,85 @@
     "description": "处理输入并发送微信",
     "tasks": [
         {
-            "type": "control",            
-            "name": "chooseType",
-            "command": "switch",
+            "type": "control",
+            "name": "myloop",
+            "command": "loop",
             "key": {
-                    "from": "origin",
-                    "name": "city"
+                "from": "template",
+                "name": "{{len .origin.cities}}"
             },
-            "cases": [
+            "tasks": [
                 {
-                    "value": "sh",
-                    "tasks": [
+                    "type": "control",
+                    "name": "chooseType",
+                    "command": "switch",
+                    "key": {
+                        "from": "template",
+                        "name": "{{index .origin.cities .loop.myloop}}"
+                    },
+                    "cases": [
                         {
-                            "type": "flow",
-                            "name": "amap_city_weather_sh",
-                            "command": "amap_city_weather",
-                            "resultKey": "weather",
-                            "parameters": [
+                            "value": "sh",
+                            "tasks": [
                                 {
-                                    "name": "city",
-                                    "value": "上海"
+                                    "type": "flow",
+                                    "name": "amap_city_weather_sh",
+                                    "command": "amap_city_weather",
+                                    "resultKey": "weather",
+                                    "parameters": [
+                                        {
+                                            "name": "city",
+                                            "value": "上海"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "value": "bj",
+                            "tasks": [
+                                {
+                                    "type": "flow",
+                                    "name": "amap_city_weather_bj",
+                                    "command": "amap_city_weather",
+                                    "resultKey": "weather",
+                                    "parameters": [
+                                        {
+                                            "name": "city",
+                                            "value": "北京"
+                                        }
+                                    ]
                                 }
                             ]
                         }
                     ]
                 },
                 {
-                    "value": "bj",
-                    "tasks": [
+                    "type": "flow",
+                    "name": "message",
+                    "command": "qywx_message_send",
+                    "parameters": [
                         {
-                            "type": "flow",
-                            "name": "amap_city_weather_bj",
-                            "command": "amap_city_weather",
-                            "resultKey": "weather",
-                            "parameters": [
-                                {
-                                    "name": "city",
-                                    "value": "北京"
-                                }
-                            ]
+                            "name": "content",
+                            "from": {
+                                "from": "template",
+                                "name": "{{index .origin.cities .loop.myloop}} weather is {{.weather.data.weather}}"
+                            }
+                        },
+                        {
+                            "name": "touser",
+                            "value": "YangYue"
+                        },
+                        {
+                            "name": "msgtype",
+                            "value": "text"
+                        },
+                        {
+                            "name": "agentid",
+                            "value": "1000002"
                         }
                     ]
                 }
-            ]
-        },
-        {
-            "type": "flow",
-            "name": "message",
-            "command": "qywx_message_send",
-            "parameters": [
-                {
-                    "name": "content",
-                    "from": {
-                        "from": "template",
-                        "name": "{{.origin.city}} weather is {{.weather.data.weather}}"
-                    }
-                },
-                {
-                    "name": "touser",
-                    "value": "YangYue"
-                },
-                {
-                    "name": "msgtype",
-                    "value": "text"
-                },    
-                {
-                    "name": "agentid",
-                    "value": "1000002"
-                }                                  
             ]
         }
     ]
