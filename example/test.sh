@@ -43,6 +43,6 @@ curl -i  -X POST -H "Content-Type: application/json" -d '{"text": "hello!", "seq
 
 echo "\r\nSCHEDULE:\r\n"
 echo "\r\n查询天气并发送企业微信"
-curl  -H "Content-Type: application/json" -d '{"city":"sh"}' "http://localhost:8080/schedule/amap_qywx"
+curl  -H "Content-Type: application/json" -d '{"cities":["sh", "bj"]}' "http://localhost:8080/schedule/amap_qywx"
 
 
