@@ -4,7 +4,6 @@
   "url": "https://ltpapi.xfyun.cn/v1/ke",
   "method": "POST",
   "private": "kdxf_keys",
-  "plugins": [{ "path": "./plugins/kdxfnlp/kdxfnlp.so" }],
   "requestContentType": "form",
   "parameters": [
     {
@@ -18,7 +17,10 @@
     {
       "in": "header",
       "name": "X-CurTime",
-      "value": ""
+      "from": {
+        "from": "func",
+        "name": "utc"
+      }
     },
     {
       "in": "header",
@@ -26,9 +28,21 @@
       "value": "eyJ0eXBlIjoiZGVwZW5kZW50In0="
     },
     {
+      "in": "vars",
+      "name": "apikey",
+      "from": {
+        "from": "private",
+        "name": "apikey"
+      }
+    },
+    {
       "in": "header",
       "name": "X-CheckSum",
-      "value": ""
+      "from": {
+        "from": "func",
+        "name": "checkSum",
+        "args": "apikey X-CurTime X-Param"
+      }
     },
     {
       "in": "body",

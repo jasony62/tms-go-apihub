@@ -1,4 +1,4 @@
-#!/bin/sh
+# !/bin/sh
 
 echo "\r\n高德地图:"
 echo "\r\n查询城市区域编码:\r\n"

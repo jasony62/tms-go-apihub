@@ -12,3 +12,5 @@ type App struct {
 }
 
 var DefaultApp App
+
+var FuncMap map[string](interface{})

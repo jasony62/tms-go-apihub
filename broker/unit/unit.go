@@ -3,8 +3,10 @@ package unit
 import (
 	"encoding/json"
 	"fmt"
-	klog "k8s.io/klog/v2"
 	"os"
+	"strings"
+
+	klog "k8s.io/klog/v2"
 
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/jasony62/tms-go-apihub/plugin"
@@ -159,6 +161,14 @@ func RewriteApiDefInFlow(api *hub.ApiDef, flowApi *hub.FlowStepApiDef) error {
 
 	return nil
 }
+func getArgsVal(stepResult map[string]interface{}, args []string) []string {
+	vars := (stepResult["vars"]).(map[string]string)
+	argsV := []string{}
+	for _, v := range args {
+		argsV = append(argsV, vars[v])
+	}
+	return argsV
+}
 
 func GetParameterValue(stack *hub.Stack, from *hub.ApiDefParamFrom) string {
 	var value string
@@ -176,17 +186,27 @@ func GetParameterValue(stack *hub.Stack, from *hub.ApiDefParamFrom) string {
 	case "JsonTemplate":
 		jsonOutBody := util.Json2Json(stack.StepResult, from.Template)
 		byteJson, _ := json.Marshal(jsonOutBody)
-		value = string(byteJson)
+		value = util.RemoveOutideQuote(byteJson)
 	case "func":
-		function := funcMap[from.Name]
-		if function != nil {
-			value = function()
-		} else {
+		function := hub.FuncMap[from.Name]
+		if function == nil {
 			str := "获取function定义失败："
 			klog.Errorln(str)
 			panic(str)
 		}
-
+		switch funcV := function.(type) {
+		case func() string:
+			value = funcV()
+			break
+		case func([]string) string:
+			strs := strings.Fields(from.Args)
+			argsV := getArgsVal(stack.StepResult, strs)
+			value = funcV(argsV)
+		default:
+			str := "function不能执行"
+			klog.Errorln(str)
+			panic(str)
+		}
 	}
 	return value
 }
