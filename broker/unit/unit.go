@@ -1,10 +1,10 @@
 package unit
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"os"
 
 	klog "k8s.io/klog/v2"
 
@@ -153,14 +153,19 @@ func LoadJsonDefData(jsonType int, path string, prefix string) {
 			klog.Infoln("\r\n")
 		} else {
 			prefix = oldPrefix
-			filePtr, err := os.Open(fileName)
+
+			byteFile, err := ioutil.ReadFile(fileName)
 			if err != nil {
 				str := "获得Json定义失败：" + err.Error()
 				klog.Errorln(str)
 				panic(str)
 			}
-			defer filePtr.Close()
 
+			if !json.Valid(byteFile) {
+				str := "Json文件无效：" + fileName
+				klog.Errorln(str)
+				panic(str)
+			}
 			var key string
 			if prefix == "" {
 				key = fileInfoList[i].Name()
@@ -168,25 +173,22 @@ func LoadJsonDefData(jsonType int, path string, prefix string) {
 				key = prefix + "/" + fileInfoList[i].Name()
 			}
 
+			decoder := json.NewDecoder(bytes.NewReader(byteFile))
 			switch jsonType {
 			case JSON_TYPE_API:
 				def := new(hub.ApiDef)
-				decoder := json.NewDecoder(filePtr)
 				decoder.Decode(&def)
 				hub.DefaultApp.ApiMap[key] = *def
 			case JSON_TYPE_FLOW:
 				def := new(hub.FlowDef)
-				decoder := json.NewDecoder(filePtr)
 				decoder.Decode(&def)
 				hub.DefaultApp.FlowMap[key] = *def
 			case JSON_TYPE_SCHEDULE:
 				def := new(hub.ScheduleDef)
-				decoder := json.NewDecoder(filePtr)
 				decoder.Decode(&def)
 				hub.DefaultApp.ScheduleMap[key] = *def
 			case JSON_TYPE_PRIVATE:
 				def := new(hub.PrivateArray)
-				decoder := json.NewDecoder(filePtr)
 				decoder.Decode(&def)
 				hub.DefaultApp.PrivateMap[key] = *def
 			default:
