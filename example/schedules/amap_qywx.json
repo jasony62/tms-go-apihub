@@ -55,32 +55,32 @@
                             ]
                         }
                     ]
+                }
+            ]
+        },
+        {
+            "type": "flow",
+            "name": "message",
+            "command": "qywx_message_send",
+            "parameters": [
+                {
+                    "name": "content",
+                    "from": {
+                        "from": "template",
+                        "name": "{{range .myloop}}{{.data.region}} weather is {{.data.weather}},{{end}}"
+                    }
                 },
                 {
-                    "type": "flow",
-                    "name": "message",
-                    "command": "qywx_message_send",
-                    "parameters": [
-                        {
-                            "name": "content",
-                            "from": {
-                                "from": "template",
-                                "name": "{{index .origin.cities .loop.myloop}} weather is {{.weather.data.weather}}"
-                            }
-                        },
-                        {
-                            "name": "touser",
-                            "value": "YangYue"
-                        },
-                        {
-                            "name": "msgtype",
-                            "value": "text"
-                        },
-                        {
-                            "name": "agentid",
-                            "value": "1000002"
-                        }
-                    ]
+                    "name": "touser",
+                    "value": "YangYue"
+                },
+                {
+                    "name": "msgtype",
+                    "value": "text"
+                },
+                {
+                    "name": "agentid",
+                    "value": "1000002"
                 }
             ]
         }

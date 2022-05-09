@@ -37,6 +37,12 @@ func copyStack(src *hub.Stack, task *hub.ScheduleTaskDef) *hub.Stack {
 		result.StepResult = map[string]interface{}{hub.OriginName: src.StepResult[hub.OriginName]}
 	}
 
+	oriLoop := src.StepResult["loop"].(map[string]int)
+	loop := make(map[string]int, len(oriLoop))
+	for index, element := range oriLoop {
+		loop[index] = element
+	}
+	result.StepResult["loop"] = loop
 	return &result
 }
 
@@ -59,18 +65,21 @@ func handleSwitchTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{},
 
 func handleLoopTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{}, int) {
 	var result interface{}
-	key := unit.GetParameterValue(stack, nil, &task.Key)
+	keyStr := unit.GetParameterValue(stack, nil, &task.Key)
 
-	if len(key) == 0 {
+	if len(keyStr) == 0 {
 		err := "invalid loop key"
 		klog.Errorln(err)
 		panic(err)
 	}
-	max, _ := strconv.Atoi(key)
+	max, _ := strconv.Atoi(keyStr)
+	loopResult := make([]interface{}, max)
+	stack.StepResult[task.Name] = loopResult
 	for i := 0; i < max; i++ {
 		loop := stack.StepResult["loop"].(map[string]int)
 		loop[task.Name] = i
 		result, _ = handleTasks(stack, task.Tasks)
+		loopResult[i] = result
 	}
 	return result, 200
 }

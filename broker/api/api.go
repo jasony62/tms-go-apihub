@@ -55,52 +55,54 @@ func Run(stack *hub.Stack) (interface{}, int) {
 
 	// 设置请求参数
 	outReqParamRules := apiDef.Parameters
-	paramLen := len(*outReqParamRules)
-	if outReqParamRules != nil && paramLen > 0 {
-		var value string
-		q := outReqURL.Query()
-		vars := make(map[string]string, paramLen)
-		stack.StepResult[hub.VarsName] = vars
-		defer func() { stack.StepResult[hub.VarsName] = nil }()
+	if outReqParamRules != nil {
+		paramLen := len(*outReqParamRules)
+		if paramLen > 0 {
+			var value string
+			q := outReqURL.Query()
+			vars := make(map[string]string, paramLen)
+			stack.StepResult[hub.VarsName] = vars
+			defer func() { stack.StepResult[hub.VarsName] = nil }()
 
-		for _, param := range *outReqParamRules {
-			if len(param.Name) > 0 {
-				if len(param.Value) == 0 {
-					if param.From != nil {
-						value = unit.GetParameterValue(stack, apiDef.Privates, param.From)
-					}
-				} else {
-					value = param.Value
-				}
-
-				switch param.In {
-				case "query":
-					q.Set(param.Name, value)
-				case "header":
-					outReq.Header.Set(param.Name, value)
-				case "body":
-					if hasBody && apiDef.RequestContentType != hub.OriginName {
-						if apiDef.RequestContentType == "form" {
-							formBody.Form.Add(param.Name, value)
-						} else {
-							if len(outBody) == 0 {
-								outBody = value
-							} else {
-								klog.Infoln("Double content body :\r\n", outBody, "\r\nVS\r\n", value)
-							}
+			for _, param := range *outReqParamRules {
+				if len(param.Name) > 0 {
+					if len(param.Value) == 0 {
+						if param.From != nil {
+							value = unit.GetParameterValue(stack, apiDef.Privates, param.From)
 						}
 					} else {
-						klog.Infoln("Refuse to set body :", apiDef.RequestContentType, "VS\r\n", value)
+						value = param.Value
 					}
-				case hub.VarsName:
-				default:
-					klog.Infoln("Invalid in:", param.In, "名字", param.Name, "值", value)
+
+					switch param.In {
+					case "query":
+						q.Set(param.Name, value)
+					case "header":
+						outReq.Header.Set(param.Name, value)
+					case "body":
+						if hasBody && apiDef.RequestContentType != hub.OriginName {
+							if apiDef.RequestContentType == "form" {
+								formBody.Form.Add(param.Name, value)
+							} else {
+								if len(outBody) == 0 {
+									outBody = value
+								} else {
+									klog.Infoln("Double content body :\r\n", outBody, "\r\nVS\r\n", value)
+								}
+							}
+						} else {
+							klog.Infoln("Refuse to set body :", apiDef.RequestContentType, "VS\r\n", value)
+						}
+					case hub.VarsName:
+					default:
+						klog.Infoln("Invalid in:", param.In, "名字", param.Name, "值", value)
+					}
+					vars[param.Name] = value
+					klog.Infoln("设置入参，位置", param.In, "名字", param.Name, "值", value)
 				}
-				vars[param.Name] = value
-				klog.Infoln("设置入参，位置", param.In, "名字", param.Name, "值", value)
 			}
+			outReqURL.RawQuery = q.Encode()
 		}
-		outReqURL.RawQuery = q.Encode()
 	}
 
 	outReq.URL = outReqURL

@@ -6,12 +6,11 @@ type ScheduleSwitchCaseDef struct {
 }
 
 type ScheduleTaskDef struct {
-	Type        string `json:"type"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	ResultKey   string `json:"resultKey"`
-	Commond     string `json:"command"`
-	Times       string
+	Type        string          `json:"type"`
+	Name        string          `json:"name"`
+	Description string          `json:"description"`
+	ResultKey   string          `json:"resultKey"`
+	Commond     string          `json:"command"`
 	Key         ApiDefParamFrom `json:"key"`
 	//用于switch
 	Cases      *[]ScheduleSwitchCaseDef `json:"cases"`
