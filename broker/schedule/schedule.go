@@ -74,14 +74,16 @@ func handleLoopTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{}, i
 	}
 	max, _ := strconv.Atoi(keyStr)
 	loopResult := make([]interface{}, max)
-	stack.StepResult[task.Name] = loopResult
+	if len(task.ResultKey) > 0 {
+		stack.StepResult[task.ResultKey] = loopResult
+	}
 	for i := 0; i < max; i++ {
 		loop := stack.StepResult["loop"].(map[string]int)
 		loop[task.Name] = i
 		result, _ = handleTasks(stack, task.Tasks)
 		loopResult[i] = result
 	}
-	return result, 200
+	return loopResult, 200
 }
 
 func handleControlTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{}, int) {

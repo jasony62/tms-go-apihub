@@ -347,13 +347,13 @@ curl -H "Content-Type: application/json" -d '{"city": "北京"}' "http://localho
 * 支持WHILE循环命令
 * 支持func获取value
     * 支持无输入参数 utc，uuid   
-    * 支持有输入参数 md5sum，timeStamp，base64，base64 decode
+    * 支持有输入参数 md5sum，sha256，timeStamp，base64，base64 decode
     * 支持template使用func（FuncMap）
     * 支持从.so动态注册函数
-* json文件load一次，反复使用
-* 支持返回json之外的http response
 * 支持token缓存
+* 支持返回非json格式的http response
 ## 中期
+* json文件合法性检查
 * 支持在http response中访问origin中的值
 * 开发测试http server，postman或者apifox的测试脚本
 * 在JSON，HTTP处理错误时能够返回HTTP错误给调用方
@@ -376,7 +376,7 @@ curl -H "Content-Type: application/json" -d '{"city": "北京"}' "http://localho
 * 熔断，降级
 * API健康检查
 * 支持API调用websocket，gRPC，Dubbo
-* 支持HTTP->kafka
+* 支持HTTP->kafka， kafka->HTTP
 * Open API ：支持使用open api配置网关
 * URL Scheme
 * 是否考虑集成进
@@ -385,6 +385,7 @@ curl -H "Content-Type: application/json" -d '{"city": "北京"}' "http://localho
 
 ## 已经完成：
 * 支持从远端http下载压缩包，解压作为conf，支持压缩包密码
+* json文件load一次，反复使用
 # 参考
 
 [OpenAPI Specification](https://swagger.io/specification/)

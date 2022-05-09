@@ -6,6 +6,7 @@
             "type": "control",
             "name": "myloop",
             "command": "loop",
+	    "resultKey":"myloop",
             "key": {
                 "from": "template",
                 "name": "{{len .origin.cities}}"
