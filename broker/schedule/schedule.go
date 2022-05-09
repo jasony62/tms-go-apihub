@@ -1,21 +1,47 @@
 package schedule
 
 import (
+	"strconv"
+
 	klog "k8s.io/klog/v2"
 
+	"github.com/jasony62/tms-go-apihub/api"
 	"github.com/jasony62/tms-go-apihub/flow"
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/jasony62/tms-go-apihub/unit"
 )
 
-func copyStack(src *hub.Stack) *hub.Stack {
-	return &hub.Stack{GinContext: src.GinContext,
-		StepResult: make(map[string]interface{}),
+func generateStepResult(stack *hub.Stack, parameters *[]hub.OriginDefParam) interface{} {
+	var value string
+	result := make(map[string]interface{}, len(*parameters))
+	for _, parameter := range *parameters {
+		if len(parameter.Value) > 0 {
+			value = parameter.Value
+		} else {
+			value = unit.GetParameterValue(stack, nil, parameter.From)
+		}
+		result[parameter.Name] = value
 	}
+	return result
+}
+
+func copyStack(src *hub.Stack, task *hub.ScheduleTaskDef) *hub.Stack {
+	result := hub.Stack{
+		GinContext: src.GinContext,
+		Name:       task.Commond,
+	}
+
+	if task.Parameters != nil {
+		result.StepResult = map[string]interface{}{hub.OriginName: generateStepResult(src, task.Parameters)}
+	} else {
+		result.StepResult = map[string]interface{}{hub.OriginName: src.StepResult[hub.OriginName]}
+	}
+
+	return &result
 }
 
 func handleSwitchTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{}, int) {
-	key := unit.GetParameterValue(stack, &task.Key)
+	key := unit.GetParameterValue(stack, nil, &task.Key)
 
 	if len(key) == 0 {
 		err := "invalid switch key"
@@ -25,10 +51,28 @@ func handleSwitchTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{},
 
 	for _, item := range *task.Cases {
 		if item.Value == key {
-			return handleTasks(stack, *item.Tasks)
+			return handleTasks(stack, item.Tasks)
 		}
 	}
 	return nil, 500
+}
+
+func handleLoopTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{}, int) {
+	var result interface{}
+	key := unit.GetParameterValue(stack, nil, &task.Key)
+
+	if len(key) == 0 {
+		err := "invalid loop key"
+		klog.Errorln(err)
+		panic(err)
+	}
+	max, _ := strconv.Atoi(key)
+	for i := 0; i < max; i++ {
+		loop := stack.StepResult["loop"].(map[string]int)
+		loop[task.Name] = i
+		result, _ = handleTasks(stack, task.Tasks)
+	}
+	return result, 200
 }
 
 func handleControlTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{}, int) {
@@ -41,6 +85,8 @@ func handleControlTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{}
 			klog.Errorln(err)
 			panic(err)
 		}
+	case "loop":
+		return handleLoopTask(stack, task)
 	default:
 		err := "don't support command " + task.Type
 		klog.Errorln(err)
@@ -48,36 +94,8 @@ func handleControlTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{}
 	}
 }
 
-func generateStepResult(stack *hub.Stack, parameters *[]hub.ScheduleDefParam) interface{} {
-	var value string
-	result := make(map[string]string, len(*parameters))
-	for _, parameter := range *parameters {
-		if len(parameter.Value) > 0 {
-			value = parameter.Value
-		} else {
-			value = unit.GetParameterValue(stack, parameter.From)
-		}
-		result[parameter.Name] = value
-	}
-	return result
-}
-
 func handleFlowTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (result interface{}, status int) {
-	var err error
-	tmpStack := copyStack(stack)
-	tmpStack.FlowDef, err = unit.FindFlowDef(stack, task.Commond)
-
-	if tmpStack.FlowDef == nil {
-		str := "获得Flow定义失败：" + err.Error()
-		klog.Errorln(str)
-		panic(str)
-	}
-
-	if task.Parameters != nil {
-		tmpStack.StepResult["origin"] = generateStepResult(stack, task.Parameters)
-	} else {
-		tmpStack.StepResult["origin"] = stack.StepResult["origin"]
-	}
+	tmpStack := copyStack(stack, task)
 
 	// 执行编排
 	result, status = flow.Run(tmpStack)
@@ -88,8 +106,20 @@ func handleFlowTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (result interfa
 	return
 }
 
-func handleTasks(stack *hub.Stack, tasks []hub.ScheduleTaskDef) (result interface{}, status int) {
-	for _, task := range tasks {
+func handleApiTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (result interface{}, status int) {
+	tmpStack := copyStack(stack, task)
+
+	// 执行API
+	result, status = api.Run(tmpStack)
+
+	if len(task.ResultKey) > 0 {
+		stack.StepResult[task.ResultKey] = result
+	}
+	return
+}
+
+func handleTasks(stack *hub.Stack, tasks *[]hub.ScheduleTaskDef) (result interface{}, status int) {
+	for _, task := range *tasks {
 		if len(task.Type) > 0 && len(task.Commond) > 0 {
 			switch task.Type {
 			case "control":
@@ -97,9 +127,7 @@ func handleTasks(stack *hub.Stack, tasks []hub.ScheduleTaskDef) (result interfac
 			case "flow":
 				result, status = handleFlowTask(stack, &task)
 			case "api":
-				err := "don't support api"
-				klog.Errorln(err)
-				panic(err)
+				result, status = handleApiTask(stack, &task)
 			default:
 				err := "don't support type " + task.Type
 				klog.Errorln(err)
@@ -111,5 +139,11 @@ func handleTasks(stack *hub.Stack, tasks []hub.ScheduleTaskDef) (result interfac
 }
 
 func Run(stack *hub.Stack) (interface{}, int) {
-	return handleTasks(stack, stack.ScheduleDef.Tasks)
+	scheduleDef, err := unit.FindScheduleDef(stack, stack.Name)
+	if scheduleDef == nil || scheduleDef.Tasks == nil {
+		klog.Errorln("获得Schedule定义失败：", err)
+		panic(err)
+	}
+	stack.StepResult["loop"] = make(map[string]int)
+	return handleTasks(stack, scheduleDef.Tasks)
 }

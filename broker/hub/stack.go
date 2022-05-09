@@ -8,12 +8,9 @@ import (
 )
 
 type Stack struct {
-	GinContext  *gin.Context
-	StepResult  map[string]interface{}
-	ApiDef      *ApiDef
-	FlowDef     *FlowDef
-	ScheduleDef *ScheduleDef
-	//CurrentStep *FlowStepDef
+	GinContext *gin.Context
+	StepResult map[string]interface{}
+	Name       string
 }
 
 // 从请求参数中获取查询参数

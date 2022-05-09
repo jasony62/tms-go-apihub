@@ -11,8 +11,12 @@ import (
 
 func init() {
 	hub.FuncMap = map[string](interface{}){
-		"utc":      utc,
-		"checkSum": checkSum,
+		"utc":         utc,
+		"md5CheckSum": md5CheckSum,
+	}
+	hub.FuncMapForTemplate = map[string](interface{}){
+		"utc":                 utc,
+		"md5CheckSumTemplate": md5CheckSumTemplate,
 	}
 }
 
@@ -20,7 +24,7 @@ func utc() string {
 	return strconv.FormatInt(time.Now().Unix(), 10)
 }
 
-func checkSumNoMinusParam(args ...interface{}) string {
+func md5CheckSumTemplate(args ...interface{}) string {
 
 	if len(args) == 0 {
 		return ""
@@ -32,7 +36,7 @@ func checkSumNoMinusParam(args ...interface{}) string {
 	return checksum
 }
 
-func checkSum(params []string) string {
+func md5CheckSum(params []string) string {
 
 	if len(params) == 0 {
 		return ""

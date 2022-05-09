@@ -18,7 +18,7 @@ func executeTemplate(source interface{}, rules interface{}, translate bool) *byt
 		strTempl = strings.ReplaceAll(strTempl, "\\\"", "\"")
 	}
 
-	tmpl, _ := template.New("json").Funcs(hub.FuncMap).Parse(strTempl)
+	tmpl, _ := template.New("json").Funcs(hub.FuncMapForTemplate).Parse(strTempl)
 	buf := new(bytes.Buffer)
 	tmpl.Execute(buf, source)
 	return buf

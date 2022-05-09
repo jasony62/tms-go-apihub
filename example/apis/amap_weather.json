@@ -16,7 +16,7 @@
       "in": "query",
       "name": "city",
       "from": {
-        "from": "query",
+        "from": "origin",
         "name": "city"
       }
     }

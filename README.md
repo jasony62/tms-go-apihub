@@ -45,8 +45,8 @@ graph LR
    client--1.http request1-->执行1--2.http request1a-->执行2
    执行2--3.http response1a-->执行1--4.http response1-->client
 ```
-API是指将输入http request改写新的http request，然后将返回的http response根据需要进行改写，并发送回调用方。
-只支持回应报文为json格式
+API是指根据输入http request生成为新的http request，然后根据返回的http response，并生成新的http response，并发送回调用方。
+只支持回应报文为json格式。
 ```flow
 st=>start: api.Run
 e1=>end: 返回结果(json格式)
@@ -63,6 +63,7 @@ c7=>condition: 超过重试次数
 c8=>condition: 需要改写http response
 c9=>condition: 遍历结束
 
+opa=>operation: 获取api定义
 op0=>operation: 设置HTTP method
 op1=>operation: 设置HTTP content type
 op2=>operation: 载入秘钥信息
@@ -73,7 +74,7 @@ op6=>operation: 设置http request timeout
 op7=>operation: 将最终报文发送到url
 op8=>operation: 改写http response
 
-st->c0(yes)->c1(yes)->c2(no)->op3->c3(yes,right)->op5->c9(yes)->c4(yes)->op6->op7->c5(yes)->c8(no)->e1
+st->opa->c0(yes)->c1(yes)->c2(no)->op3->c3(yes,right)->op5->c9(yes)->c4(yes)->op6->op7->c5(yes)->c8(no)->e1
 c9(no)->op3
 c0(no)->e2
 c1(no)->e2
@@ -113,7 +114,7 @@ cstep结束=>condition: 遍历steps结束
 capi=>condition: 有api字段
 cResponse=>condition: 有Response字段
 
-
+op定义=>operation: 获取flow定义
 op遍历=>operation: 遍历steps列表
 op查找=>operation: 根据api.id查找api定义
 op遍历参数=>operation: parameters
@@ -123,7 +124,7 @@ op生成入参=>operation: 生成API的入参
 op存入结果=>operation: 将返回的json存入StepResult
 op改写=>operation: 生成一个新的response
 
-st->c0(yes)->c1(yes)->op遍历->op查找->capi(yes)->c参数(yes)->op遍历参数->op生成入参->c参数结束(yes)->op执行->c成功(yes)->cresultKey(yes)->op存入结果->cstep结束(yes)->e1
+st->op定义->c0(yes)->c1(yes)->op遍历->op查找->capi(yes)->c参数(yes)->op遍历参数->op生成入参->c参数结束(yes)->op执行->c成功(yes)->cresultKey(yes)->op存入结果->cstep结束(yes)->e1
 c0(no)->e2
 c1(no)->e2
 c参数结束(no)->op遍历参数
@@ -138,6 +139,7 @@ cResponse(no)->cresultKey
 ```mermaid
 graph TB
    client(http schedule调用)
+   定义(获取schedule定义)
    递归(递归调用任务列表)
    style client fill:#f9f
    style 递归 fill:#A52A2A
@@ -165,7 +167,7 @@ graph TB
    循环接收{遍历任务列表结束}
    判断递归{是递归调用}   
    
-   client-->执行1-->判断2
+   client-->定义-->执行1-->判断2
    递归-->执行1
    判断2--control-->判断3
    判断2--flow-->执行2-->判断6
@@ -251,8 +253,8 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 # 基础
 建议所有输入，输出参数都定义为非嵌套的JSON格式，方便引用。
 
-## 定义 API
-建议所有template，func中使用的参数，都独立定义在parameters中，便于在FLOW中从stepResult中取值后进行赋值。
+## API
+建议所有template，func中使用的参数，都独立定义在parameters中，并使用origin，便于在FLOW中从stepResult中取值后传入。
 
 | 字段          | 用途                                                                                                  | 类型     | 必选 |
 | ------------- | ----------------------------------------------------------------------------------------------------- | -------- | ---- |
@@ -268,9 +270,10 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 | --name        | 参数名称。                                                                                            | string   | 是   |
 | --value       | 固定值，当不存在固定值时，则从下面的from获取。                                                                                            | string   | 否   |
 | --from        | 指定参数值的获取位置。                                                                                | object   | 否   |
-| ----from      | 获取参数值的位置,支持`query`,`header`,`private`(从秘钥文件读取),`origin`(原始报文body中的json),StepResult(从原始报文和处理结果获取)，JsonTemplate(根据template生成json格式的内容)，template(跟据template生成)。               |          |      |
-| ----name      | 参数值所在位置的名称，或者template时的内容。                                                                                |          |      |
-| ----template  | JsonTemplate的输入值,支持.origin.访问输入json，.vars.访问在parameters定义的值。                                                                                |          |      |
+| ----from      | 获取参数值的位置,支持`query`,`header`,`private`(从秘钥文件读取),`origin`(原始报文body中的json),StepResult(从原始报文和处理结果获取)，JsonTemplate(根据template生成json格式的内容)，template(跟据template生成),`func`(hub.FuncMap内部定义函数的名称)。               |          |      |
+| ----name      | 参数值所在位置的名称，或者参数所调用函数的名称，或者template的内容。                                                                                |          |      |
+| ----args      | 参数值需要调用的func的输入参数，多个参数时，以空格间隔(同级别的from为func时才生效)。例如："args": "apikey X-CurTime X-Param"                                                                                | string         |   否   |
+| ----template  | JsonTemplate的输入值,支持.origin.访问输入json，.vars.访问在parameters定义的值，支持采用template的FuncMap的方式直接调用hub.FuncMapForTemplate内部定义的函数(例如"template": "{{md5CheckSumTemplate .vars.apikey .vars.XCurTime .vars.XParam}}")，切记入参若含有字符-，则需要用vars转换参数名。                                                                                |          |      |
 |               |                                                                                                       |          |      |
 | response      | 返回给调用方的内容。返回的内容统一为`application/json`格式。如果不指定，直接转发目标 API 返回的内容。 | object   | 否   |
 | --json        | 返回调用方内容的模板（mustache），数组或对象。支持从被调用方返回的结果进行映射。                      | any      | 是   |
@@ -280,20 +283,27 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 
 目前系统并未使用`id`字段定位选择的 API，而是根据指定 API 定义文件的名称。
 
-## 编排 API
+## FLOW
 
 | 字段           | 用途                                                                                                                                     | 类型     | 必选 |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------- | ---- |
-| name           | API 调用流的名称。                                                                                                                       | string   | 是   |
-| description    | API 调用流的描述。                                                                                                                       | string   | 否   |
-| steps          | 调用流执行的步骤。每个步骤对应 1 个 API 的调用。API 必须是已定义。                                                                       | object[] | 是   |
+| name           | FLOW的名称。                                                                                                                       | string   | 是   |
+| description    | FLOW的描述。                                                                                                                       | string   | 否   |
+| steps          | 调用API的步骤。每个步骤对应 1 个 API 的调用。API 必须是已定义。                                                                       | object[] | 是   |
 | --name         | 步骤的名称。                                                                                                                             | string   | 是   |
 | --description  | 步骤的描述。                                                                                                                             | string   | 是   |
-| --resultKey    | 在上下文中 API 执行结果对应的名称，origin保留为原始报文输入的json。                                                                      | string   | 是   |
+| --resultKey    | 在上下文中 API 执行结果对应的名称，origin,vars为保留值不可使用。                                                                      | string   | 是   |
 | --api          | 步骤对应的 API 定义。                                                                                                                    | object   | 是   |
 | ----id         | API 定义的 ID。                                                                                                                          | string   | 是   |
-| ----parameters | API 的参数定义，这里可以覆盖 API 定义中的参数定义。`from.from`可以指定为`StepResult`，代表从之前执行步骤的结果（和 resultKey）中提取数据。 | object[] | 否   |
+| ----parameters | 放在这里的定义会补充或者覆盖输入报文里的json参数。`from.from`可以指定为`StepResult`，代表从之前执行步骤的结果（和 resultKey）中提取数据。 | object[] | 否   |
 |                |                                                                                                                                          |          |      |
+| ------name        | 参数名称。                                                                                            | string   | 是   |
+| ------value       | 固定值，当不存在固定值时，则从下面的from获取。                                                                                            | string   | 否   |
+| ------from        | 指定参数值的获取位置。                                                                                | object   | 否   |
+| --------from      | 获取参数值的位置,支持`query`,`header`,`private`(从秘钥文件读取),`origin`(原始报文body中的json),StepResult(从原始报文和处理结果获取)，JsonTemplate(根据template生成json格式的内容)，template(跟据template生成)。               |          |      |
+| --------name      | 参数值所在位置的名称，或者template的内容。                                                                                |          |      |
+| --------template  | JsonTemplate的输入值,支持.origin.访问输入json，.vars.访问在parameters定义的值。                                                                                |          |      |
+|               |                                                                                                       |          |      |
 | --response     | 定义返回结果的模板。                                                                                                                     | object   | 否   |
 | ----json       | 统一返回 JSON 格式的内容。                                                                                                               | any      | 是   |
 
@@ -308,7 +318,7 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 通过路由`/api/{apiId}`调用指定的 API。例如：
 
 ```
-curl "http://localhost:8080/api/amap_district?city=北京"
+curl -H "Content-Type: application/json" -d '{"city": "北京"}' "http://localhost:8080/api/amap_district"
 ```
 
 ## 定义和执行调用流 FLOW
@@ -318,7 +328,7 @@ curl "http://localhost:8080/api/amap_district?city=北京"
 通过路由`/flow/{flowId}`调用指定的 FLOW。例如：
 
 ```
-curl "http://localhost:8080/flow/amap_city_weather?city=北京"
+curl -H "Content-Type: application/json" -d '{"city": "北京"}' "http://localhost:8080/flow/amap_city_weather"
 ```
 
 ## 数据转换模板
@@ -342,9 +352,10 @@ curl "http://localhost:8080/flow/amap_city_weather?city=北京"
     * 支持template使用func（FuncMap）
     * 支持从.so动态注册函数
 * json文件load一次，反复使用
-* 支持在http response中访问origin中的值
+* 支持返回json之外的http response
 * 支持token缓存
 ## 中期
+* 支持在http response中访问origin中的值
 * 开发测试http server，postman或者apifox的测试脚本
 * 在JSON，HTTP处理错误时能够返回HTTP错误给调用方
 * 支持http请求retry，timeout
@@ -373,7 +384,7 @@ curl "http://localhost:8080/flow/amap_city_weather?city=北京"
     * https://github.com/go-kratos/kratos
     * https://github.com/eolinker/apinto
 
-已经完成：
+## 已经完成：
 * 支持从远端http下载压缩包，解压作为conf，支持压缩包密码
 # 参考
 

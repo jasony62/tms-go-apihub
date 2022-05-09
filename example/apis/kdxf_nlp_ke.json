@@ -36,12 +36,27 @@
       }
     },
     {
+      "in": "vars",
+      "name": "XCurTime",
+      "from": {
+        "from": "template",
+        "name": "{{index .vars \"X-CurTime\"}}"
+      }
+    },
+    {
+      "in": "vars",
+      "name": "XParam",
+      "from": {
+        "from": "template",
+        "name": "{{index .vars \"X-Param\"}}"
+      }
+    },
+    {
       "in": "header",
       "name": "X-CheckSum",
       "from": {
-        "from": "func",
-        "name": "checkSum",
-        "args": "apikey X-CurTime X-Param"
+        "from": "JsonTemplate",
+        "template": "{{md5CheckSumTemplate .vars.apikey .vars.XCurTime .vars.XParam}}"
       }
     },
     {

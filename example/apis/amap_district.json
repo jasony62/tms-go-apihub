@@ -22,7 +22,7 @@
       "in": "query",
       "name": "keywords",
       "from": {
-        "from": "query",
+        "from": "origin",
         "name": "city"
       }
     }

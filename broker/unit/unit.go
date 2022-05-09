@@ -3,60 +3,37 @@ package unit
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strings"
-
-	klog "k8s.io/klog/v2"
 
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/jasony62/tms-go-apihub/plugin"
 	"github.com/jasony62/tms-go-apihub/util"
+	klog "k8s.io/klog/v2"
+)
+
+const (
+	JSON_TYPE_API      = 0
+	JSON_TYPE_FLOW     = 1
+	JSON_TYPE_SCHEDULE = 2
+	JSON_TYPE_PRIVATE  = 3
 )
 
 func loadPrivateData(path string, bucket string, name string) (*hub.PrivateArray, error) {
-	var filePath string
-	if bucket != "" {
-		filePath = fmt.Sprintf("%s/%s/%s.json", path, bucket, name)
-	} else {
-		filePath = fmt.Sprintf("%s/%s.json", path, name)
-	}
-	filePtr, err := os.Open(filePath)
-	if err != nil {
-		str := "获得API定义失败：" + err.Error()
-		klog.Errorln(str)
-		panic(str)
-	}
-	defer filePtr.Close()
+	key := initBucketKey(bucket, name+".json")
+	klog.Infoln("loadPrivateData key: ", key)
+	value := hub.DefaultApp.PrivateMap[key]
 
-	result := new(hub.PrivateArray)
-	decoder := json.NewDecoder(filePtr)
-	decoder.Decode(result)
-	return result, nil
+	return &value, nil
 }
 
 func FindApiDef(stack *hub.Stack, id string) (*hub.ApiDef, error) {
-	var filePath string
-	var bucket string
-	if hub.DefaultApp.BucketEnable {
-		bucket = stack.GinContext.Param(`bucket`)
-	}
-	if bucket != "" {
-		filePath = fmt.Sprintf("%s/%s/%s.json", hub.DefaultApp.ApiDefPath, bucket, id)
-	} else {
-		filePath = fmt.Sprintf("%s/%s.json", hub.DefaultApp.ApiDefPath, id)
-	}
-	filePtr, err := os.Open(filePath)
-	if err != nil {
-		str := "获得API定义失败：" + err.Error()
-		klog.Errorln(str)
-		panic(str)
-	}
-	defer filePtr.Close()
+	var err error
+	key, bucket := GetBucketKey(stack, id+".json")
+	value := hub.DefaultApp.ApiMap[key]
 
-	apiDef := new(hub.ApiDef)
-	decoder := json.NewDecoder(filePtr)
-	decoder.Decode(apiDef)
-
+	apiDef := &value
 	if len(apiDef.PrivateName) > 0 {
 		//需要load秘钥
 		apiDef.Privates, err = loadPrivateData(hub.DefaultApp.PrivateDefPath, bucket, apiDef.PrivateName)
@@ -83,63 +60,19 @@ func FindApiDef(stack *hub.Stack, id string) (*hub.ApiDef, error) {
 }
 
 func FindFlowDef(stack *hub.Stack, id string) (*hub.FlowDef, error) {
-	var filePath string
-
-	var bucket string
-	if hub.DefaultApp.BucketEnable {
-		bucket = stack.GinContext.Param(`bucket`)
-	}
-
-	if bucket != "" {
-		filePath = fmt.Sprintf("%s/%s/%s.json", hub.DefaultApp.FlowDefPath, bucket, id)
-	} else {
-		filePath = fmt.Sprintf("%s/%s.json", hub.DefaultApp.FlowDefPath, id)
-	}
-	filePtr, err := os.Open(filePath)
-	if err != nil {
-		str := "获得Flow定义失败：" + filePath + "due to" + err.Error()
-		klog.Errorln(str)
-		panic(str)
-	}
-	defer filePtr.Close()
-
-	flowDef := new(hub.FlowDef)
-	decoder := json.NewDecoder(filePtr)
-	decoder.Decode(&flowDef)
-
-	return flowDef, nil
+	key, _ := GetBucketKey(stack, id+".json")
+	value := hub.DefaultApp.FlowMap[key]
+	return &value, nil
 }
 
 func FindScheduleDef(stack *hub.Stack, id string) (*hub.ScheduleDef, error) {
-	var filePath string
-	var bucket string
-
-	if hub.DefaultApp.BucketEnable {
-		bucket = stack.GinContext.Param(`bucket`)
-	}
-
-	if bucket != "" {
-		filePath = fmt.Sprintf("%s/%s/%s.json", hub.DefaultApp.ScheduleDefPath, bucket, id)
-	} else {
-		filePath = fmt.Sprintf("%s/%s.json", hub.DefaultApp.ScheduleDefPath, id)
-	}
-	filePtr, err := os.Open(filePath)
-	if err != nil {
-		str := "获得Schedule定义失败：" + err.Error()
-		klog.Errorln(str)
-		panic(str)
-	}
-	defer filePtr.Close()
-
-	scheduleDef := new(hub.ScheduleDef)
-	decoder := json.NewDecoder(filePtr)
-	decoder.Decode(&scheduleDef)
-
-	return scheduleDef, nil
+	key, _ := GetBucketKey(stack, id+".json")
+	value := hub.DefaultApp.ScheduleMap[key]
+	return &value, nil
 }
 
-func FindPrivateValue(api *hub.ApiDef, name string) string {
-	for _, pair := range *api.Privates.Pairs {
+func findPrivateValue(private *hub.PrivateArray, name string) string {
+	for _, pair := range *private.Pairs {
 		if pair.Name == name {
 			return pair.Value
 		}
@@ -147,20 +80,6 @@ func FindPrivateValue(api *hub.ApiDef, name string) string {
 	return ""
 }
 
-// 在调用流中根据规则改写api定义
-func RewriteApiDefInFlow(api *hub.ApiDef, flowApi *hub.FlowStepApiDef) error {
-	if len(*flowApi.Parameters) > 0 {
-		for _, newParam := range *flowApi.Parameters {
-			for i, oldParam := range *api.Parameters {
-				if newParam.Name == oldParam.Name {
-					(*api.Parameters)[i] = newParam
-				}
-			}
-		}
-	}
-
-	return nil
-}
 func getArgsVal(stepResult map[string]interface{}, args []string) []string {
 	vars := (stepResult["vars"]).(map[string]string)
 	argsV := []string{}
@@ -170,15 +89,15 @@ func getArgsVal(stepResult map[string]interface{}, args []string) []string {
 	return argsV
 }
 
-func GetParameterValue(stack *hub.Stack, from *hub.ApiDefParamFrom) string {
+func GetParameterValue(stack *hub.Stack, private *hub.PrivateArray, from *hub.ApiDefParamFrom) string {
 	var value string
 	switch from.From {
 	case "query":
 		value = stack.Query(from.Name)
-	case "origin":
+	case hub.OriginName:
 		value = stack.QueryFromStepResult("{{.origin." + from.Name + "}}")
 	case "private":
-		value = FindPrivateValue(stack.ApiDef, from.Name)
+		value = findPrivateValue(private, from.Name)
 	case "template":
 		value = stack.QueryFromStepResult(from.Name)
 	case "StepResult":
@@ -209,4 +128,117 @@ func GetParameterValue(stack *hub.Stack, from *hub.ApiDefParamFrom) string {
 		}
 	}
 	return value
+}
+
+func LoadConfigJsonData() {
+	hub.DefaultApp.ApiMap = make(map[string]hub.ApiDef)
+	hub.DefaultApp.FlowMap = make(map[string]hub.FlowDef)
+	hub.DefaultApp.ScheduleMap = make(map[string]hub.ScheduleDef)
+	hub.DefaultApp.PrivateMap = make(map[string]hub.PrivateArray)
+
+	klog.Infoln("加载API def文件...")
+	LoadJsonDefData(JSON_TYPE_API, hub.DefaultApp.ApiDefPath, "")
+	klog.Infoln("\r\n")
+	klog.Infoln("加载Flow def文件...")
+	LoadJsonDefData(JSON_TYPE_FLOW, hub.DefaultApp.FlowDefPath, "")
+	klog.Infoln("\r\n")
+	klog.Infoln("加载Schedule def文件...")
+	LoadJsonDefData(JSON_TYPE_SCHEDULE, hub.DefaultApp.ScheduleDefPath, "")
+	klog.Infoln("\r\n")
+	klog.Infoln("加载Private def文件...")
+	LoadJsonDefData(JSON_TYPE_PRIVATE, hub.DefaultApp.PrivateDefPath, "")
+}
+
+func LoadJsonDefData(jsonType int, path string, prefix string) {
+	fileInfoList, err := ioutil.ReadDir(path)
+	if err != nil {
+		klog.Errorln(err)
+		return
+	}
+
+	num := len(fileInfoList)
+
+	klog.Infoln("\r\n")
+	klog.Infoln("加载Json def文件，本目录文件数: ", num)
+
+	oldPrefix := prefix
+	for i := range fileInfoList {
+		fileName := fmt.Sprintf("%s/%s", path, fileInfoList[i].Name())
+		klog.Infoln("Json file: ", fileName)
+
+		if fileInfoList[i].IsDir() {
+			klog.Infoln("Json子目录: ", fileName)
+			prefix = fileInfoList[i].Name()
+			LoadJsonDefData(jsonType, path+"/"+prefix, prefix)
+			klog.Infoln("\r\n")
+		} else {
+			prefix = oldPrefix
+			filePtr, err := os.Open(fileName)
+			if err != nil {
+				str := "获得Json定义失败：" + err.Error()
+				klog.Errorln(str)
+				panic(str)
+			}
+			defer filePtr.Close()
+
+			var key string
+			if prefix == "" {
+				key = fileInfoList[i].Name()
+			} else {
+				key = prefix + "/" + fileInfoList[i].Name()
+			}
+
+			switch jsonType {
+			case JSON_TYPE_API:
+				def := new(hub.ApiDef)
+				decoder := json.NewDecoder(filePtr)
+				decoder.Decode(&def)
+				hub.DefaultApp.ApiMap[key] = *def
+			case JSON_TYPE_FLOW:
+				def := new(hub.FlowDef)
+				decoder := json.NewDecoder(filePtr)
+				decoder.Decode(&def)
+				hub.DefaultApp.FlowMap[key] = *def
+			case JSON_TYPE_SCHEDULE:
+				def := new(hub.ScheduleDef)
+				decoder := json.NewDecoder(filePtr)
+				decoder.Decode(&def)
+				hub.DefaultApp.ScheduleMap[key] = *def
+			case JSON_TYPE_PRIVATE:
+				def := new(hub.PrivateArray)
+				decoder := json.NewDecoder(filePtr)
+				decoder.Decode(&def)
+				hub.DefaultApp.PrivateMap[key] = *def
+			default:
+			}
+
+			klog.Infof("加载Json文件成功: 文件名和map的key: %s\r\n", key)
+		}
+	}
+}
+
+func initBucketKey(bucket string, fileName string) string {
+	var key string
+	if bucket == "" {
+		key = fileName
+	} else {
+		key = bucket + "/" + fileName
+	}
+	return key
+}
+
+func GetBucketKey(stack *hub.Stack, fileName string) (string, string) {
+	var bucket string
+	if hub.DefaultApp.BucketEnable {
+		bucket = stack.GinContext.Param(`bucket`)
+	}
+
+	var key string
+	if bucket == "" {
+		key = fileName
+	} else {
+		key = bucket + "/" + fileName
+	}
+	klog.Infof("GetBucketKey key: %s, bucket: %s", key, bucket)
+	return key, bucket
 }
