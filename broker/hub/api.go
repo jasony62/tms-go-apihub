@@ -4,6 +4,7 @@ type ApiDefParamFrom struct {
 	From     string       `json:"from"`
 	Name     string       `json:"name"`
 	Template *interface{} `json:"template"`
+	Args     string       `json:"args"`
 }
 
 type ApiDefParam struct {

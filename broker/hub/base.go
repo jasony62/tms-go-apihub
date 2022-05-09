@@ -13,5 +13,11 @@ type App struct {
 
 var DefaultApp App
 
+//当from.from为"funcs"时，直接调用函数
+var FuncMap map[string](interface{})
+
+//用于template调用Funcs时，解析函数并调用
+var FuncMapForTemplate map[string](interface{})
+
 const OriginName = "origin"
 const VarsName = "vars"

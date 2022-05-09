@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-
-	klog "k8s.io/klog/v2"
+	"strings"
 
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/jasony62/tms-go-apihub/plugin"
 	"github.com/jasony62/tms-go-apihub/util"
+	klog "k8s.io/klog/v2"
 )
 
 const (
@@ -80,6 +80,15 @@ func findPrivateValue(private *hub.PrivateArray, name string) string {
 	return ""
 }
 
+func getArgsVal(stepResult map[string]interface{}, args []string) []string {
+	vars := (stepResult["vars"]).(map[string]string)
+	argsV := []string{}
+	for _, v := range args {
+		argsV = append(argsV, vars[v])
+	}
+	return argsV
+}
+
 func GetParameterValue(stack *hub.Stack, private *hub.PrivateArray, from *hub.ApiDefParamFrom) string {
 	var value string
 	switch from.From {
@@ -96,13 +105,24 @@ func GetParameterValue(stack *hub.Stack, private *hub.PrivateArray, from *hub.Ap
 	case "JsonTemplate":
 		jsonOutBody := util.Json2Json(stack.StepResult, from.Template)
 		byteJson, _ := json.Marshal(jsonOutBody)
-		value = string(byteJson)
+		value = util.RemoveOutideQuote(byteJson)
 	case "func":
-		function := funcMap[from.Name]
-		if function != nil {
-			value = function()
-		} else {
+		function := hub.FuncMap[from.Name]
+		if function == nil {
 			str := "获取function定义失败："
+			klog.Errorln(str)
+			panic(str)
+		}
+		switch funcV := function.(type) {
+		case func() string:
+			value = funcV()
+			break
+		case func([]string) string:
+			strs := strings.Fields(from.Args)
+			argsV := getArgsVal(stack.StepResult, strs)
+			value = funcV(argsV)
+		default:
+			str := "function不能执行"
 			klog.Errorln(str)
 			panic(str)
 		}
