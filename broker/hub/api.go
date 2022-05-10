@@ -1,5 +1,10 @@
 package hub
 
+import (
+	"sync"
+	"time"
+)
+
 type ApiDefParamFrom struct {
 	From     string       `json:"from"`
 	Name     string       `json:"name"`
@@ -42,4 +47,12 @@ type ApiDef struct {
 	Response           *ApiDefResponse `json:"response"`
 	Plugins            *[]ApiDefPlugin `json:"plugins,omitempty"`
 	Privates           *PrivateArray
+	Token *ApiToken `json:"token"`
+}
+
+type ApiToken struct {
+	Cache   bool         `json:"cache"`   //token supported or not
+	Expires time.Time    `json:"expires"` //expires time
+	Resp    interface{}  `json:"resp"`    //response content
+	Lock    sync.RWMutex `json:"lock"`    //api rw lock
 }

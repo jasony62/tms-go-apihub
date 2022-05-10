@@ -3,37 +3,44 @@ package unit
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"strings"
 
+	klog "k8s.io/klog/v2"
+
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/jasony62/tms-go-apihub/plugin"
 	"github.com/jasony62/tms-go-apihub/util"
-	klog "k8s.io/klog/v2"
 )
 
 const (
-	JSON_TYPE_API      = 0
-	JSON_TYPE_FLOW     = 1
-	JSON_TYPE_SCHEDULE = 2
-	JSON_TYPE_PRIVATE  = 3
+	JSON_TYPE_API = iota
+	JSON_TYPE_FLOW
+	JSON_TYPE_SCHEDULE
+	JSON_TYPE_PRIVATE
 )
 
 func loadPrivateData(bucket string, name string) (*hub.PrivateArray, error) {
-	key := initBucketKey(bucket, name+".json")
+	key := initBucketKey(bucket, name)
 	klog.Infoln("loadPrivateData key: ", key)
-	value := hub.DefaultApp.PrivateMap[key]
-
-	return &value, nil
+	value, ok := hub.DefaultApp.PrivateMap[key]
+	if !ok {
+		return nil, errors.New("Not found private data")
+	}
+	return value, nil
 }
 
 func FindApiDef(stack *hub.Stack, id string) (*hub.ApiDef, error) {
 	var err error
-	key, bucket := GetBucketKey(stack, id+".json")
-	value := hub.DefaultApp.ApiMap[key]
+	key, bucket := GetBucketKey(stack, id)
+	value, ok := hub.DefaultApp.ApiMap[key]
+	if !ok {
+		return nil, errors.New("Not found api")
+	}
 
-	apiDef := &value
+	apiDef := value
 	if len(apiDef.PrivateName) > 0 {
 		//需要load秘钥
 		apiDef.Privates, err = loadPrivateData(bucket, apiDef.PrivateName)
@@ -60,15 +67,21 @@ func FindApiDef(stack *hub.Stack, id string) (*hub.ApiDef, error) {
 }
 
 func FindFlowDef(stack *hub.Stack, id string) (*hub.FlowDef, error) {
-	key, _ := GetBucketKey(stack, id+".json")
-	value := hub.DefaultApp.FlowMap[key]
-	return &value, nil
+	key, _ := GetBucketKey(stack, id)
+	value, ok := hub.DefaultApp.FlowMap[key]
+	if !ok {
+		return nil, errors.New("Not found flow")
+	}
+	return value, nil
 }
 
 func FindScheduleDef(stack *hub.Stack, id string) (*hub.ScheduleDef, error) {
-	key, _ := GetBucketKey(stack, id+".json")
-	value := hub.DefaultApp.ScheduleMap[key]
-	return &value, nil
+	key, _ := GetBucketKey(stack, id)
+	value, ok := hub.DefaultApp.ScheduleMap[key]
+	if !ok {
+		return nil, errors.New("Not found schedule")
+	}
+	return value, nil
 }
 
 func findPrivateValue(private *hub.PrivateArray, name string) string {
@@ -131,10 +144,10 @@ func GetParameterValue(stack *hub.Stack, private *hub.PrivateArray, from *hub.Ap
 }
 
 func LoadConfigJsonData(ApiDefPath string, FlowDefPath string, ScheduleDefPath string, PrivateDefPath string) {
-	hub.DefaultApp.ApiMap = make(map[string]hub.ApiDef)
-	hub.DefaultApp.FlowMap = make(map[string]hub.FlowDef)
-	hub.DefaultApp.ScheduleMap = make(map[string]hub.ScheduleDef)
-	hub.DefaultApp.PrivateMap = make(map[string]hub.PrivateArray)
+	hub.DefaultApp.ApiMap = make(map[string]*hub.ApiDef)
+	hub.DefaultApp.FlowMap = make(map[string]*hub.FlowDef)
+	hub.DefaultApp.ScheduleMap = make(map[string]*hub.ScheduleDef)
+	hub.DefaultApp.PrivateMap = make(map[string]*hub.PrivateArray)
 
 	klog.Infoln("加载API def文件...")
 	LoadJsonDefData(JSON_TYPE_API, ApiDefPath, "")
@@ -186,35 +199,43 @@ func LoadJsonDefData(jsonType int, path string, prefix string) {
 				klog.Errorln(str)
 				panic(str)
 			}
+
 			var key string
+			fname := fileInfoList[i].Name()
+			index := strings.Index(fname, ".json")
+			if index >= 0 {
+				fname = fname[:index]
+			}
+
 			if prefix == "" {
-				key = fileInfoList[i].Name()
+				key = fname
 			} else {
-				key = prefix + "/" + fileInfoList[i].Name()
+				key = prefix + "/" + fname
 			}
 
 			decoder := json.NewDecoder(bytes.NewReader(byteFile))
 			switch jsonType {
 			case JSON_TYPE_API:
 				def := new(hub.ApiDef)
+				def.Token = new(hub.ApiToken)
 				decoder.Decode(&def)
-				hub.DefaultApp.ApiMap[key] = *def
+				hub.DefaultApp.ApiMap[key] = def
 			case JSON_TYPE_FLOW:
 				def := new(hub.FlowDef)
 				decoder.Decode(&def)
-				hub.DefaultApp.FlowMap[key] = *def
+				hub.DefaultApp.FlowMap[key] = def
 			case JSON_TYPE_SCHEDULE:
 				def := new(hub.ScheduleDef)
 				decoder.Decode(&def)
-				hub.DefaultApp.ScheduleMap[key] = *def
+				hub.DefaultApp.ScheduleMap[key] = def
 			case JSON_TYPE_PRIVATE:
 				def := new(hub.PrivateArray)
 				decoder.Decode(&def)
-				hub.DefaultApp.PrivateMap[key] = *def
+				hub.DefaultApp.PrivateMap[key] = def
 			default:
 			}
 
-			klog.Infof("加载Json文件成功: 文件名和map的key: %s\r\n", key)
+			klog.Infof("加载Json文件成功: key: %s\r\n", key)
 		}
 	}
 }
