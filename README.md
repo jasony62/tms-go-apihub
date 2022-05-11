@@ -353,7 +353,9 @@ curl -H "Content-Type: application/json" -d '{"city": "北京"}' "http://localho
     * 支持从.so动态注册函数
 * 支持token缓存
 * 支持返回非json格式的http response
+* 支持200OK + error code转错误码
 ## 中期
+* 支持load API时候，检验private信息，load FLOW时候，检验API信息，load schedule时候，检验FLOW和API
 * 支持在http response中访问origin中的值
 * 开发测试http server，postman或者apifox的测试脚本
 * 在JSON，HTTP处理错误时能够返回HTTP错误给调用方

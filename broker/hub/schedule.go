@@ -15,7 +15,7 @@ type ScheduleTaskDef struct {
 	//用于switch
 	Cases      *[]ScheduleSwitchCaseDef `json:"cases"`
 	Tasks      *[]ScheduleTaskDef       `json:"tasks"`
-	Parameters *[]OriginDefParam
+	Parameters *[]OriginDefParam        `json:"parameters"`
 }
 
 type ScheduleDef struct {

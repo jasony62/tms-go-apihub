@@ -142,23 +142,23 @@ func GetParameterValue(stack *hub.Stack, private *hub.PrivateArray, from *hub.Ap
 	return value
 }
 
-func LoadConfigJsonData(ApiDefPath string, FlowDefPath string, ScheduleDefPath string, PrivateDefPath string) {
+func LoadConfigJsonData(paths []string) {
 	hub.DefaultApp.ApiMap = make(map[string]*hub.ApiDef)
 	hub.DefaultApp.FlowMap = make(map[string]*hub.FlowDef)
 	hub.DefaultApp.ScheduleMap = make(map[string]*hub.ScheduleDef)
 	hub.DefaultApp.PrivateMap = make(map[string]*hub.PrivateArray)
 
 	klog.Infoln("加载API def文件...")
-	LoadJsonDefData(JSON_TYPE_API, ApiDefPath, "")
+	LoadJsonDefData(JSON_TYPE_API, paths[JSON_TYPE_API], "")
 	klog.Infoln("\r\n")
 	klog.Infoln("加载Flow def文件...")
-	LoadJsonDefData(JSON_TYPE_FLOW, FlowDefPath, "")
+	LoadJsonDefData(JSON_TYPE_FLOW, paths[JSON_TYPE_FLOW], "")
 	klog.Infoln("\r\n")
 	klog.Infoln("加载Schedule def文件...")
-	LoadJsonDefData(JSON_TYPE_SCHEDULE, ScheduleDefPath, "")
+	LoadJsonDefData(JSON_TYPE_SCHEDULE, paths[JSON_TYPE_SCHEDULE], "")
 	klog.Infoln("\r\n")
 	klog.Infoln("加载Private def文件...")
-	LoadJsonDefData(JSON_TYPE_PRIVATE, PrivateDefPath, "")
+	LoadJsonDefData(JSON_TYPE_PRIVATE, paths[JSON_TYPE_PRIVATE], "")
 }
 
 func LoadJsonDefData(jsonType int, path string, prefix string) {
