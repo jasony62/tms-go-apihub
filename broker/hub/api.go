@@ -47,12 +47,13 @@ type ApiDef struct {
 	Response           *ApiDefResponse `json:"response"`
 	Plugins            *[]ApiDefPlugin `json:"plugins,omitempty"`
 	Privates           *PrivateArray
-	Token *ApiToken `json:"token"`
+	Cache              *ApiCache `json:"cache"`
 }
 
-type ApiToken struct {
-	Cache   bool         `json:"cache"`   //token supported or not
-	Expires time.Time    `json:"expires"` //expires time
-	Resp    interface{}  `json:"resp"`    //response content
-	Lock    sync.RWMutex `json:"lock"`    //api rw lock
+type ApiCache struct {
+	From    *ApiDefParamFrom `json:"from,omitempty"`
+	Format  string           `json:"format,omitempty"`
+	Expires time.Time        //expires time
+	Resp    interface{}      //response content
+	Locker  sync.RWMutex     //api rw lock
 }

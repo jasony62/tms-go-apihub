@@ -22,9 +22,8 @@ const (
 	JSON_TYPE_PRIVATE
 )
 
-func loadPrivateData(bucket string, name string) (*hub.PrivateArray, error) {
+func FindPrivateData(bucket string, name string) (*hub.PrivateArray, error) {
 	key := initBucketKey(bucket, name)
-	klog.Infoln("loadPrivateData key: ", key)
 	value, ok := hub.DefaultApp.PrivateMap[key]
 	if !ok {
 		return nil, errors.New("Not found private data")
@@ -43,7 +42,7 @@ func FindApiDef(stack *hub.Stack, id string) (*hub.ApiDef, error) {
 	apiDef := value
 	if len(apiDef.PrivateName) > 0 {
 		//需要load秘钥
-		apiDef.Privates, err = loadPrivateData(bucket, apiDef.PrivateName)
+		apiDef.Privates, err = FindPrivateData(bucket, apiDef.PrivateName)
 		if err != nil {
 			str := "获得Private数据失败：" + err.Error()
 			klog.Errorln(str)
@@ -217,7 +216,6 @@ func LoadJsonDefData(jsonType int, path string, prefix string) {
 			switch jsonType {
 			case JSON_TYPE_API:
 				def := new(hub.ApiDef)
-				def.Token = new(hub.ApiToken)
 				decoder.Decode(&def)
 				hub.DefaultApp.ApiMap[key] = def
 			case JSON_TYPE_FLOW:

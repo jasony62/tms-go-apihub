@@ -29,22 +29,14 @@
         "from": "private",
         "name": "xsecret"
       }
-    },
-    {
-      "in": "query",
-      "name": "expire_key",
-      "from": {
-        "from": "header",
-        "name": "expires"
-      }
-    },
-    {
-      "in": "query",
-      "name": "expire_unit",
-      "from": {
-        "from": "date",
-        "name": "Mon, 02-Jan-06 15:04:05 MST"
-      }
     }
-  ]
+
+  ],
+  "cache": {
+	"from": {
+		"from": "header",
+		"name": "Set-Cookie.expires"
+	},
+	"format": "Mon, 02-Jan-06 15:04:05 MST"
+  }
 }
