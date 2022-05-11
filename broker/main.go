@@ -164,10 +164,10 @@ func main() {
 		klog.Infoln("Download conf zip package from remote url OK")
 	}
 
-	unit.LoadConfigJsonData(loadPath("TGAH_API_DEF_PATH", "./conf/apis"),
+	unit.LoadConfigJsonData([]string{loadPath("TGAH_API_DEF_PATH", "./conf/apis"),
 		loadPath("TGAH_FLOW_DEF_PATH", "./conf/flows"),
 		loadPath("TGAH_SCHEDULE_DEF_PATH", "./conf/schedules"),
-		loadPath("TGAH_PRIVATE_DEF_PATH", "./conf/privates"))
+		loadPath("TGAH_PRIVATE_DEF_PATH", "./conf/privates")})
 
 	router := gin.Default()
 	if hub.DefaultApp.BucketEnable {

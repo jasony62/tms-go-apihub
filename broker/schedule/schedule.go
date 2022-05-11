@@ -37,12 +37,12 @@ func copyStack(src *hub.Stack, task *hub.ScheduleTaskDef) *hub.Stack {
 		result.StepResult = map[string]interface{}{hub.OriginName: src.StepResult[hub.OriginName]}
 	}
 
-	oriLoop := src.StepResult["loop"].(map[string]int)
+	oriLoop := src.StepResult[hub.LoopName].(map[string]int)
 	loop := make(map[string]int, len(oriLoop))
 	for index, element := range oriLoop {
 		loop[index] = element
 	}
-	result.StepResult["loop"] = loop
+	result.StepResult[hub.LoopName] = loop
 	return &result
 }
 
@@ -78,7 +78,7 @@ func handleLoopTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{}, i
 		stack.StepResult[task.ResultKey] = loopResult
 	}
 	for i := 0; i < max; i++ {
-		loop := stack.StepResult["loop"].(map[string]int)
+		loop := stack.StepResult[hub.LoopName].(map[string]int)
 		loop[task.Name] = i
 		result, _ = handleTasks(stack, task.Tasks)
 		loopResult[i] = result
@@ -96,7 +96,7 @@ func handleControlTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{}
 			klog.Errorln(err)
 			panic(err)
 		}
-	case "loop":
+	case hub.LoopName:
 		return handleLoopTask(stack, task)
 	default:
 		err := "don't support command " + task.Type
@@ -155,6 +155,6 @@ func Run(stack *hub.Stack) (interface{}, int) {
 		klog.Errorln("获得Schedule定义失败：", err)
 		panic(err)
 	}
-	stack.StepResult["loop"] = make(map[string]int)
+	stack.StepResult[hub.LoopName] = make(map[string]int)
 	return handleTasks(stack, scheduleDef.Tasks)
 }

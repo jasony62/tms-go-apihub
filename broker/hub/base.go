@@ -21,3 +21,4 @@ var FuncMapForTemplate map[string](interface{})
 
 const OriginName = "origin"
 const VarsName = "vars"
+const LoopName = "loop"
