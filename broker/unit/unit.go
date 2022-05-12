@@ -138,6 +138,10 @@ func GetParameterValue(stack *hub.Stack, private *hub.PrivateArray, from *hub.Ap
 			klog.Errorln(str)
 			panic(str)
 		}
+	default:
+		str := "不支持的type" + from.From
+		klog.Errorln(str)
+		panic(str)
 	}
 	return value
 }

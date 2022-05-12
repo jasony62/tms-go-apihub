@@ -3,20 +3,21 @@ package unit
 import (
 	"crypto/md5"
 	"fmt"
-	"github.com/jasony62/tms-go-apihub/hub"
 	"io"
 	"strconv"
 	"time"
+
+	"github.com/jasony62/tms-go-apihub/hub"
 )
 
 func init() {
 	hub.FuncMap = map[string](interface{}){
-		"utc":         utc,
-		"md5CheckSum": md5CheckSum,
+		"utc": utc,
+		"md5": md5Func,
 	}
 	hub.FuncMapForTemplate = map[string](interface{}){
-		"utc":                 utc,
-		"md5CheckSumTemplate": md5CheckSumTemplate,
+		"utc": utc,
+		"md5": md5Template,
 	}
 }
 
@@ -24,7 +25,7 @@ func utc() string {
 	return strconv.FormatInt(time.Now().Unix(), 10)
 }
 
-func md5CheckSumTemplate(args ...interface{}) string {
+func md5Func(args ...interface{}) string {
 
 	if len(args) == 0 {
 		return ""
@@ -36,7 +37,7 @@ func md5CheckSumTemplate(args ...interface{}) string {
 	return checksum
 }
 
-func md5CheckSum(params []string) string {
+func md5Template(params []string) string {
 
 	if len(params) == 0 {
 		return ""

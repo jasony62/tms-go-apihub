@@ -40,7 +40,7 @@
       "name": "X-CheckSum",
       "from": {
         "from": "func",
-        "name": "md5CheckSum",
+        "name": "md5",
         "args": "apikey X-CurTime X-Param"
       }
     },

@@ -22,7 +22,7 @@ import (
 // 转发API调用
 func Run(stack *hub.Stack) (interface{}, int) {
 	var err error
-	apiDef, err := unit.FindApiDef(stack, stack.Name)
+	apiDef, err := unit.FindApiDef(stack, stack.ChildName)
 
 	if apiDef == nil {
 		klog.Errorln("获得API定义失败：", err)
@@ -55,7 +55,7 @@ func Run(stack *hub.Stack) (interface{}, int) {
 
 				// 构造发送的响应内容
 				jsonOutRspBody = NewOutRspBody(apiDef, jsonInRspBody)
-				
+
 				//解析过期时间，如果存在则记录下来
 				//str := `{"msg":"鉴权成功","expireTime":"20220510153521","ak":"MTY1MjEMTAwMU1UWTFNakUyT0RFeU1UUTNNeU14TURBd01USTJNQT09","resultcode":"1"}`
 				//expires, ok := HandleExpireTime(stack, resp, str, apiDef)
@@ -169,7 +169,13 @@ func NewRequest(stack *hub.Stack, apiDef *hub.ApiDef) *http.Request {
 								formBody.Form.Add(param.Name, value)
 							} else {
 								if len(outBody) == 0 {
-									outBody = value
+									if value == "null" {
+										klog.Errorln("获得body失败：")
+										panic("获得body失败：")
+									} else {
+										outBody = value
+										klog.Infoln("Set body :\r\n", outBody, "\r\n", len(outBody))
+									}
 								} else {
 									klog.Infoln("Double content body :\r\n", outBody, "\r\nVS\r\n", value)
 								}

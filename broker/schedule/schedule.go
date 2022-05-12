@@ -11,6 +11,17 @@ import (
 	"github.com/jasony62/tms-go-apihub/unit"
 )
 
+type concurrentLoopIn struct {
+	index int
+	stack *hub.Stack
+	task  *[]hub.ScheduleTaskDef
+}
+
+type concurrentLoopOut struct {
+	index  int
+	result interface{}
+}
+
 func generateStepResult(stack *hub.Stack, parameters *[]hub.OriginDefParam) interface{} {
 	var value string
 	result := make(map[string]interface{}, len(*parameters))
@@ -28,21 +39,32 @@ func generateStepResult(stack *hub.Stack, parameters *[]hub.OriginDefParam) inte
 func copyStack(src *hub.Stack, task *hub.ScheduleTaskDef) *hub.Stack {
 	result := hub.Stack{
 		GinContext: src.GinContext,
-		Name:       task.Commond,
+		RootName:   src.RootName,
+		ChildName:  task.Commond,
+		StepResult: make(map[string]interface{}),
 	}
 
-	if task.Parameters != nil {
-		result.StepResult = map[string]interface{}{hub.OriginName: generateStepResult(src, task.Parameters)}
-	} else {
-		result.StepResult = map[string]interface{}{hub.OriginName: src.StepResult[hub.OriginName]}
+	for k, v := range src.StepResult {
+		switch k {
+		case hub.OriginName:
+			if task.Parameters != nil {
+				result.StepResult[k] = generateStepResult(src, task.Parameters)
+			} else {
+				result.StepResult[k] = v
+			}
+		case hub.LoopName:
+			oriLoop := src.StepResult[k].(map[string]int)
+			loop := make(map[string]int, len(oriLoop))
+			for index, element := range oriLoop {
+				loop[index] = element
+			}
+			result.StepResult[k] = loop
+		default:
+			result.StepResult[k] = v
+		}
+
 	}
 
-	oriLoop := src.StepResult[hub.LoopName].(map[string]int)
-	loop := make(map[string]int, len(oriLoop))
-	for index, element := range oriLoop {
-		loop[index] = element
-	}
-	result.StepResult[hub.LoopName] = loop
 	return &result
 }
 
@@ -63,6 +85,55 @@ func handleSwitchTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{},
 	return nil, 500
 }
 
+func handleConcurrentLoop(tasks chan concurrentLoopIn, out chan concurrentLoopOut) {
+	for task := range tasks {
+		result, _ := handleTasks(task.stack, task.task)
+		out <- concurrentLoopOut{index: task.index, result: result}
+	}
+
+}
+
+func triggerConcurrentLoop(stack *hub.Stack, task *hub.ScheduleTaskDef, max int, loop map[string]int, loopResult []interface{}) {
+	var taskCount int
+	done := max
+	if task.Concurrent > max {
+		taskCount = max
+	} else {
+		taskCount = task.Concurrent
+	}
+
+	in := make(chan concurrentLoopIn, taskCount)
+	defer close(in)
+	out := make(chan concurrentLoopOut, taskCount)
+	defer close(out)
+
+	i := 0
+	for ; i < taskCount; i++ {
+		go handleConcurrentLoop(in, out)
+	}
+
+	for i = 0; i < taskCount; i++ {
+		loop[task.Name] = i
+		tmpStack := copyStack(stack, task)
+		in <- concurrentLoopIn{index: i, stack: tmpStack, task: task.Tasks}
+	}
+
+	for result := range out {
+		loopResult[result.index] = result.result
+		done--
+		if i < max {
+			loop[task.Name] = i
+			tmpStack := copyStack(stack, task)
+			in <- concurrentLoopIn{index: i, stack: tmpStack, task: task.Tasks}
+			i++
+		} else {
+			if done == 0 {
+				break
+			}
+		}
+	}
+}
+
 func handleLoopTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{}, int) {
 	var result interface{}
 	keyStr := unit.GetParameterValue(stack, nil, &task.Key)
@@ -77,11 +148,16 @@ func handleLoopTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{}, i
 	if len(task.ResultKey) > 0 {
 		stack.StepResult[task.ResultKey] = loopResult
 	}
-	for i := 0; i < max; i++ {
-		loop := stack.StepResult[hub.LoopName].(map[string]int)
-		loop[task.Name] = i
-		result, _ = handleTasks(stack, task.Tasks)
-		loopResult[i] = result
+
+	loop := stack.StepResult[hub.LoopName].(map[string]int)
+	if task.Concurrent > 1 && max > 1 {
+		triggerConcurrentLoop(stack, task, max, loop, loopResult)
+	} else {
+		for i := 0; i < max; i++ {
+			loop[task.Name] = i
+			result, _ = handleTasks(stack, task.Tasks)
+			loopResult[i] = result
+		}
 	}
 	return loopResult, 200
 }
@@ -150,7 +226,7 @@ func handleTasks(stack *hub.Stack, tasks *[]hub.ScheduleTaskDef) (result interfa
 }
 
 func Run(stack *hub.Stack) (interface{}, int) {
-	scheduleDef, err := unit.FindScheduleDef(stack, stack.Name)
+	scheduleDef, err := unit.FindScheduleDef(stack, stack.ChildName)
 	if scheduleDef == nil || scheduleDef.Tasks == nil {
 		klog.Errorln("获得Schedule定义失败：", err)
 		panic(err)
