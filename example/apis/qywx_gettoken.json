@@ -20,5 +20,12 @@
         "name": "corpsecret"
       }
     }
-  ]
+  ],
+  "cache": {
+  "from": {
+	"from": "body",
+	"name": "expires_in"
+    },
+	"format": "second"
+  }
 }

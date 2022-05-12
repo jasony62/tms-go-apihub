@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -32,13 +33,12 @@ func Run(stack *hub.Stack) (interface{}, int) {
 	var jsonOutRspBody interface{}
 
 	if apiDef.Cache != nil { //如果Json文件中配置了cache，表示支持缓存
-		if CacheExpired(apiDef, true) {
-			klog.Infoln("Cache缓存过期或还未获取缓存，获取Cache")
-
+		if content := GetCacheContentWithLock(apiDef); content == nil {
 			defer apiDef.Cache.Locker.Unlock()
 			apiDef.Cache.Locker.Lock()
 
-			if CacheExpired(apiDef, false) {
+			if content = GetCacheContent(apiDef); content == nil {
+				klog.Infoln("获取缓存Cache ... ...")
 				outReq := NewRequest(stack, apiDef)
 				// 发出请求
 				client := &http.Client{}
@@ -69,15 +69,14 @@ func Run(stack *hub.Stack) (interface{}, int) {
 				}
 			} else {
 				klog.Infoln("Cache缓存有效，直接回应")
-				jsonOutRspBody = apiDef.Cache.Resp
+				jsonOutRspBody = content
 			}
 		} else {
 			klog.Infoln("Cache缓存有效，直接回应")
-			apiDef.Cache.Locker.RLock()
-			jsonOutRspBody = apiDef.Cache.Resp
-			apiDef.Cache.Locker.RUnlock()
+			jsonOutRspBody = content
 		}
 	} else { //不支持缓存，直接请求
+		klog.Infoln("不支持Cache缓存 ... ...")
 		outReq := NewRequest(stack, apiDef)
 		// 发出请求
 		client := &http.Client{}
@@ -241,12 +240,13 @@ func HandleExpireTime(stack *hub.Stack, resp *http.Response, body string, apiDef
 				expiresIndex := strings.Index(cookie, key) //"expires="
 				if expiresIndex >= 0 {
 					semicolonIndex := strings.Index(cookie[expiresIndex:], ";")
+					if semicolonIndex < 0 {
+						semicolonIndex = 0
+					}
 					expiresStr := cookie[expiresIndex+len(key)+1 : expiresIndex+semicolonIndex]
+
 					expires, err := ParseExpireTime(expiresStr, format)
 					if err == nil {
-						// klog.Infoln("Mock now: ", time.Now())
-						// klog.Infoln("Mock Expires: ", time.Now().Add(60000000000))
-						// return time.Now().Add(60000000000), true
 						return expires, true
 					}
 				}
@@ -264,20 +264,34 @@ func HandleExpireTime(stack *hub.Stack, resp *http.Response, body string, apiDef
 		}
 	} else if strings.EqualFold(src, "body") {
 		//例"expireTime":"20220510153521",
+		klog.Infoln("消息体:", body)
 		index := strings.Index(body, key)
 		if index >= 0 {
-			comma := strings.Index(body[index:], ",")
-			if comma >= 0 {
-				timestr := body[index+len(key)+2 : index+comma]
-				timestr = strings.TrimSpace(timestr)
-				timestr = strings.TrimPrefix(timestr, `"`)
-				timestr = strings.TrimSuffix(timestr, `"`)
-				klog.Infoln("消息体中过期时间:", timestr)
+			colon := strings.Index(body[index:], ":")
+			str := body[index+colon+1:]
+			str = strings.TrimSpace(str)
 
-				formatTime, err := ParseExpireTime(timestr, format)
-				if err == nil {
-					return formatTime, true
+			//如果是过期时间是秒的话，对象为整数
+			if strings.EqualFold(format, "second") {
+				if str[0] >= '0' && str[0] <= '9' { //如果过期时间key对应的值是数字
+					reg := regexp.MustCompile(`[0-9]+`)
+					strarray := reg.FindAllString(str, -1)
+					str = strarray[0]
 				}
+			} else {
+				//如果是过期时间是日期格式的话，对象为字符串，有 " 号
+				if str[0] == '"' {
+					str = strings.TrimLeft(str, `"`)
+					quotesEnd := strings.Index(str, `"`)
+					if quotesEnd >= 0 {
+						str = str[:quotesEnd]
+					}
+				}
+			}
+			klog.Infoln("消息体中过期时间:", str)
+			formatTime, err := ParseExpireTime(str, format)
+			if err == nil {
+				return formatTime, true
 			}
 		}
 	} else {
@@ -312,12 +326,20 @@ func ParseExpireTime(str string, format string) (time.Time, error) {
 	return exptime.Local(), nil
 }
 
-func CacheExpired(apiDef *hub.ApiDef, lock bool) bool {
+func GetCacheContent(apiDef *hub.ApiDef) interface{} {
 	//如果支持缓存，判断过期时间
-	if lock {
-		apiDef.Cache.Locker.RLock()
-		defer apiDef.Cache.Locker.RUnlock()
-		return time.Now().Local().After(apiDef.Cache.Expires)
+	if time.Now().Local().After(apiDef.Cache.Expires) {
+		return nil
 	}
-	return time.Now().Local().After(apiDef.Cache.Expires)
+	return apiDef.Cache.Resp
+}
+
+func GetCacheContentWithLock(apiDef *hub.ApiDef) interface{} {
+	//如果支持缓存，判断过期时间
+	apiDef.Cache.Locker.RLock()
+	defer apiDef.Cache.Locker.RUnlock()
+	if time.Now().Local().After(apiDef.Cache.Expires) {
+		return nil
+	}
+	return apiDef.Cache.Resp
 }
