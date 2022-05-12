@@ -55,8 +55,8 @@
       "in": "header",
       "name": "X-CheckSum",
       "from": {
-        "from": "JsonTemplate",
-        "template": "{{md5CheckSumTemplate .vars.apikey .vars.XCurTime .vars.XParam}}"
+        "from": "template",
+        "name": "{{md5 .vars.apikey .vars.XCurTime .vars.XParam}}"
       }
     },
     {

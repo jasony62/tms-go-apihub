@@ -32,8 +32,7 @@ func fillOrigin(stack *hub.Stack, parameters *[]hub.OriginDefParam) {
 
 func Run(stack *hub.Stack) (interface{}, int) {
 	var lastResultKey string
-	var flowName = stack.Name
-	flowDef, err := unit.FindFlowDef(stack, stack.Name)
+	flowDef, err := unit.FindFlowDef(stack, stack.ChildName)
 
 	if flowDef == nil {
 		klog.Errorln("获得Flow定义失败：", err)
@@ -49,7 +48,7 @@ func Run(stack *hub.Stack) (interface{}, int) {
 			}
 
 			// 调用api
-			stack.Name = step.Api.Id
+			stack.ChildName = step.Api.Id
 			jsonOutRspBody, _ := api.Run(stack)
 
 			// 在上下文中保存结果
@@ -64,6 +63,5 @@ func Run(stack *hub.Stack) (interface{}, int) {
 		lastResultKey = step.ResultKey
 	}
 
-	stack.Name = flowName
 	return stack.StepResult[lastResultKey], http.StatusOK
 }

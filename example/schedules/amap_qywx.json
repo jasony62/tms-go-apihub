@@ -7,6 +7,7 @@
             "name": "myloop",
             "command": "loop",
             "resultKey": "myloop",
+            "Concurrent": 2,
             "key": {
                 "from": "template",
                 "name": "{{len .origin.cities}}"
@@ -68,7 +69,7 @@
                     "name": "content",
                     "from": {
                         "from": "template",
-                        "name": "{{range .myloop}}{{.data.region}} weather is {{.data.weather}},{{end}}"
+                        "name": "{{range $i,$v := .myloop}}{{if $i}},{{end}}{{$v.data.region}} weather is {{$v.data.weather}}{{end}}"
                     }
                 },
                 {

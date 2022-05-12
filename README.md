@@ -289,7 +289,7 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 | ----from      | 获取参数值的位置,支持`query`,`header`,`private`(从秘钥文件读取),`origin`(原始报文body中的json),StepResult(从原始报文和处理结果获取)，JsonTemplate(根据template生成json格式的内容)，template(跟据template生成),`func`(hub.FuncMap内部定义函数的名称)。               |          |      |
 | ----name      | 参数值所在位置的名称，或者参数所调用函数的名称，或者template的内容。                                                                                |          |      |
 | ----args      | 参数值需要调用的func的输入参数，多个参数时，以空格间隔(同级别的from为func时才生效)。例如："args": "apikey X-CurTime X-Param"                                                                                | string         |   否   |
-| ----template  | JsonTemplate的输入值,支持.origin.访问输入json，.vars.访问在parameters定义的值，支持采用template的FuncMap的方式直接调用hub.FuncMapForTemplate内部定义的函数(例如"template": "{{md5CheckSumTemplate .vars.apikey .vars.XCurTime .vars.XParam}}")，切记入参若含有字符-，则需要用vars转换参数名。                                                                                |          |      |
+| ----template  | JsonTemplate的输入值,支持.origin.访问输入json，.vars.访问在parameters定义的值，支持采用template的FuncMap的方式直接调用hub.FuncMapForTemplate内部定义的函数(例如"template": "{{md5 .vars.apikey .vars.XCurTime .vars.XParam}}")，切记入参若含有字符-，则需要用vars转换参数名。                                                                                |          |      |
 |               |                                                                                                       |          |      |
 | response      | 返回给调用方的内容。返回的内容统一为`application/json`格式。如果不指定，直接转发目标 API 返回的内容。 | object   | 否   |
 | --json        | 返回调用方内容的模板（mustache），数组或对象。支持从被调用方返回的结果进行映射。                      | any      | 是   |
@@ -370,7 +370,9 @@ curl -H "Content-Type: application/json" -d '{"city": "北京"}' "http://localho
 * 支持token缓存
 * 支持返回非json格式的http response
 * 支持200OK + error code转错误码
+* 支持url中含有private
 ## 中期
+* 支持基于user的private
 * 支持load API时候，检验private信息，load FLOW时候，检验API信息，load schedule时候，检验FLOW和API
 * 支持在http response中访问origin中的值
 * 开发测试http server，postman或者apifox的测试脚本

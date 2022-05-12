@@ -31,11 +31,13 @@ func newStack(c *gin.Context) *hub.Stack {
 		value = *inReqData
 	}
 
-	return &hub.Stack{
+	result := hub.Stack{
 		GinContext: c,
 		StepResult: map[string]interface{}{hub.OriginName: value},
-		Name:       c.Param(`Id`),
+		RootName:   c.Param(`Id`),
 	}
+	result.ChildName = result.RootName
+	return &result
 }
 
 // 执行1个API调用
