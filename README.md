@@ -62,6 +62,10 @@ c6=>condition: 有重试
 c7=>condition: 超过重试次数
 c8=>condition: 需要改写http response
 c9=>condition: 遍历结束
+c10=>condition: 检查是否支持缓存Cache
+c11=>condition: 检查缓存Cache是否过期
+c12=>condition: 解析过期时间正确
+c13=>condition: 支持缓存Cache
 
 opa=>operation: 获取api定义
 op0=>operation: 设置HTTP method
@@ -73,8 +77,11 @@ op5=>operation: 根据in设置到发送的http报文的相应位置
 op6=>operation: 设置http request timeout
 op7=>operation: 将最终报文发送到url
 op8=>operation: 改写http response
+op9=>operation: 读取缓存Cache报文
+op10=>operation: 解析报文过期时间
+op11=>operation: 缓存记录http response报文
 
-st->opa->c0(yes)->c1(yes)->c2(no)->op3->c3(yes,right)->op5->c9(yes)->c4(yes)->op6->op7->c5(yes)->c8(no)->e1
+st->opa->c10(yes)->c11(yes)->c0(yes)->c1(yes)->c2(no)->op3->c3(yes,right)->op5->c9(yes)->c4(yes)->op6->op7->c5(yes)->c8(no)->c13(yes)->op10->c12(yes)->op11->e1
 c9(no)->op3
 c0(no)->e2
 c1(no)->e2
@@ -84,7 +91,12 @@ c4(no)->op7
 c5(no)->c6(yes,right)->c7(yes)->e2
 c7(no)->op7
 c6(no)->e2
-c8(yes)->op8->e1
+c8(yes)->op8->c13
+c10(no)->c0
+c11(no)->op9->e1
+c12(no)->e1
+c13(no)->e1
+
 ```
 ## flow调用流程
 ```mermaid
@@ -187,14 +199,18 @@ graph TB
 
 ## 环境变量
 
-| 环境变量              | 用途                             | 默认值  |
-| --------------------- | -------------------------------- | ------- |
-| TGAH_HOST             | 服务的主机名                     | 0.0.0.0 |
-| TGAH_PORT             | 服务的端口号                     | 8080    |
-| TGAH_BUCKET_ENABLE    | API 和 FLOW 是否按 bucket 隔离   | no      |
-| TGAH_API_DEF_PATH     | API 定义文件存放位置             | -       |
-| TGAH_FLOW_DEF_PATH    | 编排定义文件存放位置             | -       |
-| TGAH_PRIVATE_DEF_PATH | API 定义中使用的私有数据存放位置 | -       |
+| 环境变量                      | 用途                                                         | 默认值  |
+| ----------------------------- | ------------------------------------------------------------ | ------- |
+| TGAH_HOST                     | 服务的主机名                                                 | 0.0.0.0 |
+| TGAH_PORT                     | 服务的端口号                                                 | 8080    |
+| TGAH_BUCKET_ENABLE            | API 和 FLOW 是否按 bucket 隔离                               | no      |
+| TGAH_API_DEF_PATH             | API 定义文件存放位置                                         | -       |
+| TGAH_FLOW_DEF_PATH            | 编排定义文件存放位置                                         | -       |
+| TGAH_PRIVATE_DEF_PATH         | API 定义中使用的私有数据存放位置                             | -       |
+| TGAH_REMOTE_CONF_DOWNLOAD     | 是否从远端http服务器下载conf的json等文件，0：不下载，1：下载，下载的话需要配置下面的url | 0       |
+| TGAH_REMOTE_CONF_URL          | 从远端http服务器下载conf的json等文件                         | -       |
+| TGAH_REMOTE_CONF_STORE_FOLDER | 下载文件解压的目录                                           | ./conf  |
+| TGAH_REMOTE_CONF_UNZIP_PWD    | 下载文件解压密码，如果有密码则写解压密码，如果没有则不填     | -       |
 
 ## 命令行
 

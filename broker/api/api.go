@@ -53,18 +53,18 @@ func Run(stack *hub.Stack) (interface{}, int) {
 				// 将收到的结果转为JSON对象
 				json.Unmarshal(returnBody, &jsonInRspBody)
 
+				// 构造发送的响应内容
+				jsonOutRspBody = NewOutRspBody(apiDef, jsonInRspBody)
+				
 				//解析过期时间，如果存在则记录下来
 				//str := `{"msg":"鉴权成功","expireTime":"20220510153521","ak":"MTY1MjEMTAwMU1UWTFNakUyT0RFeU1UUTNNeU14TURBd01USTJNQT09","resultcode":"1"}`
 				//expires, ok := HandleExpireTime(stack, resp, str, apiDef)
 				expires, ok := HandleExpireTime(stack, resp, string(returnBody), apiDef)
 				if !ok {
 					klog.Warningln("没有查询到过期时间")
-					// 构造发送的响应内容
-					jsonOutRspBody = NewOutRspBody(apiDef, jsonInRspBody)
 				} else {
 					klog.Infof("更新Cache信息，过期时间为: %v", expires)
 					apiDef.Cache.Expires = expires
-					jsonOutRspBody = NewOutRspBody(apiDef, jsonInRspBody)
 					apiDef.Cache.Resp = jsonOutRspBody
 				}
 			} else {
