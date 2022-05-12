@@ -34,9 +34,9 @@
   ],
   "cache": {
 	"from": {
-		"from": "header",
-		"name": "Set-Cookie.expires"
+		"from": "body",
+		"name": "expires_in"
 	},
-	"format": "Mon, 02-Jan-06 15:04:05 MST"
+	"format": "second"
   }
 }

@@ -254,12 +254,7 @@ func GetBucketKey(stack *hub.Stack, fileName string) (string, string) {
 		bucket = stack.GinContext.Param(`bucket`)
 	}
 
-	var key string
-	if bucket == "" {
-		key = fileName
-	} else {
-		key = bucket + "/" + fileName
-	}
+	key := initBucketKey(bucket, fileName)
 	klog.Infof("GetBucketKey key: %s, bucket: %s", key, bucket)
 	return key, bucket
 }
