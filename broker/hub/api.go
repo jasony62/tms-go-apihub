@@ -45,7 +45,6 @@ type ApiDef struct {
 	Parameters         *[]ApiDefParam  `json:"parameters"`
 	RequestContentType string          `json:"requestContentType"`
 	Response           *ApiDefResponse `json:"response"`
-	Plugins            *[]ApiDefPlugin `json:"plugins,omitempty"`
 	Privates           *PrivateArray
 	Cache              *ApiCache `json:"cache"`
 }
