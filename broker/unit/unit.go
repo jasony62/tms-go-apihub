@@ -6,12 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	klog "k8s.io/klog/v2"
+	"plugin"
 	"strings"
 
-	klog "k8s.io/klog/v2"
-
 	"github.com/jasony62/tms-go-apihub/hub"
-	"github.com/jasony62/tms-go-apihub/plugin"
 	"github.com/jasony62/tms-go-apihub/util"
 )
 
@@ -47,18 +46,6 @@ func FindApiDef(stack *hub.Stack, id string) (*hub.ApiDef, error) {
 			str := "获得Private数据失败：" + err.Error()
 			klog.Errorln(str)
 			panic(str)
-		}
-	}
-
-	// 通过插件改写API定义
-	if apiDef.Plugins != nil && len(*apiDef.Plugins) > 0 {
-		for _, pluginDef := range *apiDef.Plugins {
-			if len(pluginDef.Path) > 0 {
-				pluginFn, _ := plugin.RewriteApiDef(pluginDef.Path)
-				if pluginFn != nil {
-					pluginFn(apiDef)
-				}
-			}
 		}
 	}
 
@@ -238,6 +225,50 @@ func LoadJsonDefData(jsonType int, path string, prefix string) {
 			}
 
 			klog.Infof("加载Json文件成功: key: %s\r\n", key)
+		}
+	}
+}
+
+func LoadConfigPluginData(path string) {
+	fileInfoList, err := ioutil.ReadDir(path)
+	if err != nil {
+		klog.Errorln(err)
+		return
+	}
+
+	num := len(fileInfoList)
+
+	klog.Infoln("\r\n")
+	klog.Infoln("Plugin def文件，本目录文件数: ", num)
+	var prefix string
+	for i := range fileInfoList {
+		fileName := fmt.Sprintf("%s/%s", path, fileInfoList[i].Name())
+		klog.Infoln("Json file: ", fileName)
+
+		if fileInfoList[i].IsDir() {
+			klog.Infoln("Json子目录: ", fileName)
+			prefix = fileInfoList[i].Name()
+			LoadConfigPluginData(path + "/" + prefix)
+			klog.Infoln("\r\n")
+		} else {
+			if !strings.HasSuffix(fileName, ".so") {
+				continue
+			}
+			p, err := plugin.Open(fileName)
+			if err != nil {
+				klog.Errorln(err)
+				panic(err)
+			}
+
+			// 导入动态库，注册函数到hub.FuncMap
+			registerFunc, err := p.Lookup("register")
+			if err != nil {
+				klog.Errorln(err)
+				panic(err)
+			}
+			registerFunc.(func())()
+
+			klog.Infof("加载Json文件成功！\r\n")
 		}
 	}
 }

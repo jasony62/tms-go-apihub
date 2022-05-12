@@ -293,8 +293,6 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 |               |                                                                                                       |          |      |
 | response      | 返回给调用方的内容。返回的内容统一为`application/json`格式。如果不指定，直接转发目标 API 返回的内容。 | object   | 否   |
 | --json        | 返回调用方内容的模板（mustache），数组或对象。支持从被调用方返回的结果进行映射。                      | any      | 是   |
-|               |                                                                                                       |          |      |
-| plugins       | 支持通过`plugin`对 API 定义进行改写。                                                                 | object[] | 否   |
 | --path        | 插件文件的路径。                                                                                      | string   | 是   |
 
 目前系统并未使用`id`字段定位选择的 API，而是根据指定 API 定义文件的名称。
