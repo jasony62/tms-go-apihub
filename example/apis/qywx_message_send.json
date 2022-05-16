@@ -26,5 +26,13 @@
         }
       }
     }
-  ]
+  ],
+  "respStatus": {
+    "from": {
+  		"from": "template",
+  		"name": "{{.result.errcode}}"
+  	},
+    "format": "number",
+    "expected": "0"
+  }
 }

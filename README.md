@@ -66,6 +66,8 @@ c10=>condition: 检查是否支持缓存Cache
 c11=>condition: 检查缓存Cache是否过期
 c12=>condition: 解析过期时间正确
 c13=>condition: 支持缓存Cache
+c14=>condition: 报文是否需要errcode检查
+c15=>condition: 报文中errcode是否成功
 
 opa=>operation: 获取api定义
 op0=>operation: 设置HTTP method
@@ -80,8 +82,10 @@ op8=>operation: 改写http response
 op9=>operation: 读取缓存Cache报文
 op10=>operation: 解析报文过期时间
 op11=>operation: 缓存记录http response报文
+op12=>operation: 记录回复报文body
+op13=>operation: 解析报文中errcode
 
-st->opa->c10(yes)->c11(yes)->c0(yes)->c1(yes)->c2(no)->op3->c3(yes,right)->op5->c9(yes)->c4(yes)->op6->op7->c5(yes)->c8(no)->c13(yes)->op10->c12(yes)->op11->e1
+st->opa->c10(yes)->c11(yes)->c0(yes)->c1(yes)->c2(no)->op3->c3(yes,right)->op5->c9(yes)->c4(yes)->op6->op7->c5(yes)->op12->c14(yes)->c15(yes)->c8(no)->c13(yes)->op10->c12(yes)->op11->e1
 c9(no)->op3
 c0(no)->e2
 c1(no)->e2
@@ -96,6 +100,8 @@ c10(no)->c0
 c11(no)->op9->e1
 c12(no)->e1
 c13(no)->e1
+c14(no)->c8
+c15(no)->e2
 
 ```
 ## flow调用流程

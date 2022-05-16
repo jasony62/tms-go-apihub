@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -17,6 +16,7 @@ import (
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/jasony62/tms-go-apihub/unit"
 	"github.com/jasony62/tms-go-apihub/util"
+	jsoniter "github.com/json-iterator/go"
 )
 
 // 转发API调用
@@ -31,6 +31,11 @@ func Run(stack *hub.Stack) (interface{}, int) {
 
 	var jsonInRspBody interface{}
 	var jsonOutRspBody interface{}
+
+	//json反序列化是造成整数的精度丢失，所以使用一个扩展的json工具做反序列化
+	jsonEx := jsoniter.Config{
+		UseNumber: true,
+	}.Froze()
 
 	if apiDef.Cache != nil { //如果Json文件中配置了cache，表示支持缓存
 		if content := GetCacheContentWithLock(apiDef); content == nil {
@@ -51,15 +56,19 @@ func Run(stack *hub.Stack) (interface{}, int) {
 				returnBody, _ := io.ReadAll(resp.Body)
 
 				// 将收到的结果转为JSON对象
-				json.Unmarshal(returnBody, &jsonInRspBody)
+				jsonEx.Unmarshal(returnBody, &jsonInRspBody)
+				stack.StepResult[hub.ResultName] = jsonInRspBody
+
+				if !HandleRespStatus(stack, apiDef) {
+					klog.Errorln("消息体中返回码显示不成功，回应错误")
+					return nil, 500
+				}
 
 				// 构造发送的响应内容
 				jsonOutRspBody = NewOutRspBody(apiDef, jsonInRspBody)
 
 				//解析过期时间，如果存在则记录下来
-				//str := `{"msg":"鉴权成功","expireTime":"20220510153521","ak":"MTY1MjEMTAwMU1UWTFNakUyT0RFeU1UUTNNeU14TURBd01USTJNQT09","resultcode":"1"}`
-				//expires, ok := HandleExpireTime(stack, resp, str, apiDef)
-				expires, ok := HandleExpireTime(stack, resp, string(returnBody), apiDef)
+				expires, ok := HandleExpireTime(stack, apiDef, resp)
 				if !ok {
 					klog.Warningln("没有查询到过期时间")
 				} else {
@@ -87,9 +96,15 @@ func Run(stack *hub.Stack) (interface{}, int) {
 		}
 		defer resp.Body.Close()
 		returnBody, _ := io.ReadAll(resp.Body)
-		// 将收到的结果转为JSON对象
-		json.Unmarshal(returnBody, &jsonInRspBody)
 
+		// 将收到的结果转为JSON对象
+		jsonEx.Unmarshal(returnBody, &jsonInRspBody)
+		stack.StepResult[hub.ResultName] = jsonInRspBody
+
+		if !HandleRespStatus(stack, apiDef) {
+			klog.Errorln("消息体中返回码显示不成功，回应错误")
+			return nil, 500
+		}
 		jsonOutRspBody = NewOutRspBody(apiDef, jsonInRspBody)
 	}
 
@@ -210,7 +225,16 @@ func NewRequest(stack *hub.Stack, apiDef *hub.ApiDef) *http.Request {
 	return outReq
 }
 
-func HandleExpireTime(stack *hub.Stack, resp *http.Response, body string, apiDef *hub.ApiDef) (time.Time, bool) {
+func HandleExpireTime(stack *hub.Stack, apiDef *hub.ApiDef, resp *http.Response) (time.Time, bool) {
+	klog.Infoln("获得参数，[src]:", apiDef.Cache.From.From, "; [key]:", apiDef.Cache.From.Name, "; [format]:", apiDef.Cache.Format)
+	if strings.EqualFold(apiDef.Cache.From.From, "header") {
+		return HandleHeaderExpireTime(apiDef, resp)
+	} else {
+		return HandleBodyExpireTime(stack, apiDef)
+	}
+}
+
+func HandleHeaderExpireTime(apiDef *hub.ApiDef, resp *http.Response) (time.Time, bool) {
 	//首先在api 的json文件中配置参数 cache
 	// "cache": {
 	// 	"from": {
@@ -225,106 +249,85 @@ func HandleExpireTime(stack *hub.Stack, resp *http.Response, body string, apiDef
 	//	baidu_image_classify_token: Mon, 02-Jan-06 15:04:05 MST
 	//	body中一个例子："expireTime":"20220510153521",格式为：20060102150405
 
-	var src, key, format string
-	src = apiDef.Cache.From.From
-	key = apiDef.Cache.From.Name
-	format = apiDef.Cache.Format
-	klog.Infoln("获得参数，[src]:", src, "; [key]:", key, "; [format]:", format)
+	//format = "20060102150405"
+	key := apiDef.Cache.From.Name
+	format := apiDef.Cache.Format
 
-	if src == "" || key == "" || format == "" {
-		klog.Warningln("Json文件中未配置过期时间参数")
-		return time.Time{}, false
-	}
-
-	if strings.EqualFold(src, "header") {
-		if strings.Contains(key, "Set-Cookie.") {
-			key = strings.TrimPrefix(key, "Set-Cookie.")
-			//判断Set-Cookie中是否含有Expires 的header
-			cookie := resp.Header.Get("Set-Cookie")
-			klog.Infoln("Header中Set-Cookie: ", cookie)
-			if len(cookie) > 0 {
-				expiresIndex := strings.Index(cookie, key) //"expires="
-				if expiresIndex >= 0 {
-					semicolonIndex := strings.Index(cookie[expiresIndex:], ";")
-					if semicolonIndex < 0 {
-						semicolonIndex = 0
-					}
-					expiresStr := cookie[expiresIndex+len(key)+1 : expiresIndex+semicolonIndex]
-
-					expires, err := ParseExpireTime(expiresStr, format)
-					if err == nil {
-						return expires, true
-					}
+	if strings.Contains(key, "Set-Cookie.") {
+		key = strings.TrimPrefix(key, "Set-Cookie.")
+		//判断Set-Cookie中是否含有Expires 的header
+		cookie := resp.Header.Get("Set-Cookie")
+		klog.Infoln("Header中Set-Cookie: ", cookie)
+		if len(cookie) > 0 {
+			expiresIndex := strings.Index(cookie, key) //"expires="
+			if expiresIndex >= 0 {
+				semicolonIndex := strings.Index(cookie[expiresIndex:], ";")
+				if semicolonIndex < 0 {
+					semicolonIndex = 0
 				}
-			}
-		} else {
-			//判断是否含有Expires 的header
-			expireHeader := resp.Header.Get(key)
-			klog.Infoln("Header中Expires: ", expireHeader)
-			if len(expireHeader) > 0 {
-				expires, err := ParseExpireTime(expireHeader, format)
+
+				expires, err := ParseExpireTime(cookie[expiresIndex+len(key)+1:expiresIndex+semicolonIndex], format)
 				if err == nil {
 					return expires, true
 				}
 			}
 		}
-	} else if strings.EqualFold(src, "body") {
-		//例"expireTime":"20220510153521",
-		klog.Infoln("消息体:", body)
-		index := strings.Index(body, key)
-		if index >= 0 {
-			colon := strings.Index(body[index:], ":")
-			str := body[index+colon+1:]
-			str = strings.TrimSpace(str)
-
-			//如果是过期时间是秒的话，对象为整数
-			if strings.EqualFold(format, "second") {
-				if str[0] >= '0' && str[0] <= '9' { //如果过期时间key对应的值是数字
-					reg := regexp.MustCompile(`[0-9]+`)
-					strarray := reg.FindAllString(str, -1)
-					str = strarray[0]
-				}
-			} else {
-				//如果是过期时间是日期格式的话，对象为字符串，有 " 号
-				if str[0] == '"' {
-					str = strings.TrimLeft(str, `"`)
-					quotesEnd := strings.Index(str, `"`)
-					if quotesEnd >= 0 {
-						str = str[:quotesEnd]
-					}
-				}
-			}
-			klog.Infoln("消息体中过期时间:", str)
-			formatTime, err := ParseExpireTime(str, format)
-			if err == nil {
-				return formatTime, true
-			}
-		}
 	} else {
-		klog.Warningln("Json文件中未配置过期时间的来源: ", src)
+		//判断是否含有Expires 的header
+		expires, err := ParseExpireTime(resp.Header.Get(key), format)
+		if err == nil {
+			return expires, true
+		}
 	}
 
 	return time.Time{}, false
 }
 
-func ParseExpireTime(str string, format string) (time.Time, error) {
+func HandleBodyExpireTime(stack *hub.Stack, apiDef *hub.ApiDef) (time.Time, bool) {
+	//首先在api 的json文件中配置参数 cache
+	// "cache": {
+	// 	"from": {
+	// 		"from": "template",
+	// 		"name": "{{.result.expires_in}}"
+	// 	},
+	// 	"format": "second"
+	//   }
+	//name 为获取过期时间的关键字串
+	//format：如果是date格式，则配置具体格式串，如果是second数，则按照秒数解析
+	//	baidu_image_classify_token: Mon, 02-Jan-06 15:04:05 MST
+	//	body中一个例子："expireTime":"20220510153521",格式为：20060102150405
+
+	format := apiDef.Cache.Format
+	result := unit.GetParameterValue(stack, nil, apiDef.Cache.From)
+
+	klog.Infof("HandleBodyExpireTime:", result)
+
+	formatTime, err := ParseExpireTime(result, format)
+	if err == nil {
+		return formatTime, true
+	}
+
+	return time.Time{}, false
+}
+
+func ParseExpireTime(v interface{}, format string) (time.Time, error) {
 	var exptime time.Time
 	var err error
 
-	if format == "second" {
-		var s int
-		s, err = strconv.Atoi(str)
-		if err != nil {
-			klog.Errorln("解析过期时间失败, err: ", err)
-			return time.Time{}, errors.New("Parse expires failed")
-		}
-
-		exptime = time.Now()
-		exptime = exptime.Add(time.Second * time.Duration(s))
+	if strings.EqualFold(format, "second") {
+		seconds := GetInterfaceToInt(v)
+		klog.Infoln("解析后过期秒数: ", seconds)
+		exptime = time.Now().Add(time.Second * time.Duration(seconds))
 	} else {
-		exptime, err = time.Parse(format, str)
-		if err != nil {
-			klog.Errorln("解析过期时间失败, err: ", err)
+		str, ok := v.(string)
+		if ok {
+			exptime, err = time.Parse(format, str)
+			if err != nil {
+				klog.Errorln("解析过期时间失败, err: ", err)
+				return time.Time{}, errors.New("Parse expires failed")
+			}
+		} else {
+			klog.Errorln("解析过期时间失败, value: ", v)
 			return time.Time{}, errors.New("Parse expires failed")
 		}
 	}
@@ -348,4 +351,47 @@ func GetCacheContentWithLock(apiDef *hub.ApiDef) interface{} {
 		return nil
 	}
 	return apiDef.Cache.Resp
+}
+
+func HandleRespStatus(stack *hub.Stack, apiDef *hub.ApiDef) bool {
+	if apiDef.RespStatus == nil { //如果没有定义，则直接返回正确
+		return true
+	}
+
+	result := unit.GetParameterValue(stack, nil, apiDef.RespStatus.From)
+	klog.Infoln("HandleRespStatus 结果", result)
+	return apiDef.RespStatus.Expected == result
+}
+
+func GetInterfaceToInt(in interface{}) int {
+	var value int
+	switch in.(type) {
+	case uint:
+		value = int(in.(uint))
+	case int8:
+		value = int(in.(int8))
+	case uint8:
+		value = int(in.(uint8))
+	case int16:
+		value = int(in.(int16))
+	case uint16:
+		value = int(in.(uint16))
+	case int32:
+		value = int(in.(int32))
+	case uint32:
+		value = int(in.(uint32))
+	case int64:
+		value = int(in.(int64))
+	case uint64:
+		value = int(in.(uint64))
+	case float32:
+		value = int(in.(float32))
+	case float64:
+		value = int(in.(float64))
+	case string:
+		value, _ = strconv.Atoi(in.(string))
+	default:
+		value = in.(int)
+	}
+	return value
 }

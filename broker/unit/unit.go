@@ -26,7 +26,7 @@ func FindPrivateData(bucket string, name string) (*hub.PrivateArray, error) {
 	key := initBucketKey(bucket, name)
 	value, ok := hub.DefaultApp.PrivateMap[key]
 	if !ok {
-		return nil, errors.New("Not found private data")
+		return nil, errors.New("No private data found")
 	}
 	return value, nil
 }
@@ -36,7 +36,7 @@ func FindApiDef(stack *hub.Stack, id string) (*hub.ApiDef, error) {
 	key, bucket := GetBucketKey(stack, id)
 	value, ok := hub.DefaultApp.ApiMap[key]
 	if !ok {
-		return nil, errors.New("Not found api")
+		return nil, errors.New("No api found")
 	}
 
 	apiDef := value
@@ -57,7 +57,7 @@ func FindFlowDef(stack *hub.Stack, id string) (*hub.FlowDef, error) {
 	key, _ := GetBucketKey(stack, id)
 	value, ok := hub.DefaultApp.FlowMap[key]
 	if !ok {
-		return nil, errors.New("Not found flow")
+		return nil, errors.New("No flow found")
 	}
 	return value, nil
 }
@@ -66,7 +66,7 @@ func FindScheduleDef(stack *hub.Stack, id string) (*hub.ScheduleDef, error) {
 	key, _ := GetBucketKey(stack, id)
 	value, ok := hub.DefaultApp.ScheduleMap[key]
 	if !ok {
-		return nil, errors.New("Not found schedule")
+		return nil, errors.New("No schedule found")
 	}
 	return value, nil
 }
@@ -125,6 +125,8 @@ func GetParameterValue(stack *hub.Stack, private *hub.PrivateArray, from *hub.Ap
 			klog.Errorln(str)
 			panic(str)
 		}
+	case hub.ResultName:
+		value = stack.QueryFromStepResult("{{.result." + from.Name + "}}")
 	default:
 		str := "不支持的type" + from.From
 		klog.Errorln(str)
