@@ -6,9 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	klog "k8s.io/klog/v2"
 	"plugin"
 	"strings"
+
+	klog "k8s.io/klog/v2"
 
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/jasony62/tms-go-apihub/util"
@@ -115,13 +116,12 @@ func GetParameterValue(stack *hub.Stack, private *hub.PrivateArray, from *hub.Ap
 		switch funcV := function.(type) {
 		case func() string:
 			value = funcV()
-			break
 		case func([]string) string:
 			strs := strings.Fields(from.Args)
 			argsV := getArgsVal(stack.StepResult, strs)
 			value = funcV(argsV)
 		default:
-			str := "function不能执行"
+			str := from.Name + "不能执行"
 			klog.Errorln(str)
 			panic(str)
 		}

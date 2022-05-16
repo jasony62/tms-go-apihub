@@ -21,10 +21,12 @@ type FlowStepDef struct {
 	ResultKey   string               `json:"resultKey"`
 	Api         *FlowStepApiDef      `json:"api,omitempty"`
 	Response    *FlowStepResponseDef `json:"response,omitempty"`
+	Concurrent  bool                 `json:"concurrent"`
 }
 
 type FlowDef struct {
 	Name        string        `json:"name"`
 	Description string        `json:"description"`
+	Concurrent  int           `json:"concurrent"`
 	Steps       []FlowStepDef `json:"steps"`
 }

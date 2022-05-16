@@ -54,7 +54,7 @@
     }
   ],
   "response": {
-    "body": {
+    "json": {
       "errCode": "{{.code}}",
       "data": {
         "pos": [
