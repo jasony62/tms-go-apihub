@@ -1,11 +1,13 @@
 {
   "name": "kdxf_nlp",
   "description": "处理用户输入文本",
+  "concurrent": 2,
   "steps": [
     {
       "name": "input_cws",
       "description": "对输入内容进行分词",
       "resultKey": "cws",
+      "concurrent": true,
       "api": {
         "id": "kdxf_nlp_cws"
       }
@@ -13,6 +15,7 @@
     {
       "name": "input_pos",
       "description": "对输入内容标注词性",
+      "concurrent": true,
       "resultKey": "pos",
       "api": {
         "id": "kdxf_nlp_pos"

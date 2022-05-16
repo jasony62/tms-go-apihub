@@ -3,13 +3,16 @@ package util
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/jasony62/tms-go-apihub/hub"
 	"strings"
 	"text/template"
+
+	"github.com/jasony62/tms-go-apihub/hub"
+	klog "k8s.io/klog/v2"
 )
 
 func executeTemplate(source interface{}, rules interface{}, translate bool) *bytes.Buffer {
 	byteTempl, _ := json.Marshal(rules)
+
 	strTempl := string(byteTempl)
 	if translate {
 		// 处理数组
@@ -18,9 +21,15 @@ func executeTemplate(source interface{}, rules interface{}, translate bool) *byt
 		strTempl = strings.ReplaceAll(strTempl, "\\\"", "\"")
 	}
 
-	tmpl, _ := template.New("json").Funcs(hub.FuncMapForTemplate).Parse(strTempl)
+	tmpl, err := template.New("json").Funcs(hub.FuncMapForTemplate).Parse(strTempl)
+	if err != nil {
+		klog.Infoln("get template result：", strTempl, byteTempl, " error: ", err)
+	}
 	buf := new(bytes.Buffer)
-	tmpl.Execute(buf, source)
+	err = tmpl.Execute(buf, source)
+	if err != nil {
+		klog.Infoln("get template result：", err)
+	}
 	return buf
 }
 

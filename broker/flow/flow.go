@@ -11,6 +11,15 @@ import (
 	"github.com/jasony62/tms-go-apihub/util"
 )
 
+type concurrentFlowIn struct {
+	step *hub.FlowStepDef
+}
+
+type concurrentFlowOut struct {
+	step   *hub.FlowStepDef
+	result interface{}
+}
+
 func fillOrigin(stack *hub.Stack, parameters *[]hub.OriginDefParam) {
 	var value string
 	origin := stack.StepResult[hub.OriginName].(map[string]interface{})
@@ -30,8 +39,78 @@ func fillOrigin(stack *hub.Stack, parameters *[]hub.OriginDefParam) {
 	}
 }
 
+func runApi(stack *hub.Stack, step *hub.FlowStepDef) interface{} {
+	var result interface{}
+	if step.Api != nil && len(step.Api.Id) > 0 {
+		if step.Api.Parameters != nil && len(*step.Api.Parameters) > 0 {
+			// 根据flow的定义改写origin
+			fillOrigin(stack, step.Api.Parameters)
+		}
+
+		// 调用api
+		stack.ChildName = step.Api.Id
+		jsonOutRspBody, _ := api.Run(stack)
+
+		// 在上下文中保存结果
+		if len(step.ResultKey) > 0 {
+			result = jsonOutRspBody
+		}
+	} else if step.Response != nil {
+		// 处理响应结果
+		result = util.Json2Json(stack.StepResult, step.Response.Json)
+		if result == nil {
+			klog.Infoln("get final result：", step.Response.Json, "\r\n", stack.StepResult, "\r\n", result)
+		}
+	}
+	return result
+}
+func copyFlowStack(src *hub.Stack) *hub.Stack {
+	//avoid vars race conditions
+	result := hub.Stack{
+		GinContext: src.GinContext,
+		RootName:   src.RootName,
+		ChildName:  "",
+		StepResult: make(map[string]interface{}),
+	}
+
+	for k, v := range src.StepResult {
+		result.StepResult[k] = v
+	}
+
+	return &result
+}
+
+func concurrentFlowWorker(stack *hub.Stack, steps chan concurrentFlowIn, out chan concurrentFlowOut) {
+	for step := range steps {
+		result := runApi(copyFlowStack(stack), step.step)
+		out <- concurrentFlowOut{step: step.step, result: result}
+	}
+}
+
+func waitConcurrentResult(stack *hub.Stack, out chan concurrentFlowOut, counter int) (key string) {
+	results := make(map[string]interface{}, counter)
+	for counter > 0 {
+		//等待结果
+		result := <-out
+		key = result.step.ResultKey
+		if len(key) > 0 {
+			results[key] = result.result
+		}
+		counter--
+	}
+	//防止并发读写crash
+	for k, v := range results {
+		stack.StepResult[k] = v
+	}
+	return
+}
 func Run(stack *hub.Stack) (interface{}, int) {
 	var lastResultKey string
+	var counter int
+	var in chan concurrentFlowIn
+	var out chan concurrentFlowOut
+	var result interface{}
+
 	flowDef, err := unit.FindFlowDef(stack, stack.ChildName)
 
 	if flowDef == nil {
@@ -39,28 +118,43 @@ func Run(stack *hub.Stack) (interface{}, int) {
 		panic(err)
 	}
 
-	for _, step := range flowDef.Steps {
-		if step.Api != nil && len(step.Api.Id) > 0 {
+	if flowDef.Concurrent > 1 {
+		in = make(chan concurrentFlowIn, flowDef.Concurrent)
+		defer close(in)
+		out = make(chan concurrentFlowOut, flowDef.Concurrent)
+		defer close(out)
+		for i := 0; i < flowDef.Concurrent; i++ {
+			go concurrentFlowWorker(stack, in, out)
+		}
+	}
 
-			if step.Api.Parameters != nil && len(*step.Api.Parameters) > 0 {
-				// 根据flow的定义改写origin
-				fillOrigin(stack, step.Api.Parameters)
+	for i := range flowDef.Steps {
+		step := flowDef.Steps[i]
+		if flowDef.Concurrent > 1 {
+			if step.Concurrent {
+				in <- concurrentFlowIn{step: &step}
+				counter++
+
+				//避免并发读写ResultKey
+				if counter == flowDef.Concurrent {
+					waitConcurrentResult(stack, out, counter)
+					counter = 0
+				}
+				continue
+			} else {
+				//避免并发读写ResultKey
+				if counter > 0 {
+					waitConcurrentResult(stack, out, counter)
+					counter = 0
+				}
 			}
-
-			// 调用api
-			stack.ChildName = step.Api.Id
-			jsonOutRspBody, _ := api.Run(stack)
-
-			// 在上下文中保存结果
-			if len(step.ResultKey) > 0 {
-				stack.StepResult[step.ResultKey] = jsonOutRspBody
-			}
-		} else if step.Response != nil && len(step.ResultKey) > 0 {
-			// 处理响应结果
-			stack.StepResult[step.ResultKey] = util.Json2Json(stack.StepResult, step.Response.Json)
 		}
 
-		lastResultKey = step.ResultKey
+		result = runApi(stack, &step)
+		if len(step.ResultKey) > 0 {
+			stack.StepResult[step.ResultKey] = result
+			lastResultKey = step.ResultKey
+		}
 	}
 
 	return stack.StepResult[lastResultKey], http.StatusOK

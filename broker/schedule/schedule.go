@@ -85,12 +85,11 @@ func handleSwitchTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{},
 	return nil, 500
 }
 
-func handleConcurrentLoop(tasks chan concurrentLoopIn, out chan concurrentLoopOut) {
+func concurrentLoopWorker(tasks chan concurrentLoopIn, out chan concurrentLoopOut) {
 	for task := range tasks {
 		result, _ := handleTasks(task.stack, task.task)
 		out <- concurrentLoopOut{index: task.index, result: result}
 	}
-
 }
 
 func triggerConcurrentLoop(stack *hub.Stack, task *hub.ScheduleTaskDef, max int, loop map[string]int, loopResult []interface{}) {
@@ -108,14 +107,15 @@ func triggerConcurrentLoop(stack *hub.Stack, task *hub.ScheduleTaskDef, max int,
 	defer close(out)
 
 	i := 0
-	for ; i < taskCount; i++ {
-		go handleConcurrentLoop(in, out)
-	}
 
-	for i = 0; i < taskCount; i++ {
+	for ; i < taskCount; i++ {
 		loop[task.Name] = i
 		tmpStack := copyStack(stack, task)
 		in <- concurrentLoopIn{index: i, stack: tmpStack, task: task.Tasks}
+	}
+
+	for i = 0; i < taskCount; i++ {
+		go concurrentLoopWorker(in, out)
 	}
 
 	for result := range out {

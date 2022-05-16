@@ -25,7 +25,7 @@ func utc() string {
 	return strconv.FormatInt(time.Now().Unix(), 10)
 }
 
-func md5Func(args ...interface{}) string {
+func md5Template(args ...interface{}) string {
 
 	if len(args) == 0 {
 		return ""
@@ -37,7 +37,7 @@ func md5Func(args ...interface{}) string {
 	return checksum
 }
 
-func md5Template(params []string) string {
+func md5Func(params []string) string {
 
 	if len(params) == 0 {
 		return ""

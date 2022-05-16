@@ -306,9 +306,11 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 | steps          | 调用API的步骤。每个步骤对应 1 个 API 的调用。API 必须是已定义。                                                                       | object[] | 是   |
 | --name         | 步骤的名称。                                                                                                                             | string   | 是   |
 | --description  | 步骤的描述。                                                                                                                             | string   | 是   |
+| concurrent           | 最大允许的并行执行的数量。                                                                                                                       | int   | 否   |
 | --resultKey    | 在上下文中 API 执行结果对应的名称，origin,vars为保留值不可使用。                                                                      | string   | 是   |
 | --api          | 步骤对应的 API 定义。                                                                                                                    | object   | 是   |
 | ----id         | API 定义的 ID。                                                                                                                          | string   | 是   |
+| ----concurrent           | 是否使用并行执行。                                                                                                                       | bool   | 否   |
 | ----parameters | 放在这里的定义会补充或者覆盖输入报文里的json参数。`from.from`可以指定为`StepResult`，代表从之前执行步骤的结果（和 resultKey）中提取数据。 | object[] | 否   |
 |                |                                                                                                                                          |          |      |
 | ------name        | 参数名称。                                                                                            | string   | 是   |
