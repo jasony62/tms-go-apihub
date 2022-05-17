@@ -207,6 +207,7 @@ graph TB
 | TGAH_API_DEF_PATH             | API 定义文件存放位置                                         | -       |
 | TGAH_FLOW_DEF_PATH            | 编排定义文件存放位置                                         | -       |
 | TGAH_PRIVATE_DEF_PATH         | API 定义中使用的私有数据存放位置                             | -       |
+| TGAH_PLUGIN_DEF_PATH          | plugins 定义中使用的外部动态库存放位置                       | -       |
 | TGAH_REMOTE_CONF_DOWNLOAD     | 是否从远端http服务器下载conf的json等文件，0：不下载，1：下载，下载的话需要配置下面的url | 0       |
 | TGAH_REMOTE_CONF_URL          | 从远端http服务器下载conf的json等文件                         | -       |
 | TGAH_REMOTE_CONF_STORE_FOLDER | 下载文件解压的目录                                           | ./conf  |
@@ -293,7 +294,6 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 |               |                                                                                                       |          |      |
 | response      | 返回给调用方的内容。返回的内容统一为`application/json`格式。如果不指定，直接转发目标 API 返回的内容。 | object   | 否   |
 | --json        | 返回调用方内容的模板（mustache），数组或对象。支持从被调用方返回的结果进行映射。                      | any      | 是   |
-| --path        | 插件文件的路径。                                                                                      | string   | 是   |
 
 目前系统并未使用`id`字段定位选择的 API，而是根据指定 API 定义文件的名称。
 
@@ -353,7 +353,11 @@ curl -H "Content-Type: application/json" -d '{"city": "北京"}' "http://localho
 
 # 插件
 
-插件需要在与主程序相同的环境进行编译。
+需要通过环境变量`TGAH_PLUGIN_DEF_PATH`指定插件文件存放位置，文件名（.so）。
+程序启动会导入`TGAH_PLUGIN_DEF_PATH`目录下所有的.so插件，将插件提供的函数载入hub.FuncMap和hub.FuncMapForTemplate
+插件不需要在与主程序相同的环境进行编译，但.so插件需要定义接口函数:
+func Register() (map[string](interface{}), map[string](interface{}))，其中第一个map将指定载入hub.FuncMap，第二个map将载入hub.FuncMapForTemplate使用
+
 
 # 隔离
 
