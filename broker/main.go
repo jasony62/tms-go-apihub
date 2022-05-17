@@ -171,7 +171,7 @@ func main() {
 		loadPath("TGAH_SCHEDULE_DEF_PATH", "./conf/schedules"),
 		loadPath("TGAH_PRIVATE_DEF_PATH", "./conf/privates")})
 
-	unit.LoadConfigPluginData(loadPath("TGAH_PLUGIN_DEF_PATH", "./plugins"))
+	unit.LoadConfigPluginData(loadPath("TGAH_PLUGIN_DEF_PATH", "./conf/plugins"))
 	router := gin.Default()
 	if hub.DefaultApp.BucketEnable {
 		router.Any("/api/:bucket/:Id", runApi)

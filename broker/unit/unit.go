@@ -235,25 +235,19 @@ func LoadConfigPluginData(path string) {
 		klog.Errorln(err)
 		return
 	}
-
-	num := len(fileInfoList)
-
-	klog.Infoln("\r\n")
-	klog.Infoln("Plugin def文件，本目录文件数: ", num)
 	var prefix string
 	for i := range fileInfoList {
 		fileName := fmt.Sprintf("%s/%s", path, fileInfoList[i].Name())
-		klog.Infoln("Json file: ", fileName)
 
 		if fileInfoList[i].IsDir() {
-			klog.Infoln("Json子目录: ", fileName)
+			klog.Infoln("Plugin子目录: ", fileName)
 			prefix = fileInfoList[i].Name()
 			LoadConfigPluginData(path + "/" + prefix)
-			klog.Infoln("\r\n")
 		} else {
 			if !strings.HasSuffix(fileName, ".so") {
 				continue
 			}
+			klog.Infoln("加载Plugin(*.so)文件: ", fileName)
 			p, err := plugin.Open(fileName)
 			if err != nil {
 				klog.Errorln(err)
@@ -261,14 +255,14 @@ func LoadConfigPluginData(path string) {
 			}
 
 			// 导入动态库，注册函数到hub.FuncMap
-			registerFunc, err := p.Lookup("register")
+			registerFunc, err := p.Lookup("Register")
 			if err != nil {
 				klog.Errorln(err)
 				panic(err)
 			}
-			registerFunc.(func())()
-
-			klog.Infof("加载Json文件成功！\r\n")
+			mapFunc, mapFuncForTemplate := registerFunc.(func() (map[string](interface{}), map[string](interface{})))()
+			loadPluginFuncs(mapFunc, mapFuncForTemplate)
+			klog.Infof("加载Json文件完成！\r\n")
 		}
 	}
 }
@@ -292,4 +286,25 @@ func GetBucketKey(stack *hub.Stack, fileName string) (string, string) {
 	key := initBucketKey(bucket, fileName)
 	klog.Infof("GetBucketKey key: %s, bucket: %s", key, bucket)
 	return key, bucket
+}
+
+func loadPluginFuncs(mapFunc map[string](interface{}), mapFuncForTemplate map[string](interface{})) {
+	if mapFunc != nil {
+		for k, v := range mapFunc {
+			if _, ok := hub.FuncMap[k]; ok {
+				klog.Errorf("加载(%s)失败,FuncMap存在重名函数！\r\n", k)
+			} else {
+				hub.FuncMap[k] = v
+			}
+		}
+	}
+	if mapFuncForTemplate != nil {
+		for k, v := range mapFuncForTemplate {
+			if _, ok := hub.FuncMapForTemplate[k]; ok {
+				klog.Errorf("加载(%s)失败,FuncMapForTemplate存在重名函数！\r\n", k)
+			} else {
+				hub.FuncMapForTemplate[k] = v
+			}
+		}
+	}
 }
