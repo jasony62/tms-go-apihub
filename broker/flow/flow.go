@@ -65,19 +65,18 @@ func runApi(stack *hub.Stack, step *hub.FlowStepDef) interface{} {
 	return result
 }
 func copyFlowStack(src *hub.Stack) *hub.Stack {
+	stepResult := make(map[string]interface{})
+	for k, v := range src.StepResult {
+		stepResult[k] = v
+	}
+
 	//avoid vars race conditions
-	result := hub.Stack{
+	return &hub.Stack{
 		GinContext: src.GinContext,
 		RootName:   src.RootName,
 		ChildName:  "",
-		StepResult: make(map[string]interface{}),
+		StepResult: stepResult,
 	}
-
-	for k, v := range src.StepResult {
-		result.StepResult[k] = v
-	}
-
-	return &result
 }
 
 func concurrentFlowWorker(stack *hub.Stack, steps chan concurrentFlowIn, out chan concurrentFlowOut) {
@@ -87,7 +86,7 @@ func concurrentFlowWorker(stack *hub.Stack, steps chan concurrentFlowIn, out cha
 	}
 }
 
-func waitConcurrentResult(stack *hub.Stack, out chan concurrentFlowOut, counter int) (key string) {
+func waitConcurrentFlowResult(stack *hub.Stack, out chan concurrentFlowOut, counter int) (key string) {
 	results := make(map[string]interface{}, counter)
 	for counter > 0 {
 		//等待结果
@@ -104,6 +103,7 @@ func waitConcurrentResult(stack *hub.Stack, out chan concurrentFlowOut, counter 
 	}
 	return
 }
+
 func Run(stack *hub.Stack) (interface{}, int) {
 	var lastResultKey string
 	var counter int
@@ -118,33 +118,33 @@ func Run(stack *hub.Stack) (interface{}, int) {
 		panic(err)
 	}
 
-	if flowDef.Concurrent > 1 {
-		in = make(chan concurrentFlowIn, flowDef.Concurrent)
+	if flowDef.ConcurrentNum > 1 {
+		in = make(chan concurrentFlowIn, flowDef.ConcurrentNum)
 		defer close(in)
-		out = make(chan concurrentFlowOut, flowDef.Concurrent)
+		out = make(chan concurrentFlowOut, flowDef.ConcurrentNum)
 		defer close(out)
-		for i := 0; i < flowDef.Concurrent; i++ {
+		for i := 0; i < flowDef.ConcurrentNum; i++ {
 			go concurrentFlowWorker(stack, in, out)
 		}
 	}
 
 	for i := range flowDef.Steps {
 		step := flowDef.Steps[i]
-		if flowDef.Concurrent > 1 {
+		if flowDef.ConcurrentNum > 1 {
 			if step.Concurrent {
 				in <- concurrentFlowIn{step: &step}
 				counter++
 
 				//避免并发读写ResultKey
-				if counter == flowDef.Concurrent {
-					waitConcurrentResult(stack, out, counter)
+				if counter == flowDef.ConcurrentNum {
+					waitConcurrentFlowResult(stack, out, counter)
 					counter = 0
 				}
 				continue
 			} else {
 				//避免并发读写ResultKey
 				if counter > 0 {
-					waitConcurrentResult(stack, out, counter)
+					waitConcurrentFlowResult(stack, out, counter)
 					counter = 0
 				}
 			}
@@ -155,6 +155,12 @@ func Run(stack *hub.Stack) (interface{}, int) {
 			stack.StepResult[step.ResultKey] = result
 			lastResultKey = step.ResultKey
 		}
+	}
+
+	//当最后一个step也是并行，等待全部执行完
+	if counter > 0 {
+		waitConcurrentFlowResult(stack, out, counter)
+		counter = 0
 	}
 
 	return stack.StepResult[lastResultKey], http.StatusOK

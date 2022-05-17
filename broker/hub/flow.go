@@ -25,8 +25,8 @@ type FlowStepDef struct {
 }
 
 type FlowDef struct {
-	Name        string        `json:"name"`
-	Description string        `json:"description"`
-	Concurrent  int           `json:"concurrent"`
-	Steps       []FlowStepDef `json:"steps"`
+	Name          string        `json:"name"`
+	Description   string        `json:"description"`
+	ConcurrentNum int           `json:"concurrentNum"`
+	Steps         []FlowStepDef `json:"steps"`
 }

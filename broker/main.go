@@ -25,37 +25,38 @@ func newStack(c *gin.Context) *hub.Stack {
 	var value interface{}
 	inReqData := new(interface{})
 	c.ShouldBindJSON(&inReqData)
+
 	if *inReqData == nil {
 		value = make(map[string]interface{})
 	} else {
 		value = *inReqData
 	}
 
-	result := hub.Stack{
+	name := c.Param(`Id`)
+	return &hub.Stack{
 		GinContext: c,
 		StepResult: map[string]interface{}{hub.OriginName: value},
-		RootName:   c.Param(`Id`),
+		RootName:   name,
+		ChildName:  name,
 	}
-	result.ChildName = result.RootName
-	return &result
 }
 
 // 执行1个API调用
-func runApi(c *gin.Context) {
+func callApi(c *gin.Context) {
 	// 调用api
 	result, status := api.Run(newStack(c))
 	c.IndentedJSON(status, result)
 }
 
 // 执行一个调用流程
-func runFlow(c *gin.Context) {
+func callFlow(c *gin.Context) {
 	// 执行编排
 	result, status := flow.Run(newStack(c))
 	c.IndentedJSON(status, result)
 }
 
 // 执行一个计划流程
-func runSchedule(c *gin.Context) {
+func callSchedule(c *gin.Context) {
 	// 执行编排
 	result, status := schedule.Run(newStack(c))
 	c.IndentedJSON(status, result)
@@ -174,13 +175,13 @@ func main() {
 	unit.LoadConfigPluginData(loadPath("TGAH_PLUGIN_DEF_PATH", "./plugins"))
 	router := gin.Default()
 	if hub.DefaultApp.BucketEnable {
-		router.Any("/api/:bucket/:Id", runApi)
-		router.Any("/flow:bucket/:Id", runFlow)
-		router.Any("/schedule:bucket/:Id", runSchedule)
+		router.Any("/api/:bucket/:Id", callApi)
+		router.Any("/flow:bucket/:Id", callFlow)
+		router.Any("/schedule:bucket/:Id", callSchedule)
 	} else {
-		router.Any("/api/:Id", runApi)
-		router.Any("/flow/:Id", runFlow)
-		router.Any("/schedule/:Id", runSchedule)
+		router.Any("/api/:Id", callApi)
+		router.Any("/flow/:Id", callFlow)
+		router.Any("/schedule/:Id", callSchedule)
 	}
 
 	if hub.DefaultApp.Port > 0 {

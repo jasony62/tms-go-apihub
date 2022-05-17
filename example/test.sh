@@ -20,7 +20,7 @@ curl -X POST -d '{"content": "北京的天气"}' "http://localhost:8080/api/kdxf
 echo "\r\n对输入内容提取关键词:\r\n"
 curl -X POST -d '{"content": "北京的天气"}' "http://localhost:8080/api/kdxf_nlp_ke"
 
-echo "\r\n组合文本处理结果:\r\n"
+echo "\r\n组合并行文本处理结果:\r\n"
 curl -X POST -d '{"content": "北京的天气"}' "http://localhost:8080/flow/kdxf_nlp"
 
 echo "\r\n企业微信:"
@@ -42,7 +42,7 @@ curl -i  -X POST -H "Content-Type: application/json" -d '{"text": "hello!", "seq
 
 
 echo "\r\nSCHEDULE:\r\n"
-echo "\r\n查询天气并发送企业微信"
-curl  -H "Content-Type: application/json" -d '{"cities":["sh", "bj", "sh", "sh"]}' "http://localhost:8080/schedule/amap_qywx"
+echo "\r\n并行查询天气和天气并发送企业微信"
+curl  -H "Content-Type: application/json" -d '{"cities":["sh", "bj", "sh", "sh"], "image":"https://img.zcool.cn/community/01ff2059770a25a8012193a37c7695.jpg"}' "http://localhost:8080/schedule/amap_qywx"
 
 
