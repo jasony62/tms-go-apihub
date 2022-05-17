@@ -46,7 +46,8 @@ type ApiDef struct {
 	RequestContentType string          `json:"requestContentType"`
 	Response           *ApiDefResponse `json:"response"`
 	Privates           *PrivateArray
-	Cache              *ApiCache `json:"cache"`
+	Cache              *ApiCache      `json:"cache"`
+	RespStatus         *ApiRespStatus `json:"respStatus"`
 }
 
 type ApiCache struct {
@@ -55,4 +56,10 @@ type ApiCache struct {
 	Expires time.Time        //expires time
 	Resp    interface{}      //response content
 	Locker  sync.RWMutex     //api rw lock
+}
+
+type ApiRespStatus struct {
+	From     *ApiDefParamFrom `json:"from,omitempty"`
+	Format   string           `json:"format,omitempty"`   //number or string
+	Expected string           `json:"expected,omitempty"` //expected correct code
 }
