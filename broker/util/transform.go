@@ -10,16 +10,15 @@ import (
 	klog "k8s.io/klog/v2"
 )
 
-func executeTemplate(source interface{}, rules interface{}, translate bool) *bytes.Buffer {
+func executeTemplate(source interface{}, rules interface{}) *bytes.Buffer {
 	byteTempl, _ := json.Marshal(rules)
 
 	strTempl := string(byteTempl)
-	if translate {
-		// 处理数组
-		strTempl = strings.ReplaceAll(strTempl, "\"{{range", "{{range")
-		strTempl = strings.ReplaceAll(strTempl, "end}}\"", "end}}")
-		strTempl = strings.ReplaceAll(strTempl, "\\\"", "\"")
-	}
+
+	// 处理数组
+	strTempl = strings.ReplaceAll(strTempl, "\"{{range", "{{range")
+	strTempl = strings.ReplaceAll(strTempl, "end}}\"", "end}}")
+	strTempl = strings.ReplaceAll(strTempl, "\\\"", "\"")
 
 	tmpl, err := template.New("json").Funcs(hub.FuncMapForTemplate).Parse(strTempl)
 	if err != nil {
@@ -34,7 +33,7 @@ func executeTemplate(source interface{}, rules interface{}, translate bool) *byt
 }
 
 func Json2Json(source interface{}, rules interface{}) interface{} {
-	buf := executeTemplate(source, rules, true)
+	buf := executeTemplate(source, rules)
 	var target interface{}
 	json.Unmarshal(buf.Bytes(), &target)
 	return target
@@ -46,8 +45,3 @@ func RemoveOutideQuote(s []byte) string {
 	}
 	return string(s)
 }
-
-//func HandleTemplate(source interface{}, rules interface{}) string {
-///	buf := executeTemplate(source, rules, false)
-//	return buf.String()
-//}

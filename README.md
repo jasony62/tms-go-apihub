@@ -114,20 +114,39 @@ flow是将一组API进行串行调用，并且后续API可以使用前序API的�
 ```flow
 st=>start: flow.Run
 e1=>end: 返回结果(json格式)
-e2=>end: 返回http错误码
 
 c0=>condition: 检查调用的API健康度
 c1=>condition: 入参有效性检查
-c参数=>condition: 有api.parameters
-c参数结束=>condition: 遍历api.parameters结束
-c成功=>condition: API返回成功
-cresultKey=>condition: 有resultKey
+c并行=>condition: concurrentNum>1
+c并行1=>condition: concurrentNum>1
+c并行T=>condition: concurrent==true
+c并行最大=>condition: 运行中的API==concurrentNum
 cstep结束=>condition: 遍历steps结束
-capi=>condition: 有api字段
-cResponse=>condition: 有Response字段
 
 op定义=>operation: 获取flow定义
+op协程=>operation: 创建协程
+op协程执行=>operation: 在协程中执行API
+op协程等待=>operation: 等待所有并行API结束并写入结果
+op协程等待1=>operation: 等待所有并行API结束并写入结果
+op协程等待2=>operation: 等待所有并行API结束并写入结果
 op遍历=>operation: 遍历steps列表
+op执行=>operation: 执行API
+op执行1=>operation: 执行API
+
+st->op定义->c0(yes)->c1(yes)->c并行(yes)->op协程->op遍历->c并行1(no)->op执行1->cstep结束(yes)->op协程等待1->e1
+c并行(no)->op遍历
+c并行1(yes)->c并行T(yes)->op协程执行->c并行最大(yes)->op协程等待->cstep结束
+cstep结束(no)->op遍历
+c并行最大(no)->op遍历
+c并行T(no)->op协程等待2->op执行->cstep结束
+
+```
+单个API执行过程
+```flow
+st=>start: 根据api.id查找api定义
+e1=>end: 返回结果(json格式)
+e2=>end: 返回http错误码
+
 op查找=>operation: 根据api.id查找api定义
 op遍历参数=>operation: parameters
 op执行=>operation: 执行api
@@ -136,16 +155,19 @@ op生成入参=>operation: 生成API的入参
 op存入结果=>operation: 将返回的json存入StepResult
 op改写=>operation: 生成一个新的response
 
-st->op定义->c0(yes)->c1(yes)->op遍历->op查找->capi(yes)->c参数(yes)->op遍历参数->op生成入参->c参数结束(yes)->op执行->c成功(yes)->cresultKey(yes)->op存入结果->cstep结束(yes)->e1
-c0(no)->e2
-c1(no)->e2
+c参数=>condition: 有api.parameters
+c参数结束=>condition: 遍历api.parameters结束
+c成功=>condition: API返回成功
+cresultKey=>condition: 有resultKey
+
+capi=>condition: 有api字段
+cResponse=>condition: 有Response字段
+
+op查找->capi(yes)->c参数(yes)->op遍历参数->op生成入参->c参数结束(yes)->op执行->c成功(yes)->cresultKey(yes)->op存入结果
+c成功(no)->e2
 c参数结束(no)->op遍历参数
 c参数(no)->op执行
-c成功(no)->e2
-cstep结束(no)->op遍历
-cresultKey(no)->cstep结束
-capi(no, right)->cResponse(yes)->op改写->cresultKey
-cResponse(no)->cresultKey
+
 ```
 ## schedule调用流程
 ```mermaid
@@ -306,7 +328,7 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 | steps          | 调用API的步骤。每个步骤对应 1 个 API 的调用。API 必须是已定义。                                                                       | object[] | 是   |
 | --name         | 步骤的名称。                                                                                                                             | string   | 是   |
 | --description  | 步骤的描述。                                                                                                                             | string   | 是   |
-| concurrent           | 最大允许的并行执行的数量。                                                                                                                       | int   | 否   |
+| concurrentNum           | 最大允许的并行执行的数量。                                                                                                                       | int   | 否   |
 | --resultKey    | 在上下文中 API 执行结果对应的名称，origin,vars为保留值不可使用。                                                                      | string   | 是   |
 | --api          | 步骤对应的 API 定义。                                                                                                                    | object   | 是   |
 | ----id         | API 定义的 ID。                                                                                                                          | string   | 是   |
@@ -346,10 +368,6 @@ curl -H "Content-Type: application/json" -d '{"city": "北京"}' "http://localho
 ```
 curl -H "Content-Type: application/json" -d '{"city": "北京"}' "http://localhost:8080/flow/amap_city_weather"
 ```
-
-## 数据转换模板
-
-待补充
 
 # 插件
 

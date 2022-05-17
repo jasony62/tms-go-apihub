@@ -1,7 +1,7 @@
 {
   "name": "kdxf_nlp",
   "description": "处理用户输入文本",
-  "concurrent": 2,
+  "concurrentNum": 2,
   "steps": [
     {
       "name": "input_cws",

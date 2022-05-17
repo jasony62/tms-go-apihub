@@ -1,13 +1,15 @@
 {
     "name": "handle_send",
     "description": "处理输入并发送微信",
+    "ConcurrentNum": 2,
     "tasks": [
         {
             "type": "control",
             "name": "myloop",
             "command": "loop",
             "resultKey": "myloop",
-            "Concurrent": 2,
+            "concurrent": true,
+            "concurrentLoopNum": 2,
             "key": {
                 "from": "template",
                 "name": "{{len .origin.cities}}"
@@ -62,6 +64,22 @@
         },
         {
             "type": "flow",
+            "name": "image",
+            "command": "baidu_image_classify",
+            "Concurrent": true,
+            "resultKey": "image",
+            "parameters": [
+                {
+                    "name": "content",
+                    "from": {
+                        "from": "origin",
+                        "name": "image"
+                    }
+                }
+            ]
+        },        
+        {
+            "type": "flow",
             "name": "message",
             "command": "qywx_message_send",
             "parameters": [
@@ -69,7 +87,7 @@
                     "name": "content",
                     "from": {
                         "from": "template",
-                        "name": "{{range $i,$v := .myloop}}{{if $i}},{{end}}{{$v.data.region}} weather is {{$v.data.weather}}{{end}}"
+                        "name": "{{range $i,$v := .myloop}}{{if $i}},{{end}}{{$v.data.region}} weather is {{$v.data.weather}}{{end}}, and image is {{(index .image.result 0).name}}"
                     }
                 },
                 {
