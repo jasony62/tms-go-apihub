@@ -99,7 +99,7 @@ func generatePath(env string, inDefault string) string {
 	return result
 }
 
-func loadConf() bool {
+func downloadConf() bool {
 	//从远端下载conf
 	confUrl := os.Getenv("TGAH_REMOTE_CONF_URL")
 	if len(confUrl) > 0 {
@@ -158,7 +158,7 @@ func main() {
 	hub.DefaultApp.BucketEnable = re.MatchString(BucketEnable)
 	klog.Infoln("bucket enable ", hub.DefaultApp.BucketEnable)
 
-	if loadConf() {
+	if downloadConf() {
 		klog.Infoln("Download conf zip package from remote url OK")
 	}
 

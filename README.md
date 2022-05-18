@@ -335,6 +335,19 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 |               |                                                                                                       |          |      |
 | response      | 返回给调用方的内容。返回的内容统一为`application/json`格式。如果不指定，直接转发目标 API 返回的内容。 | object   | 否   |
 | --json        | 返回调用方内容的模板（mustache），数组或对象。支持从被调用方返回的结果进行映射。                      | any      | 是   |
+|               |                                                                                                       |          |      |
+| cache | HTTP请求是否支持缓存模式，如果支持，在过期时间内，将不会再向服务器请求，而是直接返回缓存内容。 | object | 否 |
+| --from | 指定过期时间的获取位置。 | object | 是 |
+| --format | 指定过期时间的解析格式。分为秒“second”和具体时间格式，如：“20060102150405” | string | 是 |
+| ----from | 获取过期时间的位置，是从header域中获取的话，则设置为“header”，如果从body中获取，则设置为“template” | string | 是 |
+| ----name | 过期时间域的名称，或者template的内容。 | string | 是 |
+|          |                                        |        |    |
+| respStatus | 指定回应body体中的状态码 | object | 否 |
+| --from | 指定状态码的获取位置。 | object | 是 |
+| --format | 指定状态码的解析格式。分为数字“number”和string | string | 是 |
+| --expected | 状态码的期望正确值 | string | 是 |
+| ----from | 获取状态码的位置，从body中获取，则设置为“template” | string | 是 |
+| ----name | 状态码的名称，或者template的内容。 | string | 是 |
 
 目前系统并未使用`id`字段定位选择的 API，而是根据指定 API 定义文件的名称。
 
