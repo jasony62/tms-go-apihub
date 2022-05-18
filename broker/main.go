@@ -80,7 +80,7 @@ func init() {
 	flag.StringVar(&envfile, "env", "", "指定环境变量文件")
 }
 
-func loadPath(env string, inDefault string) string {
+func generatePath(env string, inDefault string) string {
 	result := os.Getenv(env)
 	if result == "" {
 		klog.Infoln("没有通过环境变量", env, "指定API定义文件存放位置")
@@ -100,11 +100,9 @@ func loadPath(env string, inDefault string) string {
 }
 
 func loadConf() bool {
-	downUrl := os.Getenv("TGAH_REMOTE_CONF_DOWNLOAD")
-
-	if downUrl == "1" {
-		//从远端下载conf
-		confUrl := os.Getenv("TGAH_REMOTE_CONF_URL")
+	//从远端下载conf
+	confUrl := os.Getenv("TGAH_REMOTE_CONF_URL")
+	if len(confUrl) > 0 {
 		filename, err := util.DownloadFile(confUrl)
 		if err != nil {
 			klog.Errorln("Download conf file err: ", err)
@@ -124,12 +122,9 @@ func loadConf() bool {
 				return false
 			}
 		}
-	} else {
-		klog.Warningln("TGAH_REMOTE_CONF_DOWNLOAD not 1, use local conf!")
-		return false
+		return true
 	}
-
-	return true
+	return false
 }
 
 func main() {
@@ -167,12 +162,12 @@ func main() {
 		klog.Infoln("Download conf zip package from remote url OK")
 	}
 
-	unit.LoadConfigJsonData([]string{loadPath("TGAH_API_DEF_PATH", "./conf/apis"),
-		loadPath("TGAH_FLOW_DEF_PATH", "./conf/flows"),
-		loadPath("TGAH_SCHEDULE_DEF_PATH", "./conf/schedules"),
-		loadPath("TGAH_PRIVATE_DEF_PATH", "./conf/privates")})
+	unit.LoadConfigJsonData([]string{generatePath("TGAH_API_DEF_PATH", "./conf/apis"),
+		generatePath("TGAH_FLOW_DEF_PATH", "./conf/flows"),
+		generatePath("TGAH_SCHEDULE_DEF_PATH", "./conf/schedules"),
+		generatePath("TGAH_PRIVATE_DEF_PATH", "./conf/privates")})
 
-	unit.LoadConfigPluginData(loadPath("TGAH_PLUGIN_DEF_PATH", "./conf/plugins"))
+	unit.LoadConfigPluginData(generatePath("TGAH_PLUGIN_DEF_PATH", "./conf/plugins"))
 	router := gin.Default()
 	if hub.DefaultApp.BucketEnable {
 		router.Any("/api/:bucket/:Id", callApi)
