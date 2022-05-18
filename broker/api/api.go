@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strconv"
+
 	"strings"
 	"time"
 
@@ -29,52 +29,18 @@ func Run(stack *hub.Stack) (interface{}, int) {
 		panic(err)
 	}
 
-	var jsonInRspBody interface{}
 	var jsonOutRspBody interface{}
 
-	//json反序列化是造成整数的精度丢失，所以使用一个扩展的json工具做反序列化
-	jsonEx := jsoniter.Config{
-		UseNumber: true,
-	}.Froze()
-
 	if apiDef.Cache != nil { //如果Json文件中配置了cache，表示支持缓存
-		if content := GetCacheContentWithLock(apiDef); content == nil {
+		if content := getCacheContentWithLock(apiDef); content == nil {
 			defer apiDef.Cache.Locker.Unlock()
 			apiDef.Cache.Locker.Lock()
 
-			if content = GetCacheContent(apiDef); content == nil {
+			if content = getCacheContent(apiDef); content == nil {
 				klog.Infoln("获取缓存Cache ... ...")
-				outReq := NewRequest(stack, apiDef)
-				// 发出请求
-				client := &http.Client{}
-				resp, err := client.Do(outReq)
-				if err != nil {
-					klog.Errorln("err", err)
+				jsonOutRspBody, _ = handleReq(stack, apiDef)
+				if jsonOutRspBody == nil {
 					return nil, 500
-				}
-				defer resp.Body.Close()
-				returnBody, _ := io.ReadAll(resp.Body)
-
-				// 将收到的结果转为JSON对象
-				jsonEx.Unmarshal(returnBody, &jsonInRspBody)
-				stack.StepResult[hub.ResultName] = jsonInRspBody
-
-				if !HandleRespStatus(stack, apiDef) {
-					klog.Errorln("消息体中返回码显示不成功，回应错误")
-					return nil, 500
-				}
-
-				// 构造发送的响应内容
-				jsonOutRspBody = NewOutRspBody(apiDef, jsonInRspBody)
-
-				//解析过期时间，如果存在则记录下来
-				expires, ok := HandleExpireTime(stack, apiDef, resp)
-				if !ok {
-					klog.Warningln("没有查询到过期时间")
-				} else {
-					klog.Infof("更新Cache信息，过期时间为: %v", expires)
-					apiDef.Cache.Expires = expires
-					apiDef.Cache.Resp = jsonOutRspBody
 				}
 			} else {
 				klog.Infoln("Cache缓存有效，直接回应")
@@ -85,31 +51,60 @@ func Run(stack *hub.Stack) (interface{}, int) {
 			jsonOutRspBody = content
 		}
 	} else { //不支持缓存，直接请求
-		//klog.Infoln("不支持Cache缓存 ... ...")
-		outReq := NewRequest(stack, apiDef)
-		// 发出请求
-		client := &http.Client{}
-		resp, err := client.Do(outReq)
-		if err != nil {
-			klog.Errorln("err", err)
+		klog.Infoln("不支持Cache缓存 ... ...")
+		jsonOutRspBody, _ = handleReq(stack, apiDef)
+		if jsonOutRspBody == nil {
 			return nil, 500
 		}
-		defer resp.Body.Close()
-		returnBody, _ := io.ReadAll(resp.Body)
-
-		// 将收到的结果转为JSON对象
-		jsonEx.Unmarshal(returnBody, &jsonInRspBody)
-		stack.StepResult[hub.ResultName] = jsonInRspBody
-
-		if !HandleRespStatus(stack, apiDef) {
-			klog.Errorln("消息体中返回码显示不成功，回应错误")
-			return nil, 500
-		}
-		jsonOutRspBody = NewOutRspBody(apiDef, jsonInRspBody)
 	}
 
 	klog.Infoln("处理", apiDef.Url, ":", http.StatusOK, "\r\n返回结果：", jsonOutRspBody)
 	return jsonOutRspBody, http.StatusOK
+}
+
+func handleReq(stack *hub.Stack, apiDef *hub.ApiDef) (interface{}, int) {
+	var jsonInRspBody interface{}
+
+	//json反序列化是造成整数的精度丢失，所以使用一个扩展的json工具做反序列化
+	jsonEx := jsoniter.Config{
+		UseNumber: true,
+	}.Froze()
+
+	outReq := newRequest(stack, apiDef)
+	// 发出请求
+	client := &http.Client{}
+	resp, err := client.Do(outReq)
+	if err != nil {
+		klog.Errorln("err", err)
+		return nil, 500
+	}
+	defer resp.Body.Close()
+	returnBody, _ := io.ReadAll(resp.Body)
+
+	// 将收到的结果转为JSON对象
+	jsonEx.Unmarshal(returnBody, &jsonInRspBody)
+	stack.StepResult[hub.ResultName] = jsonInRspBody
+
+	if !handleRespStatus(stack, apiDef) {
+		klog.Errorln("消息体中返回码显示不成功，回应错误")
+		return nil, 500
+	}
+
+	out := NewOutRspBody(apiDef, jsonInRspBody)
+
+	if apiDef.Cache != nil {
+		//解析过期时间，如果存在则记录下来
+		expires, ok := handleExpireTime(stack, apiDef, resp)
+		if !ok {
+			klog.Warningln("没有查询到过期时间")
+		} else {
+			klog.Infof("更新Cache信息，过期时间为: %v", expires)
+			apiDef.Cache.Expires = expires
+			apiDef.Cache.Resp = out
+		}
+	}
+
+	return out, http.StatusOK
 }
 
 // 构造发送的响应内容
@@ -124,7 +119,7 @@ func NewOutRspBody(apiDef *hub.ApiDef, in interface{}) interface{} {
 	return out
 }
 
-func NewRequest(stack *hub.Stack, apiDef *hub.ApiDef) *http.Request {
+func newRequest(stack *hub.Stack, apiDef *hub.ApiDef) *http.Request {
 	var formBody *http.Request
 	var outBody string
 	var hasBody bool
@@ -225,16 +220,16 @@ func NewRequest(stack *hub.Stack, apiDef *hub.ApiDef) *http.Request {
 	return outReq
 }
 
-func HandleExpireTime(stack *hub.Stack, apiDef *hub.ApiDef, resp *http.Response) (time.Time, bool) {
+func handleExpireTime(stack *hub.Stack, apiDef *hub.ApiDef, resp *http.Response) (time.Time, bool) {
 	klog.Infoln("获得参数，[src]:", apiDef.Cache.From.From, "; [key]:", apiDef.Cache.From.Name, "; [format]:", apiDef.Cache.Format)
 	if strings.EqualFold(apiDef.Cache.From.From, "header") {
-		return HandleHeaderExpireTime(apiDef, resp)
+		return handleHeaderExpireTime(apiDef, resp)
 	} else {
-		return HandleBodyExpireTime(stack, apiDef)
+		return handleBodyExpireTime(stack, apiDef)
 	}
 }
 
-func HandleHeaderExpireTime(apiDef *hub.ApiDef, resp *http.Response) (time.Time, bool) {
+func handleHeaderExpireTime(apiDef *hub.ApiDef, resp *http.Response) (time.Time, bool) {
 	//首先在api 的json文件中配置参数 cache
 	// "cache": {
 	// 	"from": {
@@ -266,7 +261,7 @@ func HandleHeaderExpireTime(apiDef *hub.ApiDef, resp *http.Response) (time.Time,
 					semicolonIndex = 0
 				}
 
-				expires, err := ParseExpireTime(cookie[expiresIndex+len(key)+1:expiresIndex+semicolonIndex], format)
+				expires, err := parseExpireTime(cookie[expiresIndex+len(key)+1:expiresIndex+semicolonIndex], format)
 				if err == nil {
 					return expires, true
 				}
@@ -274,7 +269,7 @@ func HandleHeaderExpireTime(apiDef *hub.ApiDef, resp *http.Response) (time.Time,
 		}
 	} else {
 		//判断是否含有Expires 的header
-		expires, err := ParseExpireTime(resp.Header.Get(key), format)
+		expires, err := parseExpireTime(resp.Header.Get(key), format)
 		if err == nil {
 			return expires, true
 		}
@@ -283,7 +278,7 @@ func HandleHeaderExpireTime(apiDef *hub.ApiDef, resp *http.Response) (time.Time,
 	return time.Time{}, false
 }
 
-func HandleBodyExpireTime(stack *hub.Stack, apiDef *hub.ApiDef) (time.Time, bool) {
+func handleBodyExpireTime(stack *hub.Stack, apiDef *hub.ApiDef) (time.Time, bool) {
 	//首先在api 的json文件中配置参数 cache
 	// "cache": {
 	// 	"from": {
@@ -300,9 +295,9 @@ func HandleBodyExpireTime(stack *hub.Stack, apiDef *hub.ApiDef) (time.Time, bool
 	format := apiDef.Cache.Format
 	result := unit.GetParameterValue(stack, nil, apiDef.Cache.From)
 
-	klog.Infof("HandleBodyExpireTime:", result)
+	klog.Infof("handleBodyExpireTime:", result)
 
-	formatTime, err := ParseExpireTime(result, format)
+	formatTime, err := parseExpireTime(result, format)
 	if err == nil {
 		return formatTime, true
 	}
@@ -310,24 +305,18 @@ func HandleBodyExpireTime(stack *hub.Stack, apiDef *hub.ApiDef) (time.Time, bool
 	return time.Time{}, false
 }
 
-func ParseExpireTime(v interface{}, format string) (time.Time, error) {
+func parseExpireTime(value string, format string) (time.Time, error) {
 	var exptime time.Time
 	var err error
 
 	if strings.EqualFold(format, "second") {
-		seconds := GetInterfaceToInt(v)
+		seconds := util.GetInterfaceToInt(value)
 		klog.Infoln("解析后过期秒数: ", seconds)
 		exptime = time.Now().Add(time.Second * time.Duration(seconds))
 	} else {
-		str, ok := v.(string)
-		if ok {
-			exptime, err = time.Parse(format, str)
-			if err != nil {
-				klog.Errorln("解析过期时间失败, err: ", err)
-				return time.Time{}, errors.New("Parse expires failed")
-			}
-		} else {
-			klog.Errorln("解析过期时间失败, value: ", v)
+		exptime, err = time.Parse(format, value)
+		if err != nil {
+			klog.Errorln("解析过期时间失败, err: ", err)
 			return time.Time{}, errors.New("Parse expires failed")
 		}
 	}
@@ -335,7 +324,7 @@ func ParseExpireTime(v interface{}, format string) (time.Time, error) {
 	return exptime.Local(), nil
 }
 
-func GetCacheContent(apiDef *hub.ApiDef) interface{} {
+func getCacheContent(apiDef *hub.ApiDef) interface{} {
 	//如果支持缓存，判断过期时间
 	if time.Now().Local().After(apiDef.Cache.Expires) {
 		return nil
@@ -343,7 +332,7 @@ func GetCacheContent(apiDef *hub.ApiDef) interface{} {
 	return apiDef.Cache.Resp
 }
 
-func GetCacheContentWithLock(apiDef *hub.ApiDef) interface{} {
+func getCacheContentWithLock(apiDef *hub.ApiDef) interface{} {
 	//如果支持缓存，判断过期时间
 	apiDef.Cache.Locker.RLock()
 	defer apiDef.Cache.Locker.RUnlock()
@@ -353,45 +342,12 @@ func GetCacheContentWithLock(apiDef *hub.ApiDef) interface{} {
 	return apiDef.Cache.Resp
 }
 
-func HandleRespStatus(stack *hub.Stack, apiDef *hub.ApiDef) bool {
+func handleRespStatus(stack *hub.Stack, apiDef *hub.ApiDef) bool {
 	if apiDef.RespStatus == nil { //如果没有定义，则直接返回正确
 		return true
 	}
 
 	result := unit.GetParameterValue(stack, nil, apiDef.RespStatus.From)
-	klog.Infoln("HandleRespStatus 结果", result)
+	klog.Infoln("handleRespStatus 结果", result)
 	return apiDef.RespStatus.Expected == result
-}
-
-func GetInterfaceToInt(in interface{}) int {
-	var value int
-	switch in.(type) {
-	case uint:
-		value = int(in.(uint))
-	case int8:
-		value = int(in.(int8))
-	case uint8:
-		value = int(in.(uint8))
-	case int16:
-		value = int(in.(int16))
-	case uint16:
-		value = int(in.(uint16))
-	case int32:
-		value = int(in.(int32))
-	case uint32:
-		value = int(in.(uint32))
-	case int64:
-		value = int(in.(int64))
-	case uint64:
-		value = int(in.(uint64))
-	case float32:
-		value = int(in.(float32))
-	case float64:
-		value = int(in.(float64))
-	case string:
-		value, _ = strconv.Atoi(in.(string))
-	default:
-		value = in.(int)
-	}
-	return value
 }
