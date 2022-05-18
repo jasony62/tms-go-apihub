@@ -49,7 +49,7 @@ func copyScheduleStack(src *hub.Stack, task *hub.ScheduleTaskDef) *hub.Stack {
 	result := hub.Stack{
 		GinContext: src.GinContext,
 		RootName:   src.RootName,
-		ChildName:  task.Commond,
+		ChildName:  task.Name,
 		StepResult: make(map[string]interface{}),
 	}
 
@@ -102,23 +102,29 @@ func concurrentLoopWorker(tasks chan concurrentLoopIn, out chan concurrentLoopOu
 }
 
 func triggerConcurrentLoop(stack *hub.Stack, task *hub.ScheduleTaskDef, max int, loop map[string]int, loopResult []interface{}) {
-	var taskCount int
-	done := max
+	var taskCount, msgCount int
+	counter := max
+
 	if task.ConcurrentLoopNum > max {
 		taskCount = max
+		msgCount = max
 	} else {
 		taskCount = task.ConcurrentLoopNum
+		msgCount = taskCount * 2
+		if msgCount > max {
+			msgCount = max
+		}
 	}
 
-	in := make(chan concurrentLoopIn, taskCount)
+	in := make(chan concurrentLoopIn, msgCount)
 	defer close(in)
-	out := make(chan concurrentLoopOut, taskCount)
+	out := make(chan concurrentLoopOut, msgCount)
 	defer close(out)
 
 	i := 0
 
-	for ; i < taskCount; i++ {
-		loop[task.Name] = i
+	for ; i < msgCount; i++ {
+		loop[task.ResultKey] = i
 		tmpStack := copyScheduleStack(stack, task)
 		in <- concurrentLoopIn{index: i, stack: tmpStack, task: task.Tasks}
 	}
@@ -127,16 +133,17 @@ func triggerConcurrentLoop(stack *hub.Stack, task *hub.ScheduleTaskDef, max int,
 		go concurrentLoopWorker(in, out)
 	}
 
+	i = msgCount
 	for result := range out {
 		loopResult[result.index] = result.result
-		done--
+		counter--
 		if i < max {
-			loop[task.Name] = i
+			loop[task.ResultKey] = i
 			tmpStack := copyScheduleStack(stack, task)
 			in <- concurrentLoopIn{index: i, stack: tmpStack, task: task.Tasks}
 			i++
 		} else {
-			if done == 0 {
+			if counter == 0 {
 				break
 			}
 		}
@@ -154,7 +161,7 @@ func handleLoopTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{}, i
 	}
 	max, _ := strconv.Atoi(keyStr)
 	loopResult := make([]interface{}, max)
-	if len(task.ResultKey) > 0 {
+	if !task.Concurrent && len(task.ResultKey) > 0 {
 		stack.StepResult[task.ResultKey] = loopResult
 	}
 
@@ -172,7 +179,7 @@ func handleLoopTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{}, i
 }
 
 func handleControlTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{}, int) {
-	switch task.Commond {
+	switch task.Name {
 	case "switch":
 		if task.Cases != nil {
 			return handleSwitchTask(stack, task)
@@ -196,7 +203,7 @@ func handleFlowTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (result interfa
 	// 执行编排
 	result, status = flow.Run(tmpStack)
 
-	if len(task.ResultKey) > 0 {
+	if !task.Concurrent && len(task.ResultKey) > 0 {
 		stack.StepResult[task.ResultKey] = result
 	}
 	return
@@ -208,13 +215,13 @@ func handleApiTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (result interfac
 	// 执行API
 	result, status = api.Run(tmpStack)
 
-	if len(task.ResultKey) > 0 {
+	if !task.Concurrent && len(task.ResultKey) > 0 {
 		stack.StepResult[task.ResultKey] = result
 	}
 	return
 }
-func runTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (result interface{}, status int) {
-	if len(task.Type) > 0 && len(task.Commond) > 0 {
+func handleOneTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (result interface{}, status int) {
+	if len(task.Type) > 0 && len(task.Name) > 0 {
 		switch task.Type {
 		case "control":
 			result, status = handleControlTask(stack, task)
@@ -233,19 +240,21 @@ func runTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (result interface{}, s
 
 func concurrentScheWorker(stack *hub.Stack, tasks chan concurrentScheIn, out chan concurrentScheOut) {
 	for task := range tasks {
-		result, _ := runTask(stack, task.task)
+		result, _ := handleOneTask(stack, task.task)
 		out <- concurrentScheOut{task: task.task, result: result}
 	}
 }
 
-func waitConcurrentScheResult(stack *hub.Stack, out chan concurrentScheOut, counter int) (key string) {
+func waitConcurrentScheResult(stack *hub.Stack, out chan concurrentScheOut, counter int) interface{} {
 	results := make(map[string]interface{}, counter)
+	var lastKey string
 	for counter > 0 {
 		//等待结果
 		result := <-out
-		key = result.task.ResultKey
+		key := result.task.ResultKey
 		if len(key) > 0 {
 			results[key] = result.result
+			lastKey = key
 		}
 		counter--
 	}
@@ -253,7 +262,9 @@ func waitConcurrentScheResult(stack *hub.Stack, out chan concurrentScheOut, coun
 	for k, v := range results {
 		stack.StepResult[k] = v
 	}
-	return
+
+	//由于并行，最后的结果并不确定，所以并行的返回结果不是固定的，因此当需要返回值时，最后一个应该是非并行的
+	return results[lastKey]
 }
 
 func handleTasks(stack *hub.Stack, tasks *[]hub.ScheduleTaskDef, concurrentNum int) (result interface{}, status int) {
@@ -262,9 +273,10 @@ func handleTasks(stack *hub.Stack, tasks *[]hub.ScheduleTaskDef, concurrentNum i
 	var out chan concurrentScheOut
 
 	if concurrentNum > 1 {
-		in = make(chan concurrentScheIn, concurrentNum)
+		/*假设所有的task都是并行的，多留buffer，提升性能*/
+		in = make(chan concurrentScheIn, len(*tasks))
 		defer close(in)
-		out = make(chan concurrentScheOut, concurrentNum)
+		out = make(chan concurrentScheOut, len(*tasks))
 		defer close(out)
 		for i := 0; i < concurrentNum; i++ {
 			go concurrentScheWorker(stack, in, out)
@@ -277,27 +289,22 @@ func handleTasks(stack *hub.Stack, tasks *[]hub.ScheduleTaskDef, concurrentNum i
 			if task.Concurrent {
 				in <- concurrentScheIn{task: task}
 				counter++
-
-				//避免并发读写ResultKey
-				if counter == concurrentNum {
-					waitConcurrentScheResult(stack, out, counter)
-					counter = 0
-				}
 				continue
 			} else {
 				//避免并发读写ResultKey
 				if counter > 0 {
-					waitConcurrentScheResult(stack, out, counter)
+					result = waitConcurrentScheResult(stack, out, counter)
 					counter = 0
 				}
 			}
 		}
 
-		result, status = runTask(stack, task)
+		result, status = handleOneTask(stack, task)
 	}
+
+	//防止都是并行任务
 	if counter > 0 {
-		waitConcurrentScheResult(stack, out, counter)
-		counter = 0
+		result = waitConcurrentScheResult(stack, out, counter)
 	}
 	return result, status
 }

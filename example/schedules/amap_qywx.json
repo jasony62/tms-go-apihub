@@ -5,8 +5,7 @@
     "tasks": [
         {
             "type": "control",
-            "name": "myloop",
-            "command": "loop",
+            "name": "loop",
             "resultKey": "myloop",
             "concurrent": true,
             "concurrentLoopNum": 2,
@@ -17,8 +16,7 @@
             "tasks": [
                 {
                     "type": "control",
-                    "name": "chooseType",
-                    "command": "switch",
+                    "name": "switch",
                     "key": {
                         "from": "template",
                         "name": "{{index .origin.cities .loop.myloop}}"
@@ -29,8 +27,7 @@
                             "tasks": [
                                 {
                                     "type": "flow",
-                                    "name": "amap_city_weather_sh",
-                                    "command": "amap_city_weather",
+                                    "name": "amap_city_weather",
                                     "resultKey": "weather",
                                     "parameters": [
                                         {
@@ -46,8 +43,7 @@
                             "tasks": [
                                 {
                                     "type": "flow",
-                                    "name": "amap_city_weather_bj",
-                                    "command": "amap_city_weather",
+                                    "name": "amap_city_weather",
                                     "resultKey": "weather",
                                     "parameters": [
                                         {
@@ -64,8 +60,7 @@
         },
         {
             "type": "flow",
-            "name": "image",
-            "command": "baidu_image_classify",
+            "name": "baidu_image_classify",
             "Concurrent": true,
             "resultKey": "image",
             "parameters": [
@@ -80,8 +75,7 @@
         },        
         {
             "type": "flow",
-            "name": "message",
-            "command": "qywx_message_send",
+            "name": "qywx_message_send",
             "parameters": [
                 {
                     "name": "content",

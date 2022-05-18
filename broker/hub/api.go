@@ -27,27 +27,24 @@ type ApiDefPlugin struct {
 	Path string `json:"path"`
 }
 
-type PrivatePairs struct {
-	Name  string `json:"name"`
-	Value string `json:"value"`
-}
-
-type PrivateArray struct {
-	Pairs *[]PrivatePairs `json:"privates"`
-}
-
 type ApiDef struct {
-	Id                 string          `json:"id"`
-	Url                string          `json:"url"`
-	Description        string          `json:"description"`
-	Method             string          `json:"method"`
-	PrivateName        string          `json:"private"`
+	Id                 string `json:"id"`
+	Url                string `json:"url"`
+	Description        string `json:"description"`
+	Method             string `json:"method"`
+	PrivateName        string `json:"private"`
+	Privates           *PrivateArray
 	Parameters         *[]ApiDefParam  `json:"parameters"`
 	RequestContentType string          `json:"requestContentType"`
 	Response           *ApiDefResponse `json:"response"`
-	Privates           *PrivateArray
-	Cache              *ApiCache      `json:"cache"`
-	RespStatus         *ApiRespStatus `json:"respStatus"`
+	Cache              *ApiCache       `json:"cache"`
+	RespStatus         *ApiRespStatus  `json:"respStatus"`
+}
+
+type ApiRespStatus struct {
+	From     *ApiDefParamFrom `json:"from,omitempty"`
+	Format   string           `json:"format,omitempty"`   //number or string
+	Expected string           `json:"expected,omitempty"` //expected correct code
 }
 
 type ApiCache struct {
@@ -56,10 +53,4 @@ type ApiCache struct {
 	Expires time.Time        //expires time
 	Resp    interface{}      //response content
 	Locker  sync.RWMutex     //api rw lock
-}
-
-type ApiRespStatus struct {
-	From     *ApiDefParamFrom `json:"from,omitempty"`
-	Format   string           `json:"format,omitempty"`   //number or string
-	Expected string           `json:"expected,omitempty"` //expected correct code
 }

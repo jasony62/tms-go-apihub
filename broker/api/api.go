@@ -85,7 +85,7 @@ func Run(stack *hub.Stack) (interface{}, int) {
 			jsonOutRspBody = content
 		}
 	} else { //不支持缓存，直接请求
-		klog.Infoln("不支持Cache缓存 ... ...")
+		//klog.Infoln("不支持Cache缓存 ... ...")
 		outReq := NewRequest(stack, apiDef)
 		// 发出请求
 		client := &http.Client{}

@@ -11,7 +11,6 @@ type ScheduleTaskDef struct {
 	Name              string          `json:"name"`
 	Description       string          `json:"description"`
 	ResultKey         string          `json:"resultKey"`
-	Commond           string          `json:"command"`
 	Key               ApiDefParamFrom `json:"key"`
 	ConcurrentNum     int             `json:"concurrentNum,omitempty"`
 	ConcurrentLoopNum int             `json:"concurrentLoopNum,omitempty"`
