@@ -143,13 +143,10 @@ func LoadConfigJsonData(paths []string) {
 
 	klog.Infoln("加载API def文件...")
 	LoadJsonDefData(JSON_TYPE_API, paths[JSON_TYPE_API], "")
-	klog.Infoln("\r\n")
 	klog.Infoln("加载Flow def文件...")
 	LoadJsonDefData(JSON_TYPE_FLOW, paths[JSON_TYPE_FLOW], "")
-	klog.Infoln("\r\n")
 	klog.Infoln("加载Schedule def文件...")
 	LoadJsonDefData(JSON_TYPE_SCHEDULE, paths[JSON_TYPE_SCHEDULE], "")
-	klog.Infoln("\r\n")
 	klog.Infoln("加载Private def文件...")
 	LoadJsonDefData(JSON_TYPE_PRIVATE, paths[JSON_TYPE_PRIVATE], "")
 }
@@ -161,21 +158,13 @@ func LoadJsonDefData(jsonType int, path string, prefix string) {
 		return
 	}
 
-	num := len(fileInfoList)
-
-	klog.Infoln("\r\n")
-	klog.Infoln("加载Json def文件，本目录文件数: ", num)
-
 	oldPrefix := prefix
 	for i := range fileInfoList {
 		fileName := fmt.Sprintf("%s/%s", path, fileInfoList[i].Name())
-		klog.Infoln("Json file: ", fileName)
 
 		if fileInfoList[i].IsDir() {
-			klog.Infoln("Json子目录: ", fileName)
 			prefix = fileInfoList[i].Name()
 			LoadJsonDefData(jsonType, path+"/"+prefix, prefix)
-			klog.Infoln("\r\n")
 		} else {
 			prefix = oldPrefix
 

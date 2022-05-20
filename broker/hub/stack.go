@@ -5,6 +5,7 @@ import (
 	"html/template"
 
 	"github.com/gin-gonic/gin"
+	klog "k8s.io/klog/v2"
 )
 
 type Stack struct {
@@ -22,8 +23,15 @@ func (stack Stack) Query(name string) string {
 
 // 从执行结果中获取查询参数
 func (stack Stack) QueryFromStepResult(name string) string {
-	tmpl, _ := template.New("key").Funcs(FuncMapForTemplate).Parse(name)
+	tmpl, err := template.New("key").Funcs(FuncMapForTemplate).Parse(name)
+	if err != nil {
+		klog.Infoln("QueryFromStepResult 创建并解析template失败:", err)
+		return ""
+	}
 	buf := new(bytes.Buffer)
-	tmpl.Execute(buf, stack.StepResult)
+	err = tmpl.Execute(buf, stack.StepResult)
+	if err != nil {
+		klog.Infoln("渲染template失败:", err)
+	}
 	return buf.String()
 }

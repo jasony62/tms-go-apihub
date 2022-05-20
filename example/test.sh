@@ -7,8 +7,11 @@ curl -H "Content-Type: application/json" -d '{"city": "北京"}' "http://localho
 echo "\r\n\r\n根据区域编码获得天气数据:\r\n"
 curl -H "Content-Type: application/json" -d '{"city": "110100"}' "http://localhost:8080/api/amap_weather"
 
-echo "\r\n通过编排实现直接指定城市名称获得天气数据:\r\n"
+echo "\r\n通过编排实现直接指定城市名称获得天气数据Json格式:\r\n"
 curl -H "Content-Type: application/json" -d '{"city": "北京"}' "http://localhost:8080/flow/amap_city_weather"
+
+echo "\r\n通过编排实现直接指定城市名称获得天气数据HTML格式:\r\n"
+curl -H "Content-Type: application/json" -d '{"city": "北京"}' "http://localhost:8080/flow/amap_city_weather_html"
 
 echo "\r\n科大讯飞 NLP:"
 echo "\r\n对输入内容进行分词:\r\n"

@@ -85,6 +85,8 @@ func handleReq(stack *hub.Stack, apiDef *hub.ApiDef) (interface{}, int) {
 	jsonEx.Unmarshal(returnBody, &jsonInRspBody)
 	stack.StepResult[hub.ResultName] = jsonInRspBody
 
+	klog.Errorln("消息体: ", string(returnBody))
+
 	if !handleRespStatus(stack, apiDef) {
 		klog.Errorln("消息体中返回码显示不成功，回应错误")
 		return nil, 500

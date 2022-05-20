@@ -12,7 +12,8 @@ type FlowStepApiDef struct {
 }
 
 type FlowStepResponseDef struct {
-	Json interface{} `json:"json"`
+	Type string           `json:"type"`
+	From *ApiDefParamFrom `json:"from,omitempty"`
 }
 
 type FlowStepDef struct {

@@ -120,7 +120,7 @@ graph LR
 flow是处理一组API调用（支持串线/并行/并行串行交替），并且后续串行API可以使用前序API的返回结果，也支持将多个API的返回结果聚合成一个http response。
 ```flow
 st=>start: flow.Run
-e1=>end: 返回结果(json格式)
+e1=>end: 返回结果(json或HTML)
 
 c0=>condition: 检查调用的API健康度
 c1=>condition: 入参有效性检查
@@ -147,7 +147,7 @@ c并行T(no,down)->op协程等待2(left)->op执行->cstep结束
 单个API执行过程
 ```flow
 st=>start: 根据api.id查找api定义
-e1=>end: 返回结果(json格式)
+e1=>end: 返回结果(json或HTML)
 e2=>end: 返回http错误码
 e3=>end: 将结果返回主协程
 
@@ -158,6 +158,7 @@ op遍历参数=>operation: 遍历api.parameters
 op生成入参=>operation: 生成API的入参
 op存入结果=>operation: 将返回的json存入StepResult
 op改写=>operation: 生成一个新的response
+op记录文本格式=>operation: 记录返回的文本格式
 
 c参数=>condition: 有api.parameters
 c参数结束=>condition: 遍历api.parameters结束
@@ -168,7 +169,7 @@ c并行=>condition: concurrent==true
 capi=>condition: 有api字段
 cResponse=>condition: 有Response字段
 
-op查找->capi(yes)->c参数(yes)->op遍历参数->op生成入参->c参数结束(yes)->op执行->c成功(yes)->c并行(no)->cresultKey(yes)->op存入结果->e1
+op查找->capi(yes)->c参数(yes)->op遍历参数->op生成入参->c参数结束(yes)->op执行->c成功(yes)->c并行(no)->cresultKey(yes)->op存入结果->op记录文本格式->e1
 c成功(no)->e2
 c参数结束(no)->op遍历参数
 c参数(no)->op执行
@@ -366,7 +367,7 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 | --api          | 步骤对应的 API 定义。                                    | object   | 是   |
 | ----id         | API 定义的 ID。                            | string   | 是   |
 | ----parameters | 放在这里的定义会补充或者覆盖输入报文里的json参数。`from.from`可以指定为`StepResult`，代表从之前执行步骤的结果（和 resultKey）中提取数据。 | object[] | 否   |
-|                |          |      |
+|                |          |      ||
 | ------name        | 参数名称。                          | string   | 是   |
 | ------value       | 固定值，当不存在固定值时，则从下面的from获取。                       | string   | 否   |
 | ------from        | 指定参数值的获取位置。                               | object   | 否   |
@@ -375,7 +376,9 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 | --------template  | JsonTemplate的输入值,支持.origin.访问输入json，.vars.访问在parameters定义的值。      |      |      |
 |               |              |          |      |
 | --response     | 定义返回结果的模板。                                      | object   | 否   |
-| ----json       | 统一返回 JSON 格式的内容。                                                     | object      | 是   |
+| ----type   | 返回什么格式的内容，json或者html。                                       | string      | 是   |
+| ----from | 返回的内容或者template定义 | object | 否 |
+
 ## SCHEDULE
 | 字段          | 用途                                                                                                  | 类型     | 必选 |
 | ------------- | ----------------------------------------------------------------------------------------------------- | -------- | ---- |
@@ -397,6 +400,7 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 | ----Value   | 上层的key等于本字段则执行tasks。                       | string   | 是   |
 |----concurrentNum   |  control命令时最大允许的并行执行的数量。      | int   |  否    |
 | --tasks   | 结构同上层的tasks，为tasks的自身嵌套。                       | object[]   | 否   |
+
 # 功能
 ## 定义和执行 API
 
@@ -497,5 +501,4 @@ func Register() (map[string](interface{}), map[string](interface{}))，其中第
 [OpenAPI Specification](https://swagger.io/specification/)
 
 https://netflix.github.io/conductor/configuration/workflowdef/
-
 

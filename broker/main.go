@@ -51,8 +51,15 @@ func callApi(c *gin.Context) {
 // 执行一个调用流程
 func callFlow(c *gin.Context) {
 	// 执行编排
-	result, status := flow.Run(newStack(c))
-	c.IndentedJSON(status, result)
+	result, textType, status := flow.Run(newStack(c))
+	if textType == "html" {
+		c.Header("Content-Type", "text/html; charset=utf-8")
+		c.String(status, "%s", result)
+		// } else if textType == "json" {
+		// 	c.IndentedJSON(status, result)
+	} else { //目前默认其他均按json回应
+		c.IndentedJSON(status, result)
+	}
 }
 
 // 执行一个计划流程

@@ -70,11 +70,20 @@ func handleOneApi(stack *hub.Stack, step *hub.FlowStepDef) interface{} {
 		if len(step.ResultKey) > 0 {
 			result = jsonOutRspBody
 		}
-	} else if step.Response != nil {
+	} else if step.Response != nil && step.Response.From != nil {
 		// 处理响应结果
-		result = util.Json2Json(stack.StepResult, step.Response.Json)
+		klog.Infoln("handleOneApi响应文本格式", step.Response.Type)
+		var rules interface{}
+		if step.Response.Type == "json" {
+			rules = step.Response.From.Template
+		} else if step.Response.Type == "html" {
+			rules = step.Response.From.Name
+		}
+		result = util.Json2Json(stack.StepResult, rules)
 		if result == nil {
-			klog.Infoln("get final result：", step.Response.Json, "\r\n", stack.StepResult, "\r\n", result)
+			klog.Infoln("get final result failed：", rules, "\r\n", stack.StepResult, "\r\n", result)
+		} else {
+			klog.Infoln("get final result：", result)
 		}
 	}
 	return result
@@ -108,8 +117,9 @@ func waitConcurrentFlowResult(stack *hub.Stack, out chan concurrentFlowOut, coun
 	return lastKey
 }
 
-func Run(stack *hub.Stack) (interface{}, int) {
+func Run(stack *hub.Stack) (interface{}, string, int) {
 	var lastResultKey string
+	var lastTypeKey string
 	var counter int
 	var in chan concurrentFlowIn
 	var out chan concurrentFlowOut
@@ -131,6 +141,8 @@ func Run(stack *hub.Stack) (interface{}, int) {
 		}
 	}
 
+	lastTypeKey = "json" //默认类型为json
+
 	for i := range flowDef.Steps {
 		step := flowDef.Steps[i]
 		if flowDef.ConcurrentNum > 1 {
@@ -151,6 +163,9 @@ func Run(stack *hub.Stack) (interface{}, int) {
 		if len(step.ResultKey) > 0 {
 			stack.StepResult[step.ResultKey] = result
 			lastResultKey = step.ResultKey
+			if step.Response != nil {
+				lastTypeKey = step.Response.Type
+			}
 		}
 	}
 
@@ -160,5 +175,5 @@ func Run(stack *hub.Stack) (interface{}, int) {
 	}
 
 	//由于并行，最后的结果并不确定，所以并行的返回结果不是固定的，因此当需要返回值时，最后一个应该是非并行的
-	return stack.StepResult[lastResultKey], http.StatusOK
+	return stack.StepResult[lastResultKey], lastTypeKey, http.StatusOK
 }
