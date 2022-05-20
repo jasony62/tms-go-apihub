@@ -1,0 +1,31 @@
+{
+  "name": "amap_city_weather",
+  "description": "高德地图查询城市的天气",
+  "steps": [
+    {
+      "name": "city_adcode",
+      "description": "查询城市的区域码",
+      "resultKey": "adcodeResult",
+      "api": {
+        "id": "amap_district_test"
+      }
+    },
+    {
+      "name": "city_adcode",
+      "description": "查询城市的区域码",
+      "resultKey": "weatherResult",
+      "api": {
+        "id": "amap_weather_test",
+        "parameters": [
+          {
+            "name": "city",
+            "from": {
+              "from": "StepResult",
+              "name": "adcodeResult.data.adcode"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
