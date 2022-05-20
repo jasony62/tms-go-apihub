@@ -7,8 +7,9 @@ type OriginDefParam struct {
 }
 
 type FlowStepApiDef struct {
-	Id         string            `json:"id"`
-	Parameters *[]OriginDefParam `json:"parameters"`
+	Id          string            `json:"id"`
+	Parameters  *[]OriginDefParam `json:"parameters"`
+	PrivateName string            `json:"private"`
 }
 
 type FlowStepResponseDef struct {

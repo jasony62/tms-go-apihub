@@ -54,8 +54,7 @@ func fillOrigin(stack *hub.Stack, parameters *[]hub.OriginDefParam) {
 	}
 }
 
-func handleOneApi(stack *hub.Stack, step *hub.FlowStepDef) interface{} {
-	var result interface{}
+func handleOneApi(stack *hub.Stack, step *hub.FlowStepDef) (result interface{}) {
 	if step.Api != nil && len(step.Api.Id) > 0 {
 		if step.Api.Parameters != nil && len(*step.Api.Parameters) > 0 {
 			// 根据flow的定义改写origin
@@ -64,7 +63,7 @@ func handleOneApi(stack *hub.Stack, step *hub.FlowStepDef) interface{} {
 
 		// 调用api
 		stack.ChildName = step.Api.Id
-		jsonOutRspBody, _ := api.Run(stack)
+		jsonOutRspBody, _ := api.Run(stack, step.Api.PrivateName)
 
 		// 在上下文中保存结果
 		if len(step.ResultKey) > 0 {

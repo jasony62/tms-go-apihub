@@ -22,39 +22,38 @@ const (
 	JSON_TYPE_PRIVATE
 )
 
-func FindPrivateData(bucket string, name string) (*hub.PrivateArray, error) {
-	key := initBucketKey(bucket, name)
-	value, ok := hub.DefaultApp.PrivateMap[key]
-	if !ok {
-		return nil, errors.New("No private data found")
-	}
-	return value, nil
-}
-
 func FindApiDef(stack *hub.Stack, id string) (*hub.ApiDef, error) {
-	var err error
-	key, bucket := GetBucketKey(stack, id)
-	value, ok := hub.DefaultApp.ApiMap[key]
+	key := GetBucketKey(stack, id)
+	apiDef, ok := hub.DefaultApp.ApiMap[key]
 	if !ok {
 		return nil, errors.New("No api found")
-	}
-
-	apiDef := value
-	if len(apiDef.PrivateName) > 0 {
-		//需要load秘钥
-		apiDef.Privates, err = FindPrivateData(bucket, apiDef.PrivateName)
-		if err != nil {
-			str := "获得Private数据失败：" + err.Error()
-			klog.Errorln(str)
-			panic(str)
-		}
 	}
 
 	return apiDef, nil
 }
 
+func FindPrivateDef(stack *hub.Stack, primary string, secondary string) (*hub.PrivateArray, error) {
+	var name string
+	if len(primary) > 0 {
+		name = primary
+	} else if len(secondary) > 0 {
+		name = secondary
+	}
+
+	if len(name) == 0 {
+		return nil, nil
+	}
+
+	key := GetBucketKey(stack, name)
+	result, ok := hub.DefaultApp.PrivateMap[key]
+	if !ok {
+		return nil, errors.New("No api found")
+	}
+	return result, nil
+}
+
 func FindFlowDef(stack *hub.Stack, id string) (*hub.FlowDef, error) {
-	key, _ := GetBucketKey(stack, id)
+	key := GetBucketKey(stack, id)
 	value, ok := hub.DefaultApp.FlowMap[key]
 	if !ok {
 		return nil, errors.New("No flow found")
@@ -63,7 +62,7 @@ func FindFlowDef(stack *hub.Stack, id string) (*hub.FlowDef, error) {
 }
 
 func FindScheduleDef(stack *hub.Stack, id string) (*hub.ScheduleDef, error) {
-	key, _ := GetBucketKey(stack, id)
+	key := GetBucketKey(stack, id)
 	value, ok := hub.DefaultApp.ScheduleMap[key]
 	if !ok {
 		return nil, errors.New("No schedule found")
@@ -258,44 +257,38 @@ func LoadConfigPluginData(path string) {
 	}
 }
 
-func initBucketKey(bucket string, fileName string) string {
+func GetBucketKey(stack *hub.Stack, fileName string) string {
+	var bucket string
 	var key string
+	if hub.DefaultApp.BucketEnable {
+		bucket = stack.GinContext.Param(`bucket`)
+	}
+
 	if bucket == "" {
 		key = fileName
 	} else {
 		key = bucket + "/" + fileName
 	}
+	klog.Infof("GetBucketKey key: %s, bucket: %s", key, bucket)
 	return key
 }
 
-func GetBucketKey(stack *hub.Stack, fileName string) (string, string) {
-	var bucket string
-	if hub.DefaultApp.BucketEnable {
-		bucket = stack.GinContext.Param(`bucket`)
-	}
-
-	key := initBucketKey(bucket, fileName)
-	klog.Infof("GetBucketKey key: %s, bucket: %s", key, bucket)
-	return key, bucket
-}
-
 func loadPluginFuncs(mapFunc map[string](interface{}), mapFuncForTemplate map[string](interface{})) {
-	if mapFunc != nil {
-		for k, v := range mapFunc {
-			if _, ok := hub.FuncMap[k]; ok {
-				klog.Errorf("加载(%s)失败,FuncMap存在重名函数！\r\n", k)
-			} else {
-				hub.FuncMap[k] = v
-			}
+
+	for k, v := range mapFunc {
+		if _, ok := hub.FuncMap[k]; ok {
+			klog.Errorf("加载(%s)失败,FuncMap存在重名函数！\r\n", k)
+		} else {
+			hub.FuncMap[k] = v
 		}
 	}
-	if mapFuncForTemplate != nil {
-		for k, v := range mapFuncForTemplate {
-			if _, ok := hub.FuncMapForTemplate[k]; ok {
-				klog.Errorf("加载(%s)失败,FuncMapForTemplate存在重名函数！\r\n", k)
-			} else {
-				hub.FuncMapForTemplate[k] = v
-			}
+
+	for k, v := range mapFuncForTemplate {
+		if _, ok := hub.FuncMapForTemplate[k]; ok {
+			klog.Errorf("加载(%s)失败,FuncMapForTemplate存在重名函数！\r\n", k)
+		} else {
+			hub.FuncMapForTemplate[k] = v
 		}
 	}
+
 }

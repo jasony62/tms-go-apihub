@@ -213,7 +213,7 @@ func handleApiTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (result interfac
 	tmpStack := copyScheduleStack(stack, task)
 
 	// 执行API
-	result, status = api.Run(tmpStack)
+	result, status = api.Run(tmpStack, task.PrivateName)
 
 	if !task.Concurrent && len(task.ResultKey) > 0 {
 		stack.StepResult[task.ResultKey] = result

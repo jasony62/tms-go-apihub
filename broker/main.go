@@ -44,7 +44,7 @@ func newStack(c *gin.Context) *hub.Stack {
 // 执行1个API调用
 func callApi(c *gin.Context) {
 	// 调用api
-	result, status := api.Run(newStack(c))
+	result, status := api.Run(newStack(c), "")
 	c.IndentedJSON(status, result)
 }
 
