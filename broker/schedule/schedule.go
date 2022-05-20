@@ -201,7 +201,7 @@ func handleFlowTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (result interfa
 	tmpStack := copyScheduleStack(stack, task)
 
 	// 执行编排
-	result, status = flow.Run(tmpStack)
+	result, _, status = flow.Run(tmpStack)
 
 	if !task.Concurrent && len(task.ResultKey) > 0 {
 		stack.StepResult[task.ResultKey] = result

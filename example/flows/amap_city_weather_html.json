@@ -32,7 +32,7 @@
       "description": "合并收到的结果",
       "resultKey": "merged",
       "response": {
-        "type": "json",
+        "type": "html",
         "from": {
           "from": "template",
           "name": "<html><head><title>Hello API</title></head><body><p>status:{{.weatherResult.errCode}}</p><p>region:{{.weatherResult.data.region}}</p><p>weather:{{.weatherResult.data.weather}}</p><p>temperature:{{.weatherResult.data.temperature}}</p><p>winddirection:{{.weatherResult.data.winddirection}}</p><p>windpower:{{.weatherResult.data.windpower}}</p><p>humidity:{{.weatherResult.data.humidity}}</p></body></html>",
