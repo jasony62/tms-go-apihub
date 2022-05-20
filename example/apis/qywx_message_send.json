@@ -9,7 +9,7 @@
       "name": "access_token",
       "from": {
         "from": "origin",
-        "name": "token"
+        "content": "token"
       }
 
     },
@@ -17,8 +17,8 @@
       "in": "body",
       "name": "body",
       "from": {
-        "from": "JsonTemplate",
-        "template": {
+        "from": "json",
+        "json": {
           "touser": "{{.origin.touser}}",
           "msgtype": "{{.origin.msgtype}}",
           "agentid": "{{.origin.agentid}}",
@@ -30,7 +30,7 @@
   "respStatus": {
     "from": {
   		"from": "template",
-  		"name": "{{.result.errcode}}"
+  		"content": "{{.result.errcode}}"
   	},
     "format": "number",
     "expected": "0"

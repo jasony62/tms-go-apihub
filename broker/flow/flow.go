@@ -74,9 +74,9 @@ func handleOneApi(stack *hub.Stack, step *hub.FlowStepDef) (result interface{}) 
 		klog.Infoln("handleOneApi响应文本格式", step.Response.Type)
 		var rules interface{}
 		if step.Response.Type == "json" {
-			rules = step.Response.From.Template
+			rules = step.Response.From.Json
 		} else if step.Response.Type == "html" {
-			rules = step.Response.From.Name
+			rules = step.Response.From.Content
 		}
 		result = util.Json2Json(stack.StepResult, rules)
 		if result == nil {

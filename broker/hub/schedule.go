@@ -12,7 +12,7 @@ type ScheduleTaskDef struct {
 	Description string `json:"description"`
 	ResultKey   string `json:"resultKey"`
 	//用于switch和loop
-	Key ApiDefParamFrom `json:"key"`
+	Key BaseDefParamFrom `json:"key"`
 	//用于switch和loop
 	ConcurrentNum int `json:"concurrentNum,omitempty"`
 	//用于loop

@@ -11,7 +11,7 @@
       "name": "grant_type",
       "from": {
         "from": "private",
-        "name": "xgranttype"
+        "content": "xgranttype"
       }
     },
     {
@@ -19,7 +19,7 @@
       "name": "client_id",
       "from": {
         "from": "private",
-        "name": "xappkey"
+        "content": "xappkey"
       }
     },
 	{
@@ -27,15 +27,15 @@
       "name": "client_secret",
       "from": {
         "from": "private",
-        "name": "xsecret"
+        "content": "xsecret"
       }
     }
 
   ],
   "cache": {
 	"from": {
-		"from": "template",
-		"name": "{{.result.expires_in}}"
+		"from": "json",
+		"content": "{{.result.expires_in}}"
 	},
 	"format": "second"
   }

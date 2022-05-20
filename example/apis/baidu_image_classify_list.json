@@ -10,7 +10,7 @@
       "name": "access_token",
       "from": {
         "from": "origin",
-        "name": "token"
+        "content": "token"
       }
     },
     {
@@ -18,7 +18,7 @@
       "name": "imgUrl",
       "from": {
         "from": "origin",
-        "name": "content"
+        "content": "content"
       }
     }
   ]

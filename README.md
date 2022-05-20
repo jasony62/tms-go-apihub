@@ -240,13 +240,17 @@ graph TB
 | TGAH_HOST                     | 服务的主机名                                                 | 0.0.0.0 |
 | TGAH_PORT                     | 服务的端口号                                                 | 8080    |
 | TGAH_BUCKET_ENABLE            | API 和 FLOW 是否按 bucket 隔离                               | no      |
-| TGAH_API_DEF_PATH             | API 定义文件存放位置                                         | .conf/apis       |
-| TGAH_FLOW_DEF_PATH            | 编排定义文件存放位置                                         | .conf/flows       |
-| TGAH_PRIVATE_DEF_PATH         | API 定义中使用的私有数据存放位置                             | .conf/privates       |
-| TGAH_PLUGIN_DEF_PATH          | plugins 定义中使用的外部动态库存放位置                       | .conf/plugins       |
+| TGAH_CONF_BASE_PATH             | API 定义文件存放位置                                         | ./conf       |
 | TGAH_REMOTE_CONF_URL          | 从远端http服务器下载conf压缩包的路径，未配置则不下载，直接使用本地文件                         | -       |
-| TGAH_REMOTE_CONF_STORE_FOLDER | 下载文件解压的目录                                           | ./conf  |
 | TGAH_REMOTE_CONF_UNZIP_PWD    | 下载文件解压密码，如果有密码则写解压密码，如果没有则不填     | -       |
+## CONF目录结构
+| 环境变量                      | 用途                                                         |
+| ----------------------------- | ------------------------------------------------------------ |
+| privates                     | 存放密码文件                                                 |
+| apis                         | 存放API定义文件|
+| flows            | 存放FLOW定义文件                               |
+| schedules             | 存放SCHEDULE定义文件                                         |
+| plugins             | 存放动态注册func的.so                                         |
 
 ## 命令行
 
@@ -293,6 +297,15 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 将生成的.so放到conf/plugins下，模块启动时候会自动加载
 
 # JSON定义
+
+## FROM
+from是一个基础结构，用在多处
+| 字段           | 用途                                                                                                                                     | 类型     | 必选 |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------- | ---- |
+| from      | 获取参数值的位置,支持`query`,`header`,`private`(从秘钥文件读取),`origin`(原始报文body中的json),StepResult(从原始报文和处理结果获取)，json(从json中生成内容)，template(从content中生成),`func`(hub.FuncMap内部定义函数的名称)。               |     string     |  是    |
+| content      | 参数名称，或者函数名称，或者template的内容。                 |     string     | 否     |
+| args      | from为func时，func的输入参数，多个参数时需要以空格分割，如："args": "apikey X-CurTime X-Param"                 | string         |   否   |
+| json  | json的输入值,支持.origin.访问输入json，.vars.访问在parameters定义的值，支持采用template的FuncMap的方式直接调用hub.FuncMapForTemplate内部定义的函数(例如"template": "{{md5 .vars.apikey .vars.XCurTime .vars.XParam}}")。如果入参名字含有字符-，则需要定义一个新的vars，去掉原名字中的-|    object      |  否    |
 ## PRIVATE
 | 字段           | 用途                                                                                                                                     | 类型     | 必选 |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------- | ---- |
@@ -316,23 +329,17 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 | --in          | 参数位置。支持`query`，`header`,`body`, `vars`。前三者的值除了会放到发送报文里，还可以在模板通过.vars.访问，vars表示只进入.vars| string| 是   |
 | --name        | 参数名称。                                                                                            | string   | 是   |
 | --value       | 固定值，当不存在固定值时，则从下面的from获取。     | string   | 否   |
-| --from        | 指定参数值的获取位置。             | object   | 否   |
-| ----from      | 获取参数值的位置,支持`query`,`header`,`private`(从秘钥文件读取),`origin`(原始报文body中的json),StepResult(从原始报文和处理结果获取)，JsonTemplate(根据template生成json格式的内容)，template(跟据template生成),`func`(hub.FuncMap内部定义函数的名称)。               |     string     |  是    |
-| ----name      | 参数名称，或者函数名称，或者template的内容。                 |     string     | 否     |
-| ----args      | from为func时，func的输入参数，多个参数时需要以空格分割，如："args": "apikey X-CurTime X-Param"                 | string         |   否   |
-| ----template  | JsonTemplate的输入值,支持.origin.访问输入json，.vars.访问在parameters定义的值，支持采用template的FuncMap的方式直接调用hub.FuncMapForTemplate内部定义的函数(例如"template": "{{md5 .vars.apikey .vars.XCurTime .vars.XParam}}")。如果入参名字含有字符-，则需要定义一个新的vars，去掉原名字中的-|    object      |  否    |
-|               |                                                                                                       |          |      |
+| --from        | 指定参数值的获取位置，标准from结构。          | object   | 否   |
 | response      | 返回给调用方的内容。返回的内容统一为`application/json`格式。如果不指定，直接转发目标 API 返回的内容。 | object   | 否   |
 | --json        | 返回调用方内容的模板（mustache），数组或对象。支持从被调用方返回的结果进行映射。                      | any      | 是   |
-|               |                                                                                                       |          |      |
+|               |                                                                                                |          |      |
 | cache | HTTP请求是否支持缓存模式，如果支持，在过期时间内，将不会再向服务器请求，而是直接返回缓存内容。 | object | 否 |
 | --format | 指定过期时间的解析格式。分为秒“second”和具体时间格式，如：“20060102150405” | string | 是 |
-| --from | 指定过期时间的获取位置。 | object | 是 |
-| ----from | 获取过期时间的位置，是从header域中获取的话，则设置为“header”，如果从body中获取，则设置为“template” | string | 是 |
-| ----name | 过期时间域的名称，或者template的内容。 | string | 是 |
+| --from | 指定过期时间的获取位置，标准from结构。 | object | 是 |
+| ----from | 差异：获取过期时间的位置，是从header域中获取的话，则设置为“header”，如果从body中获取，则设置为“template” | string | 是 |
 |          |                                        |        |    |
 | respStatus | 指定回应body体中的状态码 | object | 否 |
-| --from | 指定状态码的获取位置，同上面的from。 | object | 是 |
+| --from | 指定状态码的获取位置，标准from结构。 | object | 是 |
 | --format | 指定状态码的解析格式。分为数字“number”和string | string | 是 |
 | --expected | 状态码的期望正确值 | string | 是 |
 
@@ -358,14 +365,11 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 |                |          |      ||
 | ------name        | 参数名称。                          | string   | 是   |
 | ------value       | 固定值，当不存在固定值时，则从下面的from获取。                       | string   | 否   |
-| ------from        | 指定参数值的获取位置。                               | object   | 否   |
-| --------from      | 获取参数值的位置,支持`query`,`header`,`private`(从秘钥文件读取),`origin`(原始报文body中的json),StepResult(从原始报文和处理结果获取)，JsonTemplate(根据template生成json格式的内容)，template(跟据template生成)。               |          |      |
-| --------name      | 参数值所在位置的名称，或者template的内容。             |          |      |
-| --------template  | JsonTemplate的输入值,支持.origin.访问输入json，.vars.访问在parameters定义的值。      |      |      |
+| ------from        | 指定参数值的获取位，标准from结构置。                               | object   | 否   |
 |               |              |          |      |
 | --response     | 定义返回结果的模板。                                      | object   | 否   |
 | ----type   | 返回什么格式的内容，json或者html。                                       | string      | 是   |
-| ----from | 返回的内容或者template定义 | object | 否 |
+| ----from | 返回的内容或者template定义，标准from结构 | object | 否 |
 
 ## SCHEDULE
 | 字段          | 用途                                                                                                  | 类型     | 必选 |
@@ -379,7 +383,7 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 | --name          | type为api, flow时，为对应的名字，control时可以是switch，loop| string   | 是   |
 |--description   | task 的描述。      | string   |  否    |
 |--resultKey   |  在API或者FLOW 执行结果对应的名称，在loop时将索引保存在.loop.resultKey,便于后续引用(如{{index .origin.cities .loop.myloop}}), origin,vars,result,loop为保留值不可使用。      | string   |  否    |
-|--key   |  switch时为要检查的值，loop时为循环的次数，同FLOW里的from。      | object   |  否    |
+|--key   |  switch时为要检查的值，loop时为循环的次数，标准from结构。      | object   |  否    |
 |--concurrentNum   |  control命令时最大允许的并行执行的数量。      | int   |  否    |
 | --concurrent   | 是否使用并行执行。                       | bool   | 否   |
 | --tasks   | control命令时的执行列表，结构同上层的tasks，为tasks的自身嵌套。                       | object[]   | 否   |
@@ -442,9 +446,13 @@ example/test.sh中的*_test是用于测试的样例。
 ## 近期
 * 支持返回非json格式的http response
 * json schema
+* 支持api带数组的
 * 开发测试http server，postman或者apifox的测试脚本
-* api version
+* pre/post func支持
+* 本地kv存储
+
 ## 中期
+* api version
 * 对输入数组的支持
 * 支持switch default case
 * 支持load API时候，检验private信息，load FLOW时候，检验API信息，load schedule时候，检验FLOW和API

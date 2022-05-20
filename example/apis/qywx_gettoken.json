@@ -9,7 +9,7 @@
       "name": "corpid",
       "from": {
         "from": "private",
-        "name": "corpid"
+        "content": "corpid"
       }
     },
     {
@@ -17,14 +17,14 @@
       "name": "corpsecret",
       "from": {
         "from": "private",
-        "name": "corpsecret"
+        "content": "corpsecret"
       }
     }
   ],
   "cache": {
   "from": {
-	  "from": "template",
-	  "name": "{{.result.expires_in}}"
+	  "from": "json",
+	  "content": "{{.result.expires_in}}"
     },
 	"format": "second"
   }

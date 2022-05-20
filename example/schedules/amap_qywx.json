@@ -11,7 +11,7 @@
             "concurrentLoopNum": 2,
             "key": {
                 "from": "template",
-                "name": "{{len .origin.cities}}"
+                "content": "{{len .origin.cities}}"
             },
             "tasks": [
                 {
@@ -19,7 +19,7 @@
                     "name": "switch",
                     "key": {
                         "from": "template",
-                        "name": "{{index .origin.cities .loop.myloop}}"
+                        "content": "{{index .origin.cities .loop.myloop}}"
                     },
                     "cases": [
                         {
@@ -68,7 +68,7 @@
                     "name": "content",
                     "from": {
                         "from": "origin",
-                        "name": "image"
+                        "content": "image"
                     }
                 }
             ]
@@ -81,7 +81,7 @@
                     "name": "content",
                     "from": {
                         "from": "template",
-                        "name": "{{range $i,$v := .myloop}}{{if $i}},{{end}}{{$v.data.region}} weather is {{$v.data.weather}}{{end}}, and image is {{(index .image.result 0).name}}"
+                        "content": "{{range $i,$v := .myloop}}{{if $i}},{{end}}{{$v.data.region}} weather is {{$v.data.weather}}{{end}}, and image is {{(index .image.result 0).name}}"
                     }
                 },
                 {

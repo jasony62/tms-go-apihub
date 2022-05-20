@@ -21,7 +21,7 @@
             "name": "token",
             "from": {
               "from": "StepResult",
-              "name": "tokenResult.access_token"
+              "content": "tokenResult.access_token"
             }
           }
         ]

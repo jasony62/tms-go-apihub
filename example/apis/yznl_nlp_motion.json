@@ -10,7 +10,7 @@
       "name": "X-APP-ID",
       "from": {
         "from": "private",
-        "name": "xappid"
+        "content": "xappid"
       }
     },
     {
@@ -18,7 +18,7 @@
       "name": "X-APP-KEY",
       "from": {
         "from": "private",
-        "name": "xappkey"
+        "content": "xappkey"
       }
     },
     {
@@ -26,15 +26,15 @@
       "name": "utc",
       "from": {
         "from": "func",
-        "name": "utc"
+        "content": "utc"
       }
     },
     {
       "in": "body",
       "name": "body",
       "from": {
-        "from": "JsonTemplate",
-        "template": {
+        "from": "json",
+        "json": {
           "text": "{{.origin.text}}",
           "seqid": "{{.origin.seqid}}",
           "timestamp": "{{.vars.utc}}"

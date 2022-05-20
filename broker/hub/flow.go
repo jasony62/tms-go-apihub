@@ -1,9 +1,9 @@
 package hub
 
 type OriginDefParam struct {
-	Name  string           `json:"name"`
-	Value string           `json:"value,omitempty"`
-	From  *ApiDefParamFrom `json:"from,omitempty"`
+	Name  string            `json:"name"`
+	Value string            `json:"value,omitempty"`
+	From  *BaseDefParamFrom `json:"from,omitempty"`
 }
 
 type FlowStepApiDef struct {
@@ -13,8 +13,8 @@ type FlowStepApiDef struct {
 }
 
 type FlowStepResponseDef struct {
-	Type string           `json:"type"`
-	From *ApiDefParamFrom `json:"from,omitempty"`
+	Type string            `json:"type"`
+	From *BaseDefParamFrom `json:"from,omitempty"`
 }
 
 type FlowStepDef struct {

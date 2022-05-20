@@ -11,7 +11,7 @@
       "name": "X-Appid",
       "from": {
         "from": "private",
-        "name": "appid"
+        "content": "appid"
       }
     },
     {
@@ -24,7 +24,7 @@
       "name": "X-CurTime",
       "from": {
         "from": "func",
-        "name": "utc"
+        "content": "utc"
       }
     },
     {
@@ -32,7 +32,7 @@
       "name": "apikey",
       "from": {
         "from": "private",
-        "name": "apikey"
+        "content": "apikey"
       }
     },
     {
@@ -40,7 +40,7 @@
       "name": "X-CheckSum",
       "from": {
         "from": "func",
-        "name": "md5",
+        "content": "md5",
         "args": "apikey X-CurTime X-Param"
       }
     },
@@ -49,7 +49,7 @@
       "name": "text",
       "from": {
         "from": "origin",
-        "name": "content"
+        "content": "content"
       }
     }
   ],

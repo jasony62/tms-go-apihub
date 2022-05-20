@@ -10,7 +10,7 @@
       "name": "key",
       "from": {
         "from": "private",
-        "name": "key1"
+        "content": "key1"
       }
     },
     {
@@ -23,7 +23,7 @@
       "name": "keywords",
       "from": {
         "from": "origin",
-        "name": "city"
+        "content": "city"
       }
     }
   ],
