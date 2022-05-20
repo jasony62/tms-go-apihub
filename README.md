@@ -434,6 +434,10 @@ func Register() (map[string](interface{}), map[string](interface{}))，其中第
 
 使用`bucket`进行数据隔离。
 
+# 测试
+test用于模拟http server进行功能和高并发测试
+example/test.sh中的*_test是用于测试的样例。
+
 # 开发计划
 ## 近期
 * 支持返回非json格式的http response

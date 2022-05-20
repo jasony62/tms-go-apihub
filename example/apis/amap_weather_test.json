@@ -1,0 +1,37 @@
+{
+  "id": "amap_weather",
+  "url": "http://localhost:6060/v3/weather/weatherInfo",
+  "method": "GET",
+  "private": "amap_keys",
+  "parameters": [
+    {
+      "in": "query",
+      "name": "key",
+      "from": {
+        "from": "private",
+        "name": "key1"
+      }
+    },
+    {
+      "in": "query",
+      "name": "city",
+      "from": {
+        "from": "origin",
+        "name": "city"
+      }
+    }
+  ],
+  "response": {
+    "json": {
+      "errCode": "{{.status}}",
+      "data": {
+        "region": "{{(index .lives 0).province}}",
+        "weather": "{{(index .lives 0).weather}}",
+        "temperature": "{{(index .lives 0).temperature}}",
+        "winddirection": "{{(index .lives 0).winddirection}}",
+        "windpower": "{{(index .lives 0).windpower}}",
+        "humidity": "{{(index .lives 0).humidity}}"
+      }
+    }
+  }
+}
