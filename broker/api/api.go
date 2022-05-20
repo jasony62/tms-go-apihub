@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"errors"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -19,58 +18,15 @@ import (
 	jsoniter "github.com/json-iterator/go"
 )
 
-// 转发API调用
-func Run(stack *hub.Stack) (interface{}, int) {
-	var err error
-	apiDef, err := unit.FindApiDef(stack, stack.ChildName)
+//json反序列化是造成整数的精度丢失，所以使用一个扩展的json工具做反序列化
+var jsonEx = jsoniter.Config{
+	UseNumber: true,
+}.Froze()
 
-	if apiDef == nil {
-		klog.Errorln("获得API定义失败：", err)
-		panic(err)
-	}
-
-	var jsonOutRspBody interface{}
-
-	if apiDef.Cache != nil { //如果Json文件中配置了cache，表示支持缓存
-		if content := getCacheContentWithLock(apiDef); content == nil {
-			defer apiDef.Cache.Locker.Unlock()
-			apiDef.Cache.Locker.Lock()
-
-			if content = getCacheContent(apiDef); content == nil {
-				klog.Infoln("获取缓存Cache ... ...")
-				jsonOutRspBody, _ = handleReq(stack, apiDef)
-				if jsonOutRspBody == nil {
-					return nil, 500
-				}
-			} else {
-				klog.Infoln("Cache缓存有效，直接回应")
-				jsonOutRspBody = content
-			}
-		} else {
-			klog.Infoln("Cache缓存有效，直接回应")
-			jsonOutRspBody = content
-		}
-	} else { //不支持缓存，直接请求
-		klog.Infoln("不支持Cache缓存 ... ...")
-		jsonOutRspBody, _ = handleReq(stack, apiDef)
-		if jsonOutRspBody == nil {
-			return nil, 500
-		}
-	}
-
-	klog.Infoln("处理", apiDef.Url, ":", http.StatusOK, "\r\n返回结果：", jsonOutRspBody)
-	return jsonOutRspBody, http.StatusOK
-}
-
-func handleReq(stack *hub.Stack, apiDef *hub.ApiDef) (interface{}, int) {
+func handleReq(stack *hub.Stack, apiDef *hub.ApiDef, privateDef *hub.PrivateArray) (interface{}, int) {
 	var jsonInRspBody interface{}
 
-	//json反序列化是造成整数的精度丢失，所以使用一个扩展的json工具做反序列化
-	jsonEx := jsoniter.Config{
-		UseNumber: true,
-	}.Froze()
-
-	outReq := newRequest(stack, apiDef)
+	outReq := newRequest(stack, apiDef, privateDef)
 	// 发出请求
 	client := &http.Client{}
 	resp, err := client.Do(outReq)
@@ -92,7 +48,7 @@ func handleReq(stack *hub.Stack, apiDef *hub.ApiDef) (interface{}, int) {
 		return nil, 500
 	}
 
-	out := NewOutRspBody(apiDef, jsonInRspBody)
+	out := newOutRspBody(apiDef, jsonInRspBody)
 
 	if apiDef.Cache != nil {
 		//解析过期时间，如果存在则记录下来
@@ -110,7 +66,7 @@ func handleReq(stack *hub.Stack, apiDef *hub.ApiDef) (interface{}, int) {
 }
 
 // 构造发送的响应内容
-func NewOutRspBody(apiDef *hub.ApiDef, in interface{}) interface{} {
+func newOutRspBody(apiDef *hub.ApiDef, in interface{}) interface{} {
 	var out interface{}
 	if apiDef.Response != nil && apiDef.Response.Json != nil {
 		out = util.Json2Json(in, apiDef.Response.Json)
@@ -121,7 +77,7 @@ func NewOutRspBody(apiDef *hub.ApiDef, in interface{}) interface{} {
 	return out
 }
 
-func newRequest(stack *hub.Stack, apiDef *hub.ApiDef) *http.Request {
+func newRequest(stack *hub.Stack, apiDef *hub.ApiDef, privateDef *hub.PrivateArray) *http.Request {
 	var formBody *http.Request
 	var outBody string
 	var hasBody bool
@@ -148,7 +104,18 @@ func newRequest(stack *hub.Stack, apiDef *hub.ApiDef) *http.Request {
 	}
 
 	// 发出请求的URL
-	outReqURL, _ := url.Parse(apiDef.Url)
+	var finalUrl string
+	if len(apiDef.Url) == 0 {
+		if apiDef.DynamicUrl != nil {
+			finalUrl = unit.GetParameterValue(stack, privateDef, apiDef.DynamicUrl)
+		} else {
+			klog.Errorln("无有效url")
+			panic("无有效url")
+		}
+	} else {
+		finalUrl = apiDef.Url
+	}
+	outReqURL, _ := url.Parse(finalUrl)
 	// 设置请求参数
 	outReqParamRules := apiDef.Parameters
 	if outReqParamRules != nil {
@@ -164,7 +131,7 @@ func newRequest(stack *hub.Stack, apiDef *hub.ApiDef) *http.Request {
 				if len(param.Name) > 0 {
 					if len(param.Value) == 0 {
 						if param.From != nil {
-							value = unit.GetParameterValue(stack, apiDef.Privates, param.From)
+							value = unit.GetParameterValue(stack, privateDef, param.From)
 						}
 					} else {
 						value = param.Value
@@ -319,7 +286,7 @@ func parseExpireTime(value string, format string) (time.Time, error) {
 		exptime, err = time.Parse(format, value)
 		if err != nil {
 			klog.Errorln("解析过期时间失败, err: ", err)
-			return time.Time{}, errors.New("Parse expires failed")
+			return time.Time{}, err
 		}
 	}
 	klog.Infoln("解析后过期时间: ", exptime)
@@ -352,4 +319,45 @@ func handleRespStatus(stack *hub.Stack, apiDef *hub.ApiDef) bool {
 	result := unit.GetParameterValue(stack, nil, apiDef.RespStatus.From)
 	klog.Infoln("handleRespStatus 结果", result)
 	return apiDef.RespStatus.Expected == result
+}
+
+// 转发API调用
+func Run(stack *hub.Stack, private string) (jsonOutRspBody interface{}, ret int) {
+	var err error
+	apiDef, err := unit.FindApiDef(stack, stack.ChildName)
+
+	if apiDef == nil {
+		klog.Errorln("获得API定义失败：", err)
+		panic(err)
+	}
+	privateDef, err := unit.FindPrivateDef(stack, private, apiDef.PrivateName)
+	if err != nil {
+		klog.Errorln("获得API定义失败：", err)
+		panic(err)
+	}
+
+	if apiDef.Cache != nil { //如果Json文件中配置了cache，表示支持缓存
+		if jsonOutRspBody = getCacheContentWithLock(apiDef); jsonOutRspBody == nil {
+			defer apiDef.Cache.Locker.Unlock()
+			apiDef.Cache.Locker.Lock()
+
+			if jsonOutRspBody = getCacheContent(apiDef); jsonOutRspBody == nil {
+				klog.Infoln("获取缓存Cache ... ...")
+				jsonOutRspBody, _ = handleReq(stack, apiDef, privateDef)
+			} else {
+				klog.Infoln("Cache缓存有效，直接回应")
+			}
+		} else {
+			klog.Infoln("Cache缓存有效，直接回应")
+		}
+	} else { //不支持缓存，直接请求
+		klog.Infoln("不支持Cache缓存 ... ...")
+		jsonOutRspBody, _ = handleReq(stack, apiDef, privateDef)
+	}
+
+	klog.Infoln("处理", apiDef.Url, ":", http.StatusOK, "\r\n返回结果：", jsonOutRspBody)
+	if jsonOutRspBody == nil {
+		return nil, 500
+	}
+	return jsonOutRspBody, http.StatusOK
 }

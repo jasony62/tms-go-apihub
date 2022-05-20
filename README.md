@@ -135,7 +135,7 @@ op协程执行=>operation: 在协程中执行API
 op协程等待1=>operation: 等待所有并行API结束
 op协程等待2=>operation: 等待所有并行API结束
 op遍历=>operation: 遍历steps列表
-op执行=>operation: 执行API
+op执行=>operation: 串行执行API
 
 st->op定义->c0(yes)->c1(yes)->c并行(yes)->op协程->op遍历->c并行1(no,down)->op执行->cstep结束(yes)->op协程等待1->e1
 c并行(no)->op遍历
@@ -178,15 +178,12 @@ c并行(yes)->e3
 
 ```
 ## schedule调用流程
-schedule封装了两种控制命令
-* switch/case
-* loop
-并且能够调用底层的flow和api.
+schedule封装了两种控制命令switch/case和loop，并且能够调用底层的flow和api.
 
 类似flow的并行，schedule也支持上述四种命令的并行执行。建议不要在schedule层次嵌套使用多层并行，未进行相关测试。
-while循环也支持并行执行，可以和上面的并行嵌套。
+loop循环支持多个条目并行执行，可以和上面的并行嵌套。
 
-由于schedule的并行和flow的并行逻辑基本相同，下图中只描述了串行流程，没有并行相关逻辑。
+由于schedule的并行逻辑和flow的并行逻辑基本相同（并行API的结果会在所有并行API都执行后写入stepResult;在执行串行API之前，会等到所有并行API执行结束），下图中只描述了串行流程，没有并行相关逻辑。
 ```mermaid
 graph TB
    client(http schedule调用)
@@ -286,24 +283,14 @@ docker compose up tms-gah-broker
 ```
 
 ## 安装插件
-
-将插件代码复制到容器中
-
-```
-docker cp plugins tms-gah-broker:/home/tms-gah/plugins
-```
-
-进入容器编译插件
-
-```
-docker exec -it tms-go-broker sh
-```
+插件编译不依赖于本代码。
 
 ```
 cd plugins
 cd kdxfnlp
 go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 ```
+将生成的.so放到conf/plugins下，模块启动时候会自动加载
 
 # JSON定义
 ## PRIVATE
@@ -318,37 +305,37 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 | 字段          | 用途                                                                                                  | 类型     | 必选 |
 | ------------- | ----------------------------------------------------------------------------------------------------- | -------- | ---- |
 | id            | API 定义的标识。                                                                                      | string   | 是   |
-| url           | API 的目标地址。不包括任何查询参数。                                                                  | string   | 是   |
+| url           | API 的目标地址。不包括任何查询参数。                                                                  | string   | 否   |
+| dynamicUrl    | 当url为空时，必须提供这个结构，用来动态生成URL（比如路径中含有appId），结构为下面的from。不包括任何查询参数。    | object   | 否   |
 | private       | API 秘钥文件名。                                                                                      | string   | 否   |
 | description   | API 的描述。                                                                                          | string   |  否    |
 | method        | HTTP 请求方法，支持`POST`和`GET`。                                                                    | string   | 是   |
 |requestContentType | json映射为`application/json`，form映射为`application/x-www-form-urlencoded`，origin为取输入报文的ContentType，并直接转发输入报文的http body，none表示没有body,其他值则直接写入ContentType|string |是|
 |               |                                                                                                       |          |      |
-| parameters    | HTTP 请求的参数。                                                                                     | object[] |      |
-| --in          | 参数位置。支持`query`，`header`,`body`, `vars`。前三者的值除了会放到发送报文里，还可以在模板通过.vars.访问，vars表示只进入.vars问，                                                             | string   | 是   |
+| parameters    | HTTP 请求的参数。                                                                                     | object[] |    否  |
+| --in          | 参数位置。支持`query`，`header`,`body`, `vars`。前三者的值除了会放到发送报文里，还可以在模板通过.vars.访问，vars表示只进入.vars| string| 是   |
 | --name        | 参数名称。                                                                                            | string   | 是   |
 | --value       | 固定值，当不存在固定值时，则从下面的from获取。     | string   | 否   |
 | --from        | 指定参数值的获取位置。             | object   | 否   |
-| ----from      | 获取参数值的位置,支持`query`,`header`,`private`(从秘钥文件读取),`origin`(原始报文body中的json),StepResult(从原始报文和处理结果获取)，JsonTemplate(根据template生成json格式的内容)，template(跟据template生成),`func`(hub.FuncMap内部定义函数的名称)。               |          |      |
-| ----name      | 参数名称，或者函数名称，或者template的内容。                 |          |      |
+| ----from      | 获取参数值的位置,支持`query`,`header`,`private`(从秘钥文件读取),`origin`(原始报文body中的json),StepResult(从原始报文和处理结果获取)，JsonTemplate(根据template生成json格式的内容)，template(跟据template生成),`func`(hub.FuncMap内部定义函数的名称)。               |     string     |  是    |
+| ----name      | 参数名称，或者函数名称，或者template的内容。                 |     string     | 否     |
 | ----args      | from为func时，func的输入参数，多个参数时需要以空格分割，如："args": "apikey X-CurTime X-Param"                 | string         |   否   |
-| ----template  | JsonTemplate的输入值,支持.origin.访问输入json，.vars.访问在parameters定义的值，支持采用template的FuncMap的方式直接调用hub.FuncMapForTemplate内部定义的函数(例如"template": "{{md5 .vars.apikey .vars.XCurTime .vars.XParam}}")。如果入参名字含有字符-，则需要定义一个新的vars，去掉原名字中的-。                                                                                |          |      |
+| ----template  | JsonTemplate的输入值,支持.origin.访问输入json，.vars.访问在parameters定义的值，支持采用template的FuncMap的方式直接调用hub.FuncMapForTemplate内部定义的函数(例如"template": "{{md5 .vars.apikey .vars.XCurTime .vars.XParam}}")。如果入参名字含有字符-，则需要定义一个新的vars，去掉原名字中的-|    object      |  否    |
 |               |                                                                                                       |          |      |
 | response      | 返回给调用方的内容。返回的内容统一为`application/json`格式。如果不指定，直接转发目标 API 返回的内容。 | object   | 否   |
 | --json        | 返回调用方内容的模板（mustache），数组或对象。支持从被调用方返回的结果进行映射。                      | any      | 是   |
 |               |                                                                                                       |          |      |
 | cache | HTTP请求是否支持缓存模式，如果支持，在过期时间内，将不会再向服务器请求，而是直接返回缓存内容。 | object | 否 |
-| --from | 指定过期时间的获取位置。 | object | 是 |
 | --format | 指定过期时间的解析格式。分为秒“second”和具体时间格式，如：“20060102150405” | string | 是 |
+| --from | 指定过期时间的获取位置。 | object | 是 |
 | ----from | 获取过期时间的位置，是从header域中获取的话，则设置为“header”，如果从body中获取，则设置为“template” | string | 是 |
 | ----name | 过期时间域的名称，或者template的内容。 | string | 是 |
 |          |                                        |        |    |
 | respStatus | 指定回应body体中的状态码 | object | 否 |
-| --from | 指定状态码的获取位置。 | object | 是 |
+| --from | 指定状态码的获取位置，同上面的from。 | object | 是 |
 | --format | 指定状态码的解析格式。分为数字“number”和string | string | 是 |
 | --expected | 状态码的期望正确值 | string | 是 |
-| ----from | 获取状态码的位置，从body中获取，则设置为“template” | string | 是 |
-| ----name | 状态码的名称，或者template的内容。 | string | 是 |
+
 
 目前系统并未使用`id`字段定位选择的 API，而是根据指定 API 定义文件的名称。
 
@@ -365,6 +352,7 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 | --resultKey    | 在上下文中 API 执行结果对应的名称，origin,vars,result,loop为保留值不可使用。      | string   | 否   |
 | --concurrent   | 是否使用并行执行。                       | bool   | 否   |
 | --api          | 步骤对应的 API 定义。                                    | object   | 是   |
+| ----private    | 用于覆盖原始API中的private。                            | string   | 否   |
 | ----id         | API 定义的 ID。                            | string   | 是   |
 | ----parameters | 放在这里的定义会补充或者覆盖输入报文里的json参数。`from.from`可以指定为`StepResult`，代表从之前执行步骤的结果（和 resultKey）中提取数据。 | object[] | 否   |
 |                |          |      ||
@@ -383,7 +371,7 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 | 字段          | 用途                                                                                                  | 类型     | 必选 |
 | ------------- | ----------------------------------------------------------------------------------------------------- | -------- | ---- |
 | name            | SCHEDULE 定义的标识。                                         | string   | 是   |
-| description   | SCHEDULE 的描述。                                                                                          | string   |  否    |
+| description   | SCHEDULE 的描述。                        | string   |  否    |
 | concurrentNum           | 最大允许的并行执行的数量。                               | int   | 否   |
 |          |      |
 | tasks    | 任务列表。                                object[] |      |
@@ -395,10 +383,11 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 |--concurrentNum   |  control命令时最大允许的并行执行的数量。      | int   |  否    |
 | --concurrent   | 是否使用并行执行。                       | bool   | 否   |
 | --tasks   | control命令时的执行列表，结构同上层的tasks，为tasks的自身嵌套。                       | object[]   | 否   |
-| --parameters   | flow和control时用于改写origin，同flow的parameters。                       | object[]   | 否   |
+| --parameters   | flow和control时用于改写origin，同flow的parameters。        | object[]   | 否   |
+| --private    | 用于覆盖原始API中的private。                            | string   | 否   | 
 | --cases   | switch时检查的case。                       | object[]   | 否   |
 | ----Value   | 上层的key等于本字段则执行tasks。                       | string   | 是   |
-|----concurrentNum   |  control命令时最大允许的并行执行的数量。      | int   |  否    |
+| ----concurrentNum   |  control命令时最大允许的并行执行的数量。      | int   |  否    |
 | --tasks   | 结构同上层的tasks，为tasks的自身嵌套。                       | object[]   | 否   |
 
 # 功能
@@ -434,7 +423,7 @@ curl  -H "Content-Type: application/json" -d '{"cities":["sh", "bj", "sh", "sh"]
 ```
 
 # 插件
-插件主要用于注册用户私有的func，可以不编译到主程序中
+插件主要用于注册用户私有的func，可以不编译到主程序中。
 
 程序启动会导入环境变量`TGAH_PLUGIN_DEF_PATH`制定的目录下以及子目录下所有的.so插件，将插件提供的函数载入hub.FuncMap和hub.FuncMapForTemplate
 插件不需要在与主程序相同的环境进行编译，但.so插件需要定义接口函数:
@@ -448,17 +437,20 @@ func Register() (map[string](interface{}), map[string](interface{}))，其中第
 # 开发计划
 ## 近期
 * 支持返回非json格式的http response
-* 支持200OK + error code转错误码
-* 支持flow覆盖api中的url中和private
-* 支持在url中使用private
+* json schema
 * 开发测试http server，postman或者apifox的测试脚本
+* api version
 ## 中期
+* 对输入数组的支持
 * 支持switch default case
-* 支持基于user的private
 * 支持load API时候，检验private信息，load FLOW时候，检验API信息，load schedule时候，检验FLOW和API
 * 支持在http response中访问origin中的值
 * 在JSON，HTTP处理错误时能够返回HTTP错误给调用方
 * 支持http请求retry，timeout
+ **"timeoutPolicy": "TIME_OUT_WF",
+ **"retryLogic": "FIXED",
+ **"retryDelaySeconds": 600,
+ **"responseTimeoutSeconds": 3600
 * 增加plugin框架，并支持Prometheus，本地log，本地file log，基于kafka的JSON输出
 ## 任务池
 * 暴露管理API，动态日志等级
@@ -471,13 +463,13 @@ func Register() (map[string](interface{}), map[string](interface{}))，其中第
 * graceful shutdown
 * 参数有效性检查
 * 支持异步，循环加异步
+* 支持基于user的private
 ## 需要考虑
 * Opentracing，Skywalking
 * 多SSL证书
 * 熔断，降级
 * API健康检查
-* 支持API调用websocket，gRPC，Dubbo
-* 支持HTTP->kafka， kafka->HTTP
+* 支持API调用websocket，gRPC，Dubbo，redis，kafka
 * Open API ：支持使用open api配置网关
 * URL Scheme
 * 是否考虑集成进
@@ -488,7 +480,8 @@ func Register() (map[string](interface{}), map[string](interface{}))，其中第
 * 支持从远端http下载压缩包，解压作为conf，支持压缩包密码
 * json文件load一次，反复使用
 * json文件合法性检查
-* 支持SWITCH/WHILE循环命令
+* 支持SWITCH/loop循环命令
+* 支持loop并发调用
 * 支持flow，schedule，loop并发调用
 * 支持func获取value
     * 支持无输入参数 utc 
@@ -496,9 +489,12 @@ func Register() (map[string](interface{}), map[string](interface{}))，其中第
     * 支持template使用func（FuncMap）
     * 支持从.so动态注册函数
 * 支持token缓存
+* 支持flow覆盖api中的private
+* 支持在url中使用private
+* 支持200OK + error code转错误码
 # 参考
 
 [OpenAPI Specification](https://swagger.io/specification/)
 
 https://netflix.github.io/conductor/configuration/workflowdef/
-
+https://states-language.net/spec.html

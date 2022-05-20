@@ -28,17 +28,17 @@ type ApiDefPlugin struct {
 }
 
 type ApiDef struct {
-	Id                 string `json:"id"`
-	Url                string `json:"url"`
-	Description        string `json:"description"`
-	Method             string `json:"method"`
-	PrivateName        string `json:"private"`
-	Privates           *PrivateArray
-	Parameters         *[]ApiDefParam  `json:"parameters"`
-	RequestContentType string          `json:"requestContentType"`
-	Response           *ApiDefResponse `json:"response"`
-	Cache              *ApiCache       `json:"cache"`
-	RespStatus         *ApiRespStatus  `json:"respStatus"`
+	Id                 string           `json:"id"`
+	Url                string           `json:"url"`
+	DynamicUrl         *ApiDefParamFrom `json:"dynamicUrl"`
+	Description        string           `json:"description"`
+	Method             string           `json:"method"`
+	PrivateName        string           `json:"private"`
+	Parameters         *[]ApiDefParam   `json:"parameters"`
+	RequestContentType string           `json:"requestContentType"`
+	Response           *ApiDefResponse  `json:"response"`
+	Cache              *ApiCache        `json:"cache"`
+	RespStatus         *ApiRespStatus   `json:"respStatus"`
 }
 
 type ApiRespStatus struct {
