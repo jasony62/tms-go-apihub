@@ -16,7 +16,10 @@
     {
       "in": "query",
       "name": "subdistrict",
-      "value": "0"
+      "from": {
+        "from": "literal",
+        "content": "0"
+      }
     },
     {
       "in": "query",

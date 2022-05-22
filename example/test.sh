@@ -43,6 +43,8 @@ curl -X POST -d '{"content": "https://img.zcool.cn/community/01ff2059770a25a8012
 echo "\r\n原子能力:对话情绪识别\r\n"
 curl -i  -X POST -H "Content-Type: application/json" -d '{"text": "hello!", "seqid": "c7574913-5a4f-4622-989c-455f9bd20640"}' "http://localhost:8080/api/yznl_nlp_motion"
 
+#echo "\r\n发送短信\r\n"
+#curl -H "Content-Type: application/json" -d '{"number": "138104xxx69", "msg":"my test !!!"}' "http://localhost:8080/api/sm_send"
 
 echo "\r\nSCHEDULE:\r\n"
 echo "\r\n并行查询天气和天气并发送企业微信"

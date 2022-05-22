@@ -11,7 +11,7 @@ type App struct {
 	ScheduleMap  map[string]*ScheduleDef
 }
 
-type BaseDefParamFrom struct {
+type BaseDefParamValue struct {
 	From    string       `json:"from"`
 	Content string       `json:"content"`
 	Json    *interface{} `json:"json"`

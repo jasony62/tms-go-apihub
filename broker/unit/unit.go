@@ -87,9 +87,10 @@ func getArgsVal(stepResult map[string]interface{}, args []string) []string {
 	return argsV
 }
 
-func GetParameterValue(stack *hub.Stack, private *hub.PrivateArray, from *hub.BaseDefParamFrom) string {
-	var value string
+func GetParameterValue(stack *hub.Stack, private *hub.PrivateArray, from *hub.BaseDefParamValue) (value string) {
 	switch from.From {
+	case "literal":
+		value = from.Content
 	case "query":
 		value = stack.Query(from.Content)
 	case hub.OriginName:

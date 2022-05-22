@@ -302,7 +302,7 @@ go build -buildmode=plugin -o kdxfnlp.so kdxfnlp.go
 from是一个基础结构，用在多处
 | 字段           | 用途                                                                                                                                     | 类型     | 必选 |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------- | ---- |
-| from      | 获取参数值的位置,支持`query`,`header`,`private`(从秘钥文件读取),`origin`(原始报文body中的json),StepResult(从原始报文和处理结果获取)，json(从json中生成内容)，template(从content中生成),`func`(hub.FuncMap内部定义函数的名称)。               |     string     |  是    |
+| from      | 获取参数值的位置,支持`literal`(直接从content里获取)，`query`,`header`,`private`(从秘钥文件读取),`origin`(原始报文body中的json),StepResult(从原始报文和处理结果获取)，json(从json中生成内容)，template(从content中生成),`func`(hub.FuncMap内部定义函数的名称)。               |     string     |  是    |
 | content      | 参数名称，或者函数名称，或者template的内容。                 |     string     | 否     |
 | args      | from为func时，func的输入参数，多个参数时需要以空格分割，如："args": "apikey X-CurTime X-Param"                 | string         |   否   |
 | json  | json的输入值,支持.origin.访问输入json，.vars.访问在parameters定义的值，支持采用template的FuncMap的方式直接调用hub.FuncMapForTemplate内部定义的函数(例如"template": "{{md5 .vars.apikey .vars.XCurTime .vars.XParam}}")。如果入参名字含有字符-，则需要定义一个新的vars，去掉原名字中的-|    object      |  否    |
@@ -319,7 +319,7 @@ from是一个基础结构，用在多处
 | ------------- | ----------------------------------------------------------------------------------------------------- | -------- | ---- |
 | id            | API 定义的标识。                                                                                      | string   | 是   |
 | url           | API 的目标地址。不包括任何查询参数。                                                                  | string   | 否   |
-| dynamicUrl    | 当url为空时，必须提供这个结构，用来动态生成URL（比如路径中含有appId），结构为下面的from。不包括任何查询参数。    | object   | 否   |
+| dynamicUrl    | 当url为空时，必须提供这个结构，用来动态生成URL（比如路径中含有appId），结构为标准的from。不包括任何查询参数。    | object   | 否   |
 | private       | API 秘钥文件名。                                                                                      | string   | 否   |
 | description   | API 的描述。                                                                                          | string   |  否    |
 | method        | HTTP 请求方法，支持`POST`和`GET`。                                                                    | string   | 是   |
@@ -328,7 +328,6 @@ from是一个基础结构，用在多处
 | parameters    | HTTP 请求的参数。                                                                                     | object[] |    否  |
 | --in          | 参数位置。支持`query`，`header`,`body`, `vars`。前三者的值除了会放到发送报文里，还可以在模板通过.vars.访问，vars表示只进入.vars| string| 是   |
 | --name        | 参数名称。                                                                                            | string   | 是   |
-| --value       | 固定值，当不存在固定值时，则从下面的from获取。     | string   | 否   |
 | --from        | 指定参数值的获取位置，标准from结构。          | object   | 否   |
 | response      | 返回给调用方的内容。返回的内容统一为`application/json`格式。如果不指定，直接转发目标 API 返回的内容。 | object   | 否   |
 | --json        | 返回调用方内容的模板（mustache），数组或对象。支持从被调用方返回的结果进行映射。                      | any      | 是   |
@@ -364,7 +363,6 @@ from是一个基础结构，用在多处
 | ----parameters | 放在这里的定义会补充或者覆盖输入报文里的json参数。`from.from`可以指定为`StepResult`，代表从之前执行步骤的结果（和 resultKey）中提取数据。 | object[] | 否   |
 |                |          |      ||
 | ------name        | 参数名称。                          | string   | 是   |
-| ------value       | 固定值，当不存在固定值时，则从下面的from获取。                       | string   | 否   |
 | ------from        | 指定参数值的获取位，标准from结构置。                               | object   | 否   |
 |               |              |          |      |
 | --response     | 定义返回结果的模板。                                      | object   | 否   |

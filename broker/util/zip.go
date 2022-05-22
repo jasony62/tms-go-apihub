@@ -142,7 +142,7 @@ func isInclude(includes []string, fname string) bool {
 }
 
 //DeCompressZip 解压zip包
-func DeCompressZip(zipFile, dest, passwd string, includes []string, offset int64) error {
+func deCompressZip(zipFile, dest, passwd string, includes []string, offset int64) error {
 	uz := &unzip{offset: offset, name: zipFile}
 	defer uz.close()
 

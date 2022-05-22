@@ -17,7 +17,10 @@
     {
       "in": "header",
       "name": "X-Param",
-      "value": "eyJ0eXBlIjoiZGVwZW5kZW50In0="
+      "from": {
+        "from": "literal",
+        "content": "eyJ0eXBlIjoiZGVwZW5kZW50In0="
+      }
     },
     {
       "in": "header",

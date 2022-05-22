@@ -129,13 +129,7 @@ func newRequest(stack *hub.Stack, apiDef *hub.ApiDef, privateDef *hub.PrivateArr
 
 			for _, param := range *outReqParamRules {
 				if len(param.Name) > 0 {
-					if len(param.Value) == 0 {
-						if param.From != nil {
-							value = unit.GetParameterValue(stack, privateDef, param.From)
-						}
-					} else {
-						value = param.Value
-					}
+					value = unit.GetParameterValue(stack, privateDef, &param.From)
 
 					switch param.In {
 					case "query":
@@ -330,6 +324,7 @@ func Run(stack *hub.Stack, private string) (jsonOutRspBody interface{}, ret int)
 		klog.Errorln("获得API定义失败：", err)
 		panic(err)
 	}
+
 	privateDef, err := unit.FindPrivateDef(stack, private, apiDef.PrivateName)
 	if err != nil {
 		klog.Errorln("获得API定义失败：", err)
@@ -351,7 +346,6 @@ func Run(stack *hub.Stack, private string) (jsonOutRspBody interface{}, ret int)
 			klog.Infoln("Cache缓存有效，直接回应")
 		}
 	} else { //不支持缓存，直接请求
-		//klog.Infoln("不支持Cache缓存 ... ...")
 		jsonOutRspBody, _ = handleReq(stack, apiDef, privateDef)
 	}
 

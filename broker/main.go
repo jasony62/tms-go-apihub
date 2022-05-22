@@ -104,33 +104,6 @@ func generatePath(env string, inDefault string) string {
 	return result
 }
 
-func downloadConf(confStoreFolder string) bool {
-	//从远端下载conf
-	confUrl := os.Getenv("TGAH_REMOTE_CONF_URL")
-	if len(confUrl) > 0 {
-		filename, err := util.DownloadFile(confUrl)
-		if err != nil {
-			klog.Errorln("Download conf file err: ", err)
-			return false
-		} else {
-			//解压缩
-			//filename = os.Getenv("TGAH_REMOTE_CONF_NAME")
-			confUnzipPwd := os.Getenv("TGAH_REMOTE_CONF_UNZIP_PWD")
-			klog.Infoln("filename: ", filename)
-			klog.Infoln("confStoreFolder: ", confStoreFolder)
-			klog.Infoln("confUnzipPwd: ", confUnzipPwd)
-
-			err = util.DeCompressZip(filename, confStoreFolder, confUnzipPwd, nil, 0)
-			if err != nil {
-				klog.Errorln(err)
-				return false
-			}
-		}
-		return true
-	}
-	return false
-}
-
 func main() {
 	flag.Parse()
 
@@ -163,7 +136,7 @@ func main() {
 	klog.Infoln("bucket enable ", hub.DefaultApp.BucketEnable)
 
 	basePath := generatePath("TGAH_CONF_BASE_PATH", "./conf/")
-	if downloadConf(basePath) {
+	if util.DownloadConf(basePath, os.Getenv("TGAH_REMOTE_CONF_UNZIP_PWD")) {
 		klog.Infoln("Download conf zip package from remote url OK")
 	}
 	unit.LoadConfigJsonData([]string{basePath + "privates", basePath + "apis", basePath + "flows",

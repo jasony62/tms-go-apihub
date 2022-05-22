@@ -35,11 +35,7 @@ func generateStepResult(stack *hub.Stack, parameters *[]hub.OriginDefParam) inte
 	var value string
 	result := make(map[string]interface{}, len(*parameters))
 	for _, parameter := range *parameters {
-		if len(parameter.Value) > 0 {
-			value = parameter.Value
-		} else {
-			value = unit.GetParameterValue(stack, nil, parameter.From)
-		}
+		value = unit.GetParameterValue(stack, nil, parameter.From)
 		result[parameter.Name] = value
 	}
 	return result
@@ -101,18 +97,18 @@ func concurrentLoopWorker(tasks chan concurrentLoopIn, out chan concurrentLoopOu
 	}
 }
 
-func triggerConcurrentLoop(stack *hub.Stack, task *hub.ScheduleTaskDef, max int, loop map[string]int, loopResult []interface{}) {
+func triggerConcurrentLoop(stack *hub.Stack, task *hub.ScheduleTaskDef, loopLength int, loop map[string]int, loopResult []interface{}) {
 	var taskCount, msgCount int
-	counter := max
+	counter := loopLength
 
-	if task.ConcurrentLoopNum > max {
-		taskCount = max
-		msgCount = max
+	if task.ConcurrentLoopNum > loopLength {
+		taskCount = loopLength
+		msgCount = loopLength
 	} else {
 		taskCount = task.ConcurrentLoopNum
 		msgCount = taskCount * 2
-		if msgCount > max {
-			msgCount = max
+		if msgCount > loopLength {
+			msgCount = loopLength
 		}
 	}
 
@@ -125,8 +121,7 @@ func triggerConcurrentLoop(stack *hub.Stack, task *hub.ScheduleTaskDef, max int,
 
 	for ; i < msgCount; i++ {
 		loop[task.ResultKey] = i
-		tmpStack := copyScheduleStack(stack, task)
-		in <- concurrentLoopIn{index: i, stack: tmpStack, task: task.Tasks}
+		in <- concurrentLoopIn{index: i, stack: copyScheduleStack(stack, task), task: task.Tasks}
 	}
 
 	for i = 0; i < taskCount; i++ {
@@ -137,7 +132,7 @@ func triggerConcurrentLoop(stack *hub.Stack, task *hub.ScheduleTaskDef, max int,
 	for result := range out {
 		loopResult[result.index] = result.result
 		counter--
-		if i < max {
+		if i < loopLength {
 			loop[task.ResultKey] = i
 			tmpStack := copyScheduleStack(stack, task)
 			in <- concurrentLoopIn{index: i, stack: tmpStack, task: task.Tasks}
@@ -159,17 +154,17 @@ func handleLoopTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{}, i
 		klog.Errorln(err)
 		panic(err)
 	}
-	max, _ := strconv.Atoi(keyStr)
-	loopResult := make([]interface{}, max)
+	loopLength, _ := strconv.Atoi(keyStr)
+	loopResult := make([]interface{}, loopLength)
 	if !task.Concurrent && len(task.ResultKey) > 0 {
 		stack.StepResult[task.ResultKey] = loopResult
 	}
 
 	loop := stack.StepResult[hub.LoopName].(map[string]int)
-	if task.ConcurrentLoopNum > 1 && max > 1 {
-		triggerConcurrentLoop(stack, task, max, loop, loopResult)
+	if task.ConcurrentLoopNum > 1 && loopLength > 1 {
+		triggerConcurrentLoop(stack, task, loopLength, loop, loopResult)
 	} else {
-		for i := 0; i < max; i++ {
+		for i := 0; i < loopLength; i++ {
 			loop[task.Name] = i
 			result, _ = handleTasks(stack, task.Tasks, task.ConcurrentNum)
 			loopResult[i] = result
@@ -198,10 +193,8 @@ func handleControlTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{}
 }
 
 func handleFlowTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (result interface{}, status int) {
-	tmpStack := copyScheduleStack(stack, task)
-
 	// 执行编排
-	result, _, status = flow.Run(tmpStack)
+	result, _, status = flow.Run(copyScheduleStack(stack, task))
 
 	if !task.Concurrent && len(task.ResultKey) > 0 {
 		stack.StepResult[task.ResultKey] = result
@@ -210,10 +203,8 @@ func handleFlowTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (result interfa
 }
 
 func handleApiTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (result interface{}, status int) {
-	tmpStack := copyScheduleStack(stack, task)
-
 	// 执行API
-	result, status = api.Run(tmpStack, task.PrivateName)
+	result, status = api.Run(copyScheduleStack(stack, task), task.PrivateName)
 
 	if !task.Concurrent && len(task.ResultKey) > 0 {
 		stack.StepResult[task.ResultKey] = result
