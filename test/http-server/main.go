@@ -20,7 +20,9 @@ func main() {
 	flag.Parse()
 
 	r := router.New()
-	r.GET("/", RequestHandler)
+	r.GET("/", Echo)
+	r.GET("/joint", Joint)
+	r.GET("/split", Split)
 	// r.GET("/hello/{name}", Hello)v3/config/district
 	r.GET("/v3/config/district", AmapDistrict)
 	r.GET("/v3/weather/weatherInfo", AmapWeather)
@@ -72,16 +74,38 @@ func AmapWeather(ctx *fasthttp.RequestCtx) {
 	// ctx.Response.SetBody(reqWeatherBytes)
 }
 
-func RequestHandler(ctx *fasthttp.RequestCtx) {
+func Echo(ctx *fasthttp.RequestCtx) {
 	klog.Infof("%%%%%%%%Connection has been established at %s\n", ctx.ConnTime())
-	ctx.SetContentType("text/plain; charset=utf8")
-	// Set arbitrary headers
-	ctx.Response.Header.Set("X-My-Header", "my-header-value")
-	ctx.Response.Header.SetContentType("application/json")
-	reqEntity := &Entity{
-		Name: "test",
-	}
-	reqEntityBytes, _ := json.Marshal(reqEntity)
+	ctx.SetContentType("application/json; charset=utf-8")
+	ctx.Request.Header.Cookie()
+	klog.Infof("DEBUG Request: %s\n", ctx.Request.Body())
+	ctx.Response.SetBody(ctx.Request.Body())
+}
+
+func Joint(ctx *fasthttp.RequestCtx) {
+	klog.Infof("%%%%%%%%Connection has been established at %s\n", ctx.ConnTime())
+	ctx.SetContentType("application/json; charset=utf-8")
+	klog.Infof("DEBUG Request: %s\n", ctx.Request.Body())
+	reqBody := &Params{}
+	json.Unmarshal(ctx.Request.Body(), reqBody)
+
+	content := &Content{
+		Content: reqBody.Param1 + reqBody.Param2}
+	contentBytes, _ := json.Marshal(content)
+	ctx.Response.SetBody(contentBytes)
+}
+
+func Split(ctx *fasthttp.RequestCtx) {
+	klog.Infof("%%%%%%%%Connection has been established at %s\n", ctx.ConnTime())
+	ctx.SetContentType("application/json; charset=utf-8")
+	klog.Infof("DEBUG Request: %s\n", ctx.Request.Body())
+	reqBody := &Content{}
+	json.Unmarshal(ctx.Request.Body(), reqBody)
+	reqStr := strings.Fields(reqBody.Content)
+	strJoint := strings.Join(reqStr, ",")
+	respContent := &Content{
+		Content: strJoint}
+	reqEntityBytes, _ := json.Marshal(respContent)
 	ctx.Response.SetBody(reqEntityBytes)
 
 }
