@@ -5,6 +5,15 @@ type Entity struct {
 	Name string
 }
 
+type Content struct {
+	Content string `json:"content"`
+}
+
+type Params struct {
+	Param1 string `json:"param1"`
+	Param2 string `json:"param2"`
+}
+
 type Amap struct {
 	Status     string     `json:"status"`
 	Count      string     `json:"count"`
