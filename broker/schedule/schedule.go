@@ -204,7 +204,7 @@ func handleFlowTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (result interfa
 
 func handleApiTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (result interface{}, status int) {
 	// 执行API
-	result, status = api.Run(copyScheduleStack(stack, task), task.PrivateName)
+	result, status = api.Run(copyScheduleStack(stack, task), task.Name, task.PrivateName)
 
 	if !task.Concurrent && len(task.ResultKey) > 0 {
 		stack.StepResult[task.ResultKey] = result

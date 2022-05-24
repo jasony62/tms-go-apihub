@@ -2,7 +2,7 @@
   "name": "kdxf_nlp",
   "description": "处理用户输入文本",
   "concurrentNum": 2,
-  "steps": [
+  "tasks": [
     {
       "name": "input_cws",
       "description": "对输入内容进行分词",

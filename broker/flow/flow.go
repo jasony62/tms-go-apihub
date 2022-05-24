@@ -5,18 +5,18 @@ import (
 
 	klog "k8s.io/klog/v2"
 
-	"github.com/jasony62/tms-go-apihub/api"
 	"github.com/jasony62/tms-go-apihub/hub"
+	"github.com/jasony62/tms-go-apihub/task"
 	"github.com/jasony62/tms-go-apihub/unit"
 	"github.com/jasony62/tms-go-apihub/util"
 )
 
 type concurrentFlowIn struct {
-	step *hub.FlowStepDef
+	taskDef *hub.TaskDef
 }
 type concurrentFlowOut struct {
-	step   *hub.FlowStepDef
-	result interface{}
+	taskDef *hub.TaskDef
+	result  interface{}
 }
 
 func copyFlowStack(src *hub.Stack) *hub.Stack {
@@ -54,22 +54,10 @@ func fillOrigin(stack *hub.Stack, parameters *[]hub.OriginDefParam, src int) {
 	}
 }
 
-func handleOneApi(stack *hub.Stack, step *hub.FlowStepDef) (result interface{}) {
-	if step.Api != nil && len(step.Api.Id) > 0 {
-		if step.Api.Parameters != nil && len(*step.Api.Parameters) > 0 {
-			// 根据flow的定义改写origin
-			fillOrigin(stack, step.Api.Parameters, hub.ORIGIN_SRC_API)
-		}
-
-		// 调用api
-		stack.ChildName = step.Api.Id
-		jsonOutRspBody, _ := api.Run(stack, step.Api.PrivateName)
-
-		// 在上下文中保存结果
-		if len(step.ResultKey) > 0 {
-			result = jsonOutRspBody
-		}
-	} else if step.Response != nil && step.Response.From != nil {
+func handleOneTask(stack *hub.Stack, taskDef *hub.TaskDef) (result interface{}, ret int) {
+	if len(taskDef.Command) > 0 {
+		return task.Run(stack, taskDef)
+	} else if taskDef.Response != nil && taskDef.Response.From != nil {
 		// 处理响应结果
 		klog.Infoln("handleOneApi响应格式", step.Response.Type)
 
@@ -84,7 +72,6 @@ func handleOneApi(stack *hub.Stack, step *hub.FlowStepDef) (result interface{}) 
 			strhtml := hub.DefaultApp.TemplateMap[step.Response.From.Content]
 			result = util.Json2Html(stack.StepResult, strhtml)
 			klog.Infoln("get final template result：", result)
-
 		} else {
 			if step.Response.Type == hub.RESP_TYPE_JSON {
 				rules = step.Response.From.Json
@@ -99,22 +86,22 @@ func handleOneApi(stack *hub.Stack, step *hub.FlowStepDef) (result interface{}) 
 			}
 		}
 	}
-	return result
+	return result, 200
 }
 
-func concurrentFlowWorker(stack *hub.Stack, steps chan concurrentFlowIn, out chan concurrentFlowOut) {
-	for step := range steps {
-		result := handleOneApi(copyFlowStack(stack), step.step)
-		out <- concurrentFlowOut{step: step.step, result: result}
+func concurrentFlowWorker(stack *hub.Stack, tasks chan concurrentFlowIn, out chan concurrentFlowOut) {
+	for taskDef := range tasks {
+		result, _ := handleOneTask(copyFlowStack(stack), taskDef.taskDef)
+		out <- concurrentFlowOut{taskDef: taskDef.taskDef, result: result}
 	}
 }
 
-func waitConcurrentFlowResult(stack *hub.Stack, out chan concurrentFlowOut, counter int) (lastKey string) {
+func waitConcurrentTaskResult(stack *hub.Stack, out chan concurrentFlowOut, counter int) (lastKey string) {
 	results := make(map[string]interface{}, counter)
 	for counter > 0 {
 		//等待结果
 		result := <-out
-		key := result.step.ResultKey
+		key := result.taskDef.ResultKey
 		if len(key) > 0 {
 			results[key] = result.result
 			lastKey = key
@@ -137,6 +124,7 @@ func Run(stack *hub.Stack) (interface{}, string, int) {
 	var in chan concurrentFlowIn
 	var out chan concurrentFlowOut
 	var result interface{}
+	var code int
 
 	flowDef, err := unit.FindFlowDef(stack, stack.ChildName)
 	if flowDef == nil {
@@ -145,9 +133,9 @@ func Run(stack *hub.Stack) (interface{}, string, int) {
 	}
 
 	if flowDef.ConcurrentNum > 1 {
-		in = make(chan concurrentFlowIn, len(flowDef.Steps))
+		in = make(chan concurrentFlowIn, len(flowDef.Tasks))
 		defer close(in)
-		out = make(chan concurrentFlowOut, len(flowDef.Steps))
+		out = make(chan concurrentFlowOut, len(flowDef.Tasks))
 		defer close(out)
 		for i := 0; i < flowDef.ConcurrentNum; i++ {
 			go concurrentFlowWorker(stack, in, out)
@@ -156,35 +144,39 @@ func Run(stack *hub.Stack) (interface{}, string, int) {
 
 	lastTypeKey = "json" //默认类型为json
 
-	for i := range flowDef.Steps {
-		step := flowDef.Steps[i]
+	for i := range flowDef.Tasks {
+		taskDef := flowDef.Tasks[i]
 		if flowDef.ConcurrentNum > 1 {
-			if step.Concurrent {
-				in <- concurrentFlowIn{step: &step}
+			if taskDef.Concurrent {
+				in <- concurrentFlowIn{taskDef: &taskDef}
 				counter++
 				continue
 			} else {
 				//避免并发读写ResultKey
 				if counter > 0 {
-					lastResultKey = waitConcurrentFlowResult(stack, out, counter)
+					lastResultKey = waitConcurrentTaskResult(stack, out, counter)
 					counter = 0
 				}
 			}
 		}
 
-		result = handleOneApi(stack, &step)
-		if len(step.ResultKey) > 0 {
-			stack.StepResult[step.ResultKey] = result
-			lastResultKey = step.ResultKey
-			if step.Response != nil {
-				lastTypeKey = step.Response.Type
+		result, code = handleOneTask(stack, &taskDef)
+		if code != 200 {
+			return nil, "", code
+		}
+
+		if len(taskDef.ResultKey) > 0 {
+			stack.StepResult[taskDef.ResultKey] = result
+			lastResultKey = taskDef.ResultKey
+			if taskDef.Response != nil {
+				lastTypeKey = taskDef.Response.Type
 			}
 		}
 	}
 
 	//当最后一个step也是并行，等待全部执行完
 	if counter > 0 {
-		lastResultKey = waitConcurrentFlowResult(stack, out, counter)
+		lastResultKey = waitConcurrentTaskResult(stack, out, counter)
 	}
 
 	//由于并行，最后的结果并不确定，所以并行的返回结果不是固定的，因此当需要返回值时，最后一个应该是非并行的

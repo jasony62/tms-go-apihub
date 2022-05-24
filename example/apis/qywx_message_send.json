@@ -26,13 +26,5 @@
         }
       }
     }
-  ],
-  "respStatus": {
-    "from": {
-  		"from": "template",
-  		"content": "{{.result.errcode}}"
-  	},
-    "format": "number",
-    "expected": "0"
-  }
+  ]
 }
