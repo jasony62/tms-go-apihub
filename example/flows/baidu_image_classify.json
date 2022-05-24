@@ -1,7 +1,7 @@
 {
   "name": "baidu_image_classify",
   "description": "百度图片动物分类",
-  "steps": [
+  "tasks": [
     {
       "name": "gettoken",
       "description": "获得access_token",

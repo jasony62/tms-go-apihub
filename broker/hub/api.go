@@ -30,14 +30,14 @@ type ApiDef struct {
 	RequestContentType string             `json:"requestContentType"`
 	Response           *ApiDefResponse    `json:"response"`
 	Cache              *ApiCache          `json:"cache"`
-	RespStatus         *ApiRespStatus     `json:"respStatus"`
+	// RespStatus         *ApiRespStatus     `json:"respStatus"`
 }
 
-type ApiRespStatus struct {
-	From     *BaseDefParamValue `json:"from,omitempty"`
-	Format   string             `json:"format,omitempty"`   //number or string
-	Expected string             `json:"expected,omitempty"` //expected correct code
-}
+// type ApiRespStatus struct {
+// 	From     *BaseDefParamValue `json:"from,omitempty"`
+// 	Format   string             `json:"format,omitempty"`   //number or string
+// 	Expected string             `json:"expected,omitempty"` //expected correct code
+// }
 
 type ApiCache struct {
 	From    *BaseDefParamValue `json:"from,omitempty"`

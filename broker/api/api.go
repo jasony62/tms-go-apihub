@@ -13,6 +13,7 @@ import (
 	klog "k8s.io/klog/v2"
 
 	"github.com/jasony62/tms-go-apihub/hub"
+	"github.com/jasony62/tms-go-apihub/task"
 	"github.com/jasony62/tms-go-apihub/unit"
 	"github.com/jasony62/tms-go-apihub/util"
 	jsoniter "github.com/json-iterator/go"
@@ -43,10 +44,10 @@ func handleReq(stack *hub.Stack, apiDef *hub.ApiDef, privateDef *hub.PrivateArra
 
 	klog.Errorln("消息体: ", string(returnBody))
 
-	if !handleRespStatus(stack, apiDef) {
-		klog.Errorln("消息体中返回码显示不成功，回应错误")
-		return nil, 500
-	}
+	// if !handleRespStatus(stack, apiDef) {
+	// 	klog.Errorln("消息体中返回码显示不成功，回应错误")
+	// 	return nil, 500
+	// }
 
 	out := newOutRspBody(apiDef, jsonInRspBody)
 
@@ -305,20 +306,20 @@ func getCacheContentWithLock(apiDef *hub.ApiDef) interface{} {
 	return apiDef.Cache.Resp
 }
 
-func handleRespStatus(stack *hub.Stack, apiDef *hub.ApiDef) bool {
-	if apiDef.RespStatus == nil { //如果没有定义，则直接返回正确
-		return true
-	}
+// func handleRespStatus(stack *hub.Stack, apiDef *hub.ApiDef) bool {
+// 	if apiDef.RespStatus == nil { //如果没有定义，则直接返回正确
+// 		return true
+// 	}
 
-	result := unit.GetParameterValue(stack, nil, apiDef.RespStatus.From)
-	klog.Infoln("handleRespStatus 结果", result)
-	return apiDef.RespStatus.Expected == result
-}
+// 	result := unit.GetParameterValue(stack, nil, apiDef.RespStatus.From)
+// 	klog.Infoln("handleRespStatus 结果", result)
+// 	return apiDef.RespStatus.Expected == result
+// }
 
 // 转发API调用
-func Run(stack *hub.Stack, private string) (jsonOutRspBody interface{}, ret int) {
+func Run(stack *hub.Stack, name string, private string) (jsonOutRspBody interface{}, ret int) {
 	var err error
-	apiDef, err := unit.FindApiDef(stack, stack.ChildName)
+	apiDef, err := unit.FindApiDef(stack, name)
 
 	if apiDef == nil {
 		klog.Errorln("获得API定义失败：", err)
@@ -354,4 +355,20 @@ func Run(stack *hub.Stack, private string) (jsonOutRspBody interface{}, ret int)
 		return nil, 500
 	}
 	return jsonOutRspBody, http.StatusOK
+}
+
+func runHttpApi(stack *hub.Stack, params map[string]string) (interface{}, int) {
+	name, OK := params["name"]
+	if !OK {
+		str := "缺少api名称"
+		klog.Errorln(str)
+		panic(str)
+	}
+
+	private := params["private"]
+	return Run(stack, name, private)
+}
+
+func init() {
+	task.RegisterTasks(map[string]hub.TaskHandler{"httpApi": runHttpApi})
 }

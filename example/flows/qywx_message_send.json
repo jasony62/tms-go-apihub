@@ -1,31 +1,73 @@
 {
   "name": "qywx_message_send",
   "description": "给企业微信用户发送消息",
-  "steps": [
+  "tasks": [
     {
       "name": "gettoken",
       "description": "获得access_token",
-      "resultKey": "tokenResult",
-      "api": {
-        "id": "qywx_gettoken"
-      }
+      "command": "httpApi",
+      "parameters": [
+        {
+          "name": "name",
+          "from": {
+            "from": "literal",
+            "content": "qywx_gettoken"
+          }
+        }
+      ],
+      "resultKey": "tokenResult"
+    },
+    {
+      "name": "checkTokenResult",
+      "description": "检查token是否有效",
+      "command": "checkStringsNotEqual",
+      "parameters": [
+        {
+          "name": "",
+          "from": {
+            "from": "StepResult",
+            "content": "tokenResult.access_token"
+          }
+        }
+      ]
     },
     {
       "name": "message_send",
       "description": "查询城市的区域码",
-      "resultKey": "sendResult",
-      "api": {
-        "id": "qywx_message_send",
-        "parameters": [
-          {
-            "name": "token",
-            "from": {
-              "from": "StepResult",
-              "content": "tokenResult.access_token"
-            }
+      "command": "httpApi",
+      "parameters": [
+        {
+          "name": "name",
+          "from": {
+            "from": "literal",
+            "content": "qywx_message_send"
           }
-        ]
-      }
+        }
+      ],
+      "origin": [
+        {
+          "name": "token",
+          "from": {
+            "from": "StepResult",
+            "content": "tokenResult.access_token"
+          }
+        }
+      ],
+      "resultKey": "sendResult"
+    },
+    {
+      "name": "checkResult",
+      "description": "检查返回值",
+      "command": "checkStringsEqual",
+      "parameters": [
+        {
+          "name": "0",
+          "from": {
+            "from": "StepResult",
+            "content": "sendResult.errcode"
+          }
+        }
+      ]
     }
   ]
 }

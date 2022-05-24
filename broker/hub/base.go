@@ -18,6 +18,8 @@ type BaseDefParamValue struct {
 	Args    string       `json:"args"`
 }
 
+type TaskHandler func(*Stack, map[string]string) (interface{}, int)
+
 var DefaultApp App
 
 //当from.from为"funcs"时，直接调用函数

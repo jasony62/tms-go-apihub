@@ -14,6 +14,7 @@ import (
 	"github.com/jasony62/tms-go-apihub/flow"
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/jasony62/tms-go-apihub/schedule"
+	"github.com/jasony62/tms-go-apihub/tasks"
 	"github.com/jasony62/tms-go-apihub/unit"
 	"github.com/jasony62/tms-go-apihub/util"
 	"github.com/joho/godotenv"
@@ -44,7 +45,8 @@ func newStack(c *gin.Context) *hub.Stack {
 // 执行1个API调用
 func callApi(c *gin.Context) {
 	// 调用api
-	result, status := api.Run(newStack(c), "")
+	tmpStack := newStack(c)
+	result, status := api.Run(tmpStack, tmpStack.ChildName, "")
 	c.IndentedJSON(status, result)
 }
 
@@ -113,7 +115,7 @@ func main() {
 			klog.Fatal(err)
 		}
 	}
-
+	tasks.Init()
 	host := os.Getenv("TGAH_HOST")
 	if host == "" {
 		hub.DefaultApp.Host = "0.0.0.0"
