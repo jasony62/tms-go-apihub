@@ -1,0 +1,2 @@
+test用于模拟http server进行功能和高并发测试
+example/test.sh中的*_test是用于测试的样例。

@@ -1,0 +1,32 @@
+{
+  "id": "sm_send",
+  "private": "sm_keys",
+  "dynamicUrl": {
+    "from": "private",
+    "content": "url"
+  },
+  "method": "POST",
+  "requestContentType": "json",
+  "parameters": [
+    {
+      "in": "body",
+      "name": "body",
+      "from": {
+        "from": "json",
+        "json": {
+          "type": 1,
+          "to": "{{.origin.number}}",
+          "content": "{{.origin.msg}}【佳信客服】"
+        }
+      }
+    }
+  ],
+  "respStatus": {
+    "from": {
+  		"from": "template",
+  		"content": "{{.result.sms.status}}"
+  	},
+    "format": "string",
+    "expected": "0"
+  }
+}
