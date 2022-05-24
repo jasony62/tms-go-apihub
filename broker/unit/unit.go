@@ -19,6 +19,7 @@ const (
 	JSON_TYPE_API
 	JSON_TYPE_FLOW
 	JSON_TYPE_SCHEDULE
+	TMPL_TYPE
 )
 
 func FindApiDef(stack *hub.Stack, id string) (*hub.ApiDef, error) {
@@ -46,7 +47,7 @@ func FindPrivateDef(stack *hub.Stack, primary string, secondary string) (*hub.Pr
 	key := GetBucketKey(stack, name)
 	result, ok := hub.DefaultApp.PrivateMap[key]
 	if !ok {
-		return nil, errors.New("No api found")
+		return nil, errors.New("No private found")
 	}
 	return result, nil
 }
@@ -139,6 +140,7 @@ func LoadConfigJsonData(paths []string) {
 	hub.DefaultApp.FlowMap = make(map[string]*hub.FlowDef)
 	hub.DefaultApp.ScheduleMap = make(map[string]*hub.ScheduleDef)
 	hub.DefaultApp.PrivateMap = make(map[string]*hub.PrivateArray)
+	hub.DefaultApp.TemplateMap = make(map[string]string)
 
 	klog.Infoln("加载API def文件...")
 	LoadJsonDefData(JSON_TYPE_API, paths[JSON_TYPE_API], "")
@@ -148,6 +150,8 @@ func LoadConfigJsonData(paths []string) {
 	LoadJsonDefData(JSON_TYPE_SCHEDULE, paths[JSON_TYPE_SCHEDULE], "")
 	klog.Infoln("加载Private def文件...")
 	LoadJsonDefData(JSON_TYPE_PRIVATE, paths[JSON_TYPE_PRIVATE], "")
+	klog.Infoln("加载Template文件...")
+	LoadTemplateData(TMPL_TYPE, paths[TMPL_TYPE], "")
 }
 
 func LoadJsonDefData(jsonType int, path string, prefix string) {
@@ -274,7 +278,6 @@ func GetBucketKey(stack *hub.Stack, fileName string) string {
 }
 
 func loadPluginFuncs(mapFunc map[string](interface{}), mapFuncForTemplate map[string](interface{})) {
-
 	for k, v := range mapFunc {
 		if _, ok := hub.FuncMap[k]; ok {
 			klog.Errorf("加载(%s)失败,FuncMap存在重名函数！\r\n", k)
@@ -290,5 +293,43 @@ func loadPluginFuncs(mapFunc map[string](interface{}), mapFuncForTemplate map[st
 			hub.FuncMapForTemplate[k] = v
 		}
 	}
+}
 
+func LoadTemplateData(jsonType int, path string, prefix string) {
+	fileInfoList, err := ioutil.ReadDir(path)
+	if err != nil {
+		klog.Errorln(err)
+		return
+	}
+
+	oldPrefix := prefix
+	for i := range fileInfoList {
+		fileName := fmt.Sprintf("%s/%s", path, fileInfoList[i].Name())
+
+		if fileInfoList[i].IsDir() {
+			prefix = fileInfoList[i].Name()
+			LoadJsonDefData(jsonType, path+"/"+prefix, prefix)
+		} else {
+			prefix = oldPrefix
+
+			byteFile, err := ioutil.ReadFile(fileName)
+			if err != nil {
+				str := "获得tmpl定义失败：" + err.Error()
+				klog.Errorln(str)
+				panic(str)
+			}
+
+			var key string
+			fname := fileInfoList[i].Name()
+
+			if prefix == "" {
+				key = fname
+			} else {
+				key = prefix + "/" + fname
+			}
+
+			hub.DefaultApp.TemplateMap[key] = string(byteFile)
+			klog.Infof("加载Template文件成功: key: %s\r\n", key)
+		}
+	}
 }

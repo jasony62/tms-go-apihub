@@ -52,7 +52,7 @@ func callApi(c *gin.Context) {
 func callFlow(c *gin.Context) {
 	// 执行编排
 	result, textType, status := flow.Run(newStack(c))
-	if textType == "html" {
+	if textType == hub.RESP_TYPE_HTML || textType == hub.RESP_TYPE_TMPL {
 		c.Header("Content-Type", "text/html; charset=utf-8")
 		c.String(status, "%s", result)
 	} else { //目前默认其他均按json回应
@@ -140,7 +140,7 @@ func main() {
 		klog.Infoln("Download conf zip package from remote url OK")
 	}
 	unit.LoadConfigJsonData([]string{basePath + "privates", basePath + "apis", basePath + "flows",
-		basePath + "schedules"})
+		basePath + "schedules", basePath + "templates"})
 
 	unit.LoadConfigPluginData(basePath + "plugins")
 	router := gin.Default()
@@ -153,6 +153,8 @@ func main() {
 		router.Any("/flow/:Id", callFlow)
 		router.Any("/schedule/:Id", callSchedule)
 	}
+
+	router.LoadHTMLGlob(basePath + "/templates/*.tmpl")
 
 	if hub.DefaultApp.Port > 0 {
 		router.Run(fmt.Sprintf("%s:%d", hub.DefaultApp.Host, hub.DefaultApp.Port))

@@ -51,6 +51,9 @@ echo "\r\n并行查询天气和天气并发送企业微信"
 curl  -H "Content-Type: application/json" -d '{"cities":["sh", "bj", "sh", "sh"], "image":"https://img.zcool.cn/community/01ff2059770a25a8012193a37c7695.jpg"}' "http://localhost:8080/schedule/amap_qywx"
 
 
+echo "\r\n地图服务查询"
+curl -H "Content-Type: application/json" -d '{"lat": "39.915599", "lng": "116.406568"}' "http://localhost:8080/flow/gis_base_map"
+
 echo "\r\n测试:"
 echo "\r\n查询城市区域编码:\r\n"
 curl -H "Content-Type: application/json" -d '{"city": "北京"}' "http://localhost:8080/api/amap_district_test"

@@ -1,0 +1,61 @@
+{
+  "name": "gis_base_map",
+  "description": "基础地图",
+  "steps": [
+    {
+      "name": "merge_result",
+      "description": "返回的结果",
+      "resultKey": "returned",
+      "response": {
+        "type": "tmpl",
+        "private": "gis_base_map_keys",
+        "from": {
+          "from": "template",
+          "content": "beijing_map.tmpl"
+        },
+		"parameters": [
+		  {
+            "in": "query",
+            "name": "lat",
+            "from": {
+              "from": "origin",
+              "content": "lat"
+            }
+          },
+		  {
+            "in": "query",
+            "name": "lng",
+            "from": {
+              "from": "origin",
+              "content": "lng"
+            }
+          },
+          {
+            "in": "vars",
+            "name": "ak",
+            "from": {
+              "from": "private",
+              "content": "ak"
+            }
+          },
+          {
+            "in": "vars",
+            "name": "srcUrl",
+            "from": {
+              "from": "private",
+              "content": "srcUrl"
+            }
+          },
+	      {
+            "in": "vars",
+            "name": "tileLayer",
+            "from": {
+              "from": "private",
+              "content": "tileLayer"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
