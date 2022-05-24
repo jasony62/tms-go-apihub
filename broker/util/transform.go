@@ -45,3 +45,20 @@ func RemoveOutideQuote(s []byte) string {
 	}
 	return string(s)
 }
+
+func Json2Html(source interface{}, rules interface{}) interface{} {
+	strTempl := rules.(string)
+
+	tmpl, err := template.New("tmpl").Parse(strTempl)
+	if err != nil {
+		klog.Infoln("get template result：", rules, " error: ", err)
+	}
+
+	buf := new(bytes.Buffer)
+	err = tmpl.Execute(buf, source)
+	if err != nil {
+		klog.Infoln("get template result：", err)
+	}
+
+	return buf
+}
