@@ -9,6 +9,7 @@ type App struct {
 	PrivateMap   map[string]*PrivateArray
 	FlowMap      map[string]*FlowDef
 	ScheduleMap  map[string]*ScheduleDef
+	TemplateMap  map[string]string
 }
 
 type BaseDefParamValue struct {
@@ -32,3 +33,7 @@ const OriginName = "origin"
 const VarsName = "vars"
 const LoopName = "loop"
 const ResultName = "result"
+
+const RESP_TYPE_JSON = "json"
+const RESP_TYPE_HTML = "html"
+const RESP_TYPE_TMPL = "tmpl"

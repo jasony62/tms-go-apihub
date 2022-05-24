@@ -33,17 +33,24 @@ func copyFlowStack(src *hub.Stack) *hub.Stack {
 	}
 }
 
-func fillOrigin(stack *hub.Stack, parameters *[]hub.OriginDefParam) {
+func fillOrigin(stack *hub.Stack, parameters *[]hub.OriginDefParam, src int) {
 	var value string
 	origin := stack.StepResult[hub.OriginName].(map[string]interface{})
 
 	for _, parameter := range *parameters {
-		value = unit.GetParameterValue(stack, nil, parameter.From)
-		oldValue, isOk := origin[parameter.Name]
-		if isOk {
-			klog.Infoln("replace ", parameter.Name, " from ", oldValue, " to ", value)
+		if (src == hub.ORIGIN_SRC_API) || (src == hub.ORIGIN_SRC_RESPONSE && parameter.In == "query") {
+			if len(parameter.Value) > 0 {
+				value = parameter.Value
+			} else {
+				value = unit.GetParameterValue(stack, nil, parameter.From)
+			}
+
+			oldValue, isOk := origin[parameter.Name]
+			if isOk {
+				klog.Infoln("replace ", parameter.Name, " from ", oldValue, " to ", value)
+			}
+			origin[parameter.Name] = value
 		}
-		origin[parameter.Name] = value
 	}
 }
 
@@ -52,18 +59,31 @@ func handleOneTask(stack *hub.Stack, taskDef *hub.TaskDef) (result interface{}, 
 		return task.Run(stack, taskDef)
 	} else if taskDef.Response != nil && taskDef.Response.From != nil {
 		// 处理响应结果
-		klog.Infoln("handleOneApi响应文本格式", taskDef.Response.Type)
+		klog.Infoln("handleOneApi响应格式", step.Response.Type)
+
 		var rules interface{}
-		if taskDef.Response.Type == "json" {
-			rules = taskDef.Response.From.Json
-		} else if taskDef.Response.Type == "html" {
-			rules = taskDef.Response.From.Content
-		}
-		result = util.Json2Json(stack.StepResult, rules)
-		if result == nil {
-			klog.Infoln("get final result failed：", rules, "\r\n", stack.StepResult, "\r\n", result)
+		if step.Response.Type == hub.RESP_TYPE_TMPL {
+			if step.Response.Parameters != nil && len(*step.Response.Parameters) > 0 {
+				// 根据flow的定义改写origin
+				fillOrigin(stack, step.Response.Parameters, hub.ORIGIN_SRC_RESPONSE)
+				fillVars(stack, step.Response.PrivateName, step.Response.Parameters)
+			}
+
+			strhtml := hub.DefaultApp.TemplateMap[step.Response.From.Content]
+			result = util.Json2Html(stack.StepResult, strhtml)
+			klog.Infoln("get final template result：", result)
 		} else {
-			klog.Infoln("get final result：", result)
+			if step.Response.Type == hub.RESP_TYPE_JSON {
+				rules = step.Response.From.Json
+			} else if step.Response.Type == hub.RESP_TYPE_HTML {
+				rules = step.Response.From.Content
+			}
+			result = util.Json2Json(stack.StepResult, rules)
+			if result == nil {
+				klog.Infoln("get final result failed：", rules, "\r\n", stack.StepResult, "\r\n", result)
+			} else {
+				klog.Infoln("get final result：", result)
+			}
 		}
 	}
 	return result, 200
@@ -161,4 +181,36 @@ func Run(stack *hub.Stack) (interface{}, string, int) {
 
 	//由于并行，最后的结果并不确定，所以并行的返回结果不是固定的，因此当需要返回值时，最后一个应该是非并行的
 	return stack.StepResult[lastResultKey], lastTypeKey, http.StatusOK
+}
+
+func fillVars(stack *hub.Stack, private string, parameters *[]hub.OriginDefParam) {
+	var value string
+	if stack.StepResult[hub.VarsName] == nil {
+		stack.StepResult[hub.VarsName] = make(map[string]interface{})
+	}
+
+	vars := stack.StepResult[hub.VarsName].(map[string]interface{})
+
+	privateDef, err := unit.FindPrivateDef(stack, private, private)
+	if err != nil {
+		klog.Errorln("获得API定义失败：", err)
+		panic(err)
+	}
+
+	for _, parameter := range *parameters {
+		if parameter.In == hub.VarsName {
+			if len(parameter.Value) > 0 {
+				value = parameter.Value
+			} else {
+				value = unit.GetParameterValue(stack, privateDef, parameter.From)
+			}
+
+			oldValue, isOk := vars[parameter.Name]
+			if isOk {
+				klog.Infoln("fillVars replace ", parameter.Name, " from ", oldValue, " to ", value)
+			}
+			vars[parameter.Name] = value
+			klog.Infoln("fillVars value: ", vars[parameter.Name])
+		}
+	}
 }

@@ -1,8 +1,15 @@
 package hub
 
+const (
+	ORIGIN_SRC_API = iota
+	ORIGIN_SRC_RESPONSE
+)
+
 type OriginDefParam struct {
-	Name string             `json:"name"`
-	From *BaseDefParamValue `json:"from,omitempty"`
+	In    string             `json:"in"`
+	Name  string             `json:"name"`
+	Value string             `json:"value,omitempty"`
+	From  *BaseDefParamValue `json:"from,omitempty"`
 }
 
 type FlowDef struct {
