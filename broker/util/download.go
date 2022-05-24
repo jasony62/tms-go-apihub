@@ -19,17 +19,17 @@ const (
 	FILE_READ_MAX_SIZE int = 1024 * 32
 )
 
-func DownloadFile(fileUrl string) (string, error) {
+func downloadFile(fileUrl string) (string, error) {
 
-	klog.Infoln("DownloadFile url: ", fileUrl)
+	klog.Infoln("downloadFile url: ", fileUrl)
 	url, err := url.ParseRequestURI(fileUrl)
 	if err != nil {
-		klog.Errorln("DownloadFile url invalid: ", err)
+		klog.Errorln("downloadFile url invalid: ", err)
 		return "", err
 	}
 
 	filename := path.Base(url.Path)
-	klog.Infoln("DownloadFile name: ", filename)
+	klog.Infoln("downloadFile name: ", filename)
 
 	client := http.DefaultClient
 	client.Timeout = time.Second * 600
@@ -41,8 +41,8 @@ func DownloadFile(fileUrl string) (string, error) {
 	}
 
 	if resp.ContentLength <= 0 {
-		klog.Errorln("DownloadFile: server response length error")
-		return "", errors.New("DownloadFile: server response length error")
+		klog.Errorln("downloadFile: server response length error")
+		return "", errors.New("downloadFile: server response length error")
 	}
 
 	content := resp.Body
@@ -60,7 +60,7 @@ func DownloadFile(fileUrl string) (string, error) {
 		select {
 		case <-ticker.C:
 			speed := written - lastWtn
-			klog.Infof("[DownloadFile] Speed %s / %s \n", bytesToSize(speed), spaceTime.String())
+			klog.Infof("[downloadFile] Speed %s / %s \n", bytesToSize(speed), spaceTime.String())
 			if written-lastWtn == 0 {
 				ticker.Stop()
 				stop = true
@@ -73,7 +73,7 @@ func DownloadFile(fileUrl string) (string, error) {
 		}
 	}
 
-	klog.Infoln("DownloadFile OK: ", filename)
+	klog.Infoln("downloadFile OK: ", filename)
 	return filename, nil
 }
 
@@ -132,4 +132,30 @@ func bytesToSize(length int) string {
 	i := math.Floor(math.Log(float64(length)) / math.Log(float64(k)))
 	r := float64(length) / math.Pow(float64(k), i)
 	return strconv.FormatFloat(r, 'f', 3, 64) + " " + sizes[int(i)]
+}
+
+func DownloadConf(confStoreFolder string, confUnzipPwd string) bool {
+	//从远端下载conf
+	confUrl := os.Getenv("TGAH_REMOTE_CONF_URL")
+	if len(confUrl) > 0 {
+		filename, err := downloadFile(confUrl)
+		if err != nil {
+			klog.Errorln("Download conf file err: ", err)
+			return false
+		} else {
+			//解压缩
+			//filename = os.Getenv("TGAH_REMOTE_CONF_NAME")
+			klog.Infoln("filename: ", filename)
+			klog.Infoln("confStoreFolder: ", confStoreFolder)
+			klog.Infoln("confUnzipPwd: ", confUnzipPwd)
+
+			err = deCompressZip(filename, confStoreFolder, confUnzipPwd, nil, 0)
+			if err != nil {
+				klog.Errorln(err)
+				return false
+			}
+		}
+		return true
+	}
+	return false
 }

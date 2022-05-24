@@ -14,7 +14,6 @@ import (
 type concurrentFlowIn struct {
 	step *hub.FlowStepDef
 }
-
 type concurrentFlowOut struct {
 	step   *hub.FlowStepDef
 	result interface{}
@@ -30,7 +29,6 @@ func copyFlowStack(src *hub.Stack) *hub.Stack {
 	return &hub.Stack{
 		GinContext: src.GinContext,
 		RootName:   src.RootName,
-		ChildName:  "",
 		StepResult: stepResult,
 	}
 }
@@ -40,12 +38,7 @@ func fillOrigin(stack *hub.Stack, parameters *[]hub.OriginDefParam) {
 	origin := stack.StepResult[hub.OriginName].(map[string]interface{})
 
 	for _, parameter := range *parameters {
-		if len(parameter.Value) > 0 {
-			value = parameter.Value
-		} else {
-			value = unit.GetParameterValue(stack, nil, parameter.From)
-		}
-
+		value = unit.GetParameterValue(stack, nil, parameter.From)
 		oldValue, isOk := origin[parameter.Name]
 		if isOk {
 			klog.Infoln("replace ", parameter.Name, " from ", oldValue, " to ", value)
@@ -74,9 +67,9 @@ func handleOneApi(stack *hub.Stack, step *hub.FlowStepDef) (result interface{}) 
 		klog.Infoln("handleOneApi响应文本格式", step.Response.Type)
 		var rules interface{}
 		if step.Response.Type == "json" {
-			rules = step.Response.From.Template
+			rules = step.Response.From.Json
 		} else if step.Response.Type == "html" {
-			rules = step.Response.From.Name
+			rules = step.Response.From.Content
 		}
 		result = util.Json2Json(stack.StepResult, rules)
 		if result == nil {

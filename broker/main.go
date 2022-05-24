@@ -55,8 +55,6 @@ func callFlow(c *gin.Context) {
 	if textType == "html" {
 		c.Header("Content-Type", "text/html; charset=utf-8")
 		c.String(status, "%s", result)
-		// } else if textType == "json" {
-		// 	c.IndentedJSON(status, result)
 	} else { //目前默认其他均按json回应
 		c.IndentedJSON(status, result)
 	}
@@ -106,34 +104,6 @@ func generatePath(env string, inDefault string) string {
 	return result
 }
 
-func downloadConf() bool {
-	//从远端下载conf
-	confUrl := os.Getenv("TGAH_REMOTE_CONF_URL")
-	if len(confUrl) > 0 {
-		filename, err := util.DownloadFile(confUrl)
-		if err != nil {
-			klog.Errorln("Download conf file err: ", err)
-			return false
-		} else {
-			//解压缩
-			//filename = os.Getenv("TGAH_REMOTE_CONF_NAME")
-			confStoreFolder := os.Getenv("TGAH_REMOTE_CONF_STORE_FOLDER")
-			confUnzipPwd := os.Getenv("TGAH_REMOTE_CONF_UNZIP_PWD")
-			klog.Infoln("filename: ", filename)
-			klog.Infoln("confStoreFolder: ", confStoreFolder)
-			klog.Infoln("confUnzipPwd: ", confUnzipPwd)
-
-			err = util.DeCompressZip(filename, confStoreFolder, confUnzipPwd, nil, 0)
-			if err != nil {
-				klog.Errorln(err)
-				return false
-			}
-		}
-		return true
-	}
-	return false
-}
-
 func main() {
 	flag.Parse()
 
@@ -165,16 +135,14 @@ func main() {
 	hub.DefaultApp.BucketEnable = re.MatchString(BucketEnable)
 	klog.Infoln("bucket enable ", hub.DefaultApp.BucketEnable)
 
-	if downloadConf() {
+	basePath := generatePath("TGAH_CONF_BASE_PATH", "./conf/")
+	if util.DownloadConf(basePath, os.Getenv("TGAH_REMOTE_CONF_UNZIP_PWD")) {
 		klog.Infoln("Download conf zip package from remote url OK")
 	}
+	unit.LoadConfigJsonData([]string{basePath + "privates", basePath + "apis", basePath + "flows",
+		basePath + "schedules"})
 
-	unit.LoadConfigJsonData([]string{generatePath("TGAH_API_DEF_PATH", "./conf/apis"),
-		generatePath("TGAH_FLOW_DEF_PATH", "./conf/flows"),
-		generatePath("TGAH_SCHEDULE_DEF_PATH", "./conf/schedules"),
-		generatePath("TGAH_PRIVATE_DEF_PATH", "./conf/privates")})
-
-	unit.LoadConfigPluginData(generatePath("TGAH_PLUGIN_DEF_PATH", "./conf/plugins"))
+	unit.LoadConfigPluginData(basePath + "plugins")
 	router := gin.Default()
 	if hub.DefaultApp.BucketEnable {
 		router.Any("/api/:bucket/:Id", callApi)

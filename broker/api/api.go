@@ -129,13 +129,7 @@ func newRequest(stack *hub.Stack, apiDef *hub.ApiDef, privateDef *hub.PrivateArr
 
 			for _, param := range *outReqParamRules {
 				if len(param.Name) > 0 {
-					if len(param.Value) == 0 {
-						if param.From != nil {
-							value = unit.GetParameterValue(stack, privateDef, param.From)
-						}
-					} else {
-						value = param.Value
-					}
+					value = unit.GetParameterValue(stack, privateDef, &param.From)
 
 					switch param.In {
 					case "query":
@@ -190,7 +184,7 @@ func newRequest(stack *hub.Stack, apiDef *hub.ApiDef, privateDef *hub.PrivateArr
 }
 
 func handleExpireTime(stack *hub.Stack, apiDef *hub.ApiDef, resp *http.Response) (time.Time, bool) {
-	klog.Infoln("获得参数，[src]:", apiDef.Cache.From.From, "; [key]:", apiDef.Cache.From.Name, "; [format]:", apiDef.Cache.Format)
+	klog.Infoln("获得参数，[src]:", apiDef.Cache.From.From, "; [key]:", apiDef.Cache.From.Content, "; [format]:", apiDef.Cache.Format)
 	if strings.EqualFold(apiDef.Cache.From.From, "header") {
 		return handleHeaderExpireTime(apiDef, resp)
 	} else {
@@ -214,7 +208,7 @@ func handleHeaderExpireTime(apiDef *hub.ApiDef, resp *http.Response) (time.Time,
 	//	body中一个例子："expireTime":"20220510153521",格式为：20060102150405
 
 	//format = "20060102150405"
-	key := apiDef.Cache.From.Name
+	key := apiDef.Cache.From.Content
 	format := apiDef.Cache.Format
 
 	if strings.Contains(key, "Set-Cookie.") {
@@ -251,7 +245,7 @@ func handleBodyExpireTime(stack *hub.Stack, apiDef *hub.ApiDef) (time.Time, bool
 	//首先在api 的json文件中配置参数 cache
 	// "cache": {
 	// 	"from": {
-	// 		"from": "template",
+	// 		"from": "json",
 	// 		"name": "{{.result.expires_in}}"
 	// 	},
 	// 	"format": "second"
@@ -330,6 +324,7 @@ func Run(stack *hub.Stack, private string) (jsonOutRspBody interface{}, ret int)
 		klog.Errorln("获得API定义失败：", err)
 		panic(err)
 	}
+
 	privateDef, err := unit.FindPrivateDef(stack, private, apiDef.PrivateName)
 	if err != nil {
 		klog.Errorln("获得API定义失败：", err)
@@ -351,7 +346,6 @@ func Run(stack *hub.Stack, private string) (jsonOutRspBody interface{}, ret int)
 			klog.Infoln("Cache缓存有效，直接回应")
 		}
 	} else { //不支持缓存，直接请求
-		klog.Infoln("不支持Cache缓存 ... ...")
 		jsonOutRspBody, _ = handleReq(stack, apiDef, privateDef)
 	}
 

@@ -9,17 +9,16 @@ import (
 	"plugin"
 	"strings"
 
-	klog "k8s.io/klog/v2"
-
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/jasony62/tms-go-apihub/util"
+	klog "k8s.io/klog/v2"
 )
 
 const (
-	JSON_TYPE_API = iota
+	JSON_TYPE_PRIVATE = iota
+	JSON_TYPE_API
 	JSON_TYPE_FLOW
 	JSON_TYPE_SCHEDULE
-	JSON_TYPE_PRIVATE
 )
 
 func FindApiDef(stack *hub.Stack, id string) (*hub.ApiDef, error) {
@@ -88,25 +87,26 @@ func getArgsVal(stepResult map[string]interface{}, args []string) []string {
 	return argsV
 }
 
-func GetParameterValue(stack *hub.Stack, private *hub.PrivateArray, from *hub.ApiDefParamFrom) string {
-	var value string
+func GetParameterValue(stack *hub.Stack, private *hub.PrivateArray, from *hub.BaseDefParamValue) (value string) {
 	switch from.From {
+	case "literal":
+		value = from.Content
 	case "query":
-		value = stack.Query(from.Name)
+		value = stack.Query(from.Content)
 	case hub.OriginName:
-		value = stack.QueryFromStepResult("{{.origin." + from.Name + "}}")
+		value = stack.QueryFromStepResult("{{.origin." + from.Content + "}}")
 	case "private":
-		value = findPrivateValue(private, from.Name)
+		value = findPrivateValue(private, from.Content)
 	case "template":
-		value = stack.QueryFromStepResult(from.Name)
+		value = stack.QueryFromStepResult(from.Content)
 	case "StepResult":
-		value = stack.QueryFromStepResult("{{." + from.Name + "}}")
-	case "JsonTemplate":
-		jsonOutBody := util.Json2Json(stack.StepResult, from.Template)
+		value = stack.QueryFromStepResult("{{." + from.Content + "}}")
+	case "json":
+		jsonOutBody := util.Json2Json(stack.StepResult, from.Json)
 		byteJson, _ := json.Marshal(jsonOutBody)
 		value = util.RemoveOutideQuote(byteJson)
 	case "func":
-		function := hub.FuncMap[from.Name]
+		function := hub.FuncMap[from.Content]
 		if function == nil {
 			str := "获取function定义失败："
 			klog.Errorln(str)
@@ -120,12 +120,12 @@ func GetParameterValue(stack *hub.Stack, private *hub.PrivateArray, from *hub.Ap
 			argsV := getArgsVal(stack.StepResult, strs)
 			value = funcV(argsV)
 		default:
-			str := from.Name + "不能执行"
+			str := from.Content + "不能执行"
 			klog.Errorln(str)
 			panic(str)
 		}
 	case hub.ResultName:
-		value = stack.QueryFromStepResult("{{.result." + from.Name + "}}")
+		value = stack.QueryFromStepResult("{{.result." + from.Content + "}}")
 	default:
 		str := "不支持的type" + from.From
 		klog.Errorln(str)

@@ -10,20 +10,23 @@
       "name": "key",
       "from": {
         "from": "private",
-        "name": "key1"
+        "content": "key1"
       }
     },
     {
       "in": "query",
       "name": "subdistrict",
-      "value": "0"
+      "from": {
+        "from": "literal",
+        "content": "0"
+      }
     },
     {
       "in": "query",
       "name": "keywords",
       "from": {
         "from": "origin",
-        "name": "city"
+        "content": "city"
       }
     }
   ],

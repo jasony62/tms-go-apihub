@@ -21,7 +21,7 @@
             "name": "city",
             "from": {
               "from": "StepResult",
-              "name": "adcodeResult.data.adcode"
+              "content": "adcodeResult.data.adcode"
             }
           }
         ]
@@ -35,18 +35,7 @@
         "type": "html",
         "from": {
           "from": "template",
-          "name": "<html><head><title>Hello API</title></head><body><p>status:{{.weatherResult.errCode}}</p><p>region:{{.weatherResult.data.region}}</p><p>weather:{{.weatherResult.data.weather}}</p><p>temperature:{{.weatherResult.data.temperature}}</p><p>winddirection:{{.weatherResult.data.winddirection}}</p><p>windpower:{{.weatherResult.data.windpower}}</p><p>humidity:{{.weatherResult.data.humidity}}</p></body></html>",
-          "template": {
-            "errCode": "{{.weatherResult.errCode}}",
-            "data": {
-              "region": "{{.weatherResult.data.region}}",
-              "weather": "{{.weatherResult.data.weather}}",
-              "temperature": "{{.weatherResult.data.temperature}}",
-              "winddirection": "{{.weatherResult.data.winddirection}}",
-              "windpower": "{{.weatherResult.data.windpower}}",
-              "humidity": "{{.weatherResult.data.humidity}}"
-            }
-          }
+          "content": "<html><head><title>Hello API</title></head><body><p>status:{{.weatherResult.errCode}}</p><p>region:{{.weatherResult.data.region}}</p><p>weather:{{.weatherResult.data.weather}}</p><p>temperature:{{.weatherResult.data.temperature}}</p><p>winddirection:{{.weatherResult.data.winddirection}}</p><p>windpower:{{.weatherResult.data.windpower}}</p><p>humidity:{{.weatherResult.data.humidity}}</p></body></html>"
         }
       }
     }

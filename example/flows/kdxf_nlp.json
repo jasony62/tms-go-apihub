@@ -26,15 +26,19 @@
       "description": "合并收到的结果",
       "resultKey": "merged",
       "response": {
-        "json": {
-          "errCode": "{{.pos.errCode}}",
-          "data": {
-            "word": [
-              "{{range $index,$elem := .cws.data.word}}{{if $index}},{{end}}\"{{.}}\"{{end}}"
-            ],
-            "pos": [
-              "{{range $index,$elem := .pos.data.pos}}{{if $index}},{{end}}\"{{.}}\"{{end}}"
-            ]
+        "type": "json",
+        "from": {
+          "from": "json",
+          "json": {
+            "errCode": "{{.pos.errCode}}",
+            "data": {
+              "word": [
+                "{{range $index,$elem := .cws.data.word}}{{if $index}},{{end}}\"{{.}}\"{{end}}"
+              ],
+              "pos": [
+                "{{range $index,$elem := .pos.data.pos}}{{if $index}},{{end}}\"{{.}}\"{{end}}"
+              ]
+            }
           }
         }
       }
