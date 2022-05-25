@@ -1,4 +1,4 @@
-package api
+package apis
 
 import (
 	"encoding/json"
@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	"strings"
 	"time"
@@ -13,9 +14,8 @@ import (
 	klog "k8s.io/klog/v2"
 
 	"github.com/jasony62/tms-go-apihub/hub"
-	"github.com/jasony62/tms-go-apihub/task"
-	"github.com/jasony62/tms-go-apihub/unit"
 	"github.com/jasony62/tms-go-apihub/util"
+
 	jsoniter "github.com/json-iterator/go"
 )
 
@@ -24,10 +24,13 @@ var jsonEx = jsoniter.Config{
 	UseNumber: true,
 }.Froze()
 
-func handleReq(stack *hub.Stack, apiDef *hub.ApiDef, privateDef *hub.PrivateArray) (interface{}, int) {
+func handleReq(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.PrivateArray) (interface{}, int) {
 	var jsonInRspBody interface{}
 
-	outReq := newRequest(stack, apiDef, privateDef)
+	outReq, err := newRequest(stack, HttpApi, privateDef)
+	if err != nil {
+		return nil, http.StatusInternalServerError
+	}
 	// 发出请求
 	client := &http.Client{}
 	resp, err := client.Do(outReq)
@@ -44,49 +47,36 @@ func handleReq(stack *hub.Stack, apiDef *hub.ApiDef, privateDef *hub.PrivateArra
 
 	klog.Errorln("消息体: ", string(returnBody))
 
-	// if !handleRespStatus(stack, apiDef) {
+	// if !handleRespStatus(stack, HttpApi) {
 	// 	klog.Errorln("消息体中返回码显示不成功，回应错误")
 	// 	return nil, 500
 	// }
 
-	out := newOutRspBody(apiDef, jsonInRspBody)
+	// out := newOutRspBody(HttpApi, jsonInRspBody)
 
-	if apiDef.Cache != nil {
+	if HttpApi.Cache != nil {
 		//解析过期时间，如果存在则记录下来
-		expires, ok := handleExpireTime(stack, apiDef, resp)
+		expires, ok := handleExpireTime(stack, HttpApi, resp)
 		if !ok {
 			klog.Warningln("没有查询到过期时间")
 		} else {
 			klog.Infof("更新Cache信息，过期时间为: %v", expires)
-			apiDef.Cache.Expires = expires
-			apiDef.Cache.Resp = out
+			HttpApi.Cache.Expires = expires
+			HttpApi.Cache.Resp = jsonInRspBody
 		}
 	}
 
-	return out, http.StatusOK
+	return jsonInRspBody, http.StatusOK
 }
 
-// 构造发送的响应内容
-func newOutRspBody(apiDef *hub.ApiDef, in interface{}) interface{} {
-	var out interface{}
-	if apiDef.Response != nil && apiDef.Response.Json != nil {
-		out = util.Json2Json(in, apiDef.Response.Json)
-	} else {
-		// 直接转发返回的结果
-		out = in
-	}
-	return out
-}
-
-func newRequest(stack *hub.Stack, apiDef *hub.ApiDef, privateDef *hub.PrivateArray) *http.Request {
-	var formBody *http.Request
+func newRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.PrivateArray) (formBody *http.Request, err error) {
 	var outBody string
 	var hasBody bool
 	// 要发送的请求
-	outReq, _ := http.NewRequest(apiDef.Method, "", nil)
-	hasBody = len(apiDef.RequestContentType) > 0 && apiDef.RequestContentType != "none"
+	outReq, _ := http.NewRequest(HttpApi.Method, "", nil)
+	hasBody = len(HttpApi.RequestContentType) > 0 && HttpApi.RequestContentType != "none"
 	if hasBody {
-		switch apiDef.RequestContentType {
+		switch HttpApi.RequestContentType {
 		case "form":
 			outReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 			formBody = new(http.Request)
@@ -100,25 +90,28 @@ func newRequest(stack *hub.Stack, apiDef *hub.ApiDef, privateDef *hub.PrivateArr
 			inData, _ := json.Marshal(stack.StepResult[hub.OriginName])
 			outBody = string(inData)
 		default:
-			outReq.Header.Set("Content-Type", apiDef.RequestContentType)
+			outReq.Header.Set("Content-Type", HttpApi.RequestContentType)
 		}
 	}
 
 	// 发出请求的URL
 	var finalUrl string
-	if len(apiDef.Url) == 0 {
-		if apiDef.DynamicUrl != nil {
-			finalUrl = unit.GetParameterValue(stack, privateDef, apiDef.DynamicUrl)
+	if len(HttpApi.Url) == 0 {
+		if HttpApi.DynamicUrl != nil {
+			finalUrl, err = util.GetParameterStringValue(stack, privateDef, HttpApi.DynamicUrl)
+			if err != nil {
+				return nil, err
+			}
 		} else {
 			klog.Errorln("无有效url")
 			panic("无有效url")
 		}
 	} else {
-		finalUrl = apiDef.Url
+		finalUrl = HttpApi.Url
 	}
 	outReqURL, _ := url.Parse(finalUrl)
 	// 设置请求参数
-	outReqParamRules := apiDef.Parameters
+	outReqParamRules := HttpApi.Parameters
 	if outReqParamRules != nil {
 		paramLen := len(*outReqParamRules)
 		if paramLen > 0 {
@@ -126,11 +119,14 @@ func newRequest(stack *hub.Stack, apiDef *hub.ApiDef, privateDef *hub.PrivateArr
 			q := outReqURL.Query()
 			vars := make(map[string]string, paramLen)
 			stack.StepResult[hub.VarsName] = vars
-			defer func() { stack.StepResult[hub.VarsName] = nil }()
+			defer delete(stack.StepResult, hub.VarsName)
 
 			for _, param := range *outReqParamRules {
 				if len(param.Name) > 0 {
-					value = unit.GetParameterValue(stack, privateDef, &param.From)
+					value, err = util.GetParameterStringValue(stack, privateDef, &param.Value)
+					if err != nil {
+						return nil, err
+					}
 
 					switch param.In {
 					case "query":
@@ -138,8 +134,8 @@ func newRequest(stack *hub.Stack, apiDef *hub.ApiDef, privateDef *hub.PrivateArr
 					case "header":
 						outReq.Header.Set(param.Name, value)
 					case "body":
-						if hasBody && apiDef.RequestContentType != hub.OriginName {
-							if apiDef.RequestContentType == "form" {
+						if hasBody && HttpApi.RequestContentType != hub.OriginName {
+							if HttpApi.RequestContentType == "form" {
 								formBody.Form.Add(param.Name, value)
 							} else {
 								if len(outBody) == 0 {
@@ -155,7 +151,7 @@ func newRequest(stack *hub.Stack, apiDef *hub.ApiDef, privateDef *hub.PrivateArr
 								}
 							}
 						} else {
-							klog.Infoln("Refuse to set body :", apiDef.RequestContentType, "VS\r\n", value)
+							klog.Infoln("Refuse to set body :", HttpApi.RequestContentType, "VS\r\n", value)
 						}
 					case hub.VarsName:
 					default:
@@ -172,31 +168,31 @@ func newRequest(stack *hub.Stack, apiDef *hub.ApiDef, privateDef *hub.PrivateArr
 	outReq.URL = outReqURL
 
 	// 处理要发送的消息体
-	if apiDef.Method == "POST" {
-		if apiDef.RequestContentType != "none" {
-			if apiDef.RequestContentType == "form" {
+	if HttpApi.Method == "POST" {
+		if HttpApi.RequestContentType != "none" {
+			if HttpApi.RequestContentType == "form" {
 				outBody = formBody.Form.Encode()
 			}
 			outReq.Body = ioutil.NopCloser(strings.NewReader(outBody))
 		}
 	}
 
-	return outReq
+	return outReq, nil
 }
 
-func handleExpireTime(stack *hub.Stack, apiDef *hub.ApiDef, resp *http.Response) (time.Time, bool) {
-	klog.Infoln("获得参数，[src]:", apiDef.Cache.From.From, "; [key]:", apiDef.Cache.From.Content, "; [format]:", apiDef.Cache.Format)
-	if strings.EqualFold(apiDef.Cache.From.From, "header") {
-		return handleHeaderExpireTime(apiDef, resp)
+func handleExpireTime(stack *hub.Stack, HttpApi *hub.HttpApiDef, resp *http.Response) (time.Time, bool) {
+	klog.Infoln("获得参数，[src]:", HttpApi.Cache.Expire.From, "; [key]:", HttpApi.Cache.Expire.Content, "; [format]:", HttpApi.Cache.Format)
+	if strings.EqualFold(HttpApi.Cache.Expire.From, "header") {
+		return handleHeaderExpireTime(HttpApi, resp)
 	} else {
-		return handleBodyExpireTime(stack, apiDef)
+		return handleBodyExpireTime(stack, HttpApi)
 	}
 }
 
-func handleHeaderExpireTime(apiDef *hub.ApiDef, resp *http.Response) (time.Time, bool) {
+func handleHeaderExpireTime(HttpApi *hub.HttpApiDef, resp *http.Response) (time.Time, bool) {
 	//首先在api 的json文件中配置参数 cache
 	// "cache": {
-	// 	"from": {
+	// 	"value": {
 	// 		"from": "header",
 	// 		"name": "Set-Cookie.expires"
 	// 	},
@@ -209,8 +205,8 @@ func handleHeaderExpireTime(apiDef *hub.ApiDef, resp *http.Response) (time.Time,
 	//	body中一个例子："expireTime":"20220510153521",格式为：20060102150405
 
 	//format = "20060102150405"
-	key := apiDef.Cache.From.Content
-	format := apiDef.Cache.Format
+	key := HttpApi.Cache.Expire.Content
+	format := HttpApi.Cache.Format
 
 	if strings.Contains(key, "Set-Cookie.") {
 		key = strings.TrimPrefix(key, "Set-Cookie.")
@@ -242,10 +238,10 @@ func handleHeaderExpireTime(apiDef *hub.ApiDef, resp *http.Response) (time.Time,
 	return time.Time{}, false
 }
 
-func handleBodyExpireTime(stack *hub.Stack, apiDef *hub.ApiDef) (time.Time, bool) {
+func handleBodyExpireTime(stack *hub.Stack, HttpApi *hub.HttpApiDef) (time.Time, bool) {
 	//首先在api 的json文件中配置参数 cache
 	// "cache": {
-	// 	"from": {
+	// 	"value": {
 	// 		"from": "json",
 	// 		"name": "{{.result.expires_in}}"
 	// 	},
@@ -256,8 +252,11 @@ func handleBodyExpireTime(stack *hub.Stack, apiDef *hub.ApiDef) (time.Time, bool
 	//	baidu_image_classify_token: Mon, 02-Jan-06 15:04:05 MST
 	//	body中一个例子："expireTime":"20220510153521",格式为：20060102150405
 
-	format := apiDef.Cache.Format
-	result := unit.GetParameterValue(stack, nil, apiDef.Cache.From)
+	format := HttpApi.Cache.Format
+	result, err := util.GetParameterStringValue(stack, nil, HttpApi.Cache.Expire)
+	if err != nil {
+		return time.Time{}, false
+	}
 
 	klog.Infof("handleBodyExpireTime:", result)
 
@@ -274,7 +273,11 @@ func parseExpireTime(value string, format string) (time.Time, error) {
 	var err error
 
 	if strings.EqualFold(format, "second") {
-		seconds := util.GetInterfaceToInt(value)
+		seconds, err := strconv.Atoi(value)
+		if err != nil {
+			klog.Errorln("解析过期时间失败, err: ", err)
+			return time.Time{}, err
+		}
 		klog.Infoln("解析后过期秒数: ", seconds)
 		exptime = time.Now().Add(time.Second * time.Duration(seconds))
 	} else {
@@ -288,58 +291,48 @@ func parseExpireTime(value string, format string) (time.Time, error) {
 	return exptime.Local(), nil
 }
 
-func getCacheContent(apiDef *hub.ApiDef) interface{} {
+func getCacheContent(HttpApi *hub.HttpApiDef) interface{} {
 	//如果支持缓存，判断过期时间
-	if time.Now().Local().After(apiDef.Cache.Expires) {
+	if time.Now().Local().After(HttpApi.Cache.Expires) {
 		return nil
 	}
-	return apiDef.Cache.Resp
+	return HttpApi.Cache.Resp
 }
 
-func getCacheContentWithLock(apiDef *hub.ApiDef) interface{} {
+func getCacheContentWithLock(HttpApi *hub.HttpApiDef) interface{} {
 	//如果支持缓存，判断过期时间
-	apiDef.Cache.Locker.RLock()
-	defer apiDef.Cache.Locker.RUnlock()
-	if time.Now().Local().After(apiDef.Cache.Expires) {
+	HttpApi.Cache.Locker.RLock()
+	defer HttpApi.Cache.Locker.RUnlock()
+	if time.Now().Local().After(HttpApi.Cache.Expires) {
 		return nil
 	}
-	return apiDef.Cache.Resp
+	return HttpApi.Cache.Resp
 }
-
-// func handleRespStatus(stack *hub.Stack, apiDef *hub.ApiDef) bool {
-// 	if apiDef.RespStatus == nil { //如果没有定义，则直接返回正确
-// 		return true
-// 	}
-
-// 	result := unit.GetParameterValue(stack, nil, apiDef.RespStatus.From)
-// 	klog.Infoln("handleRespStatus 结果", result)
-// 	return apiDef.RespStatus.Expected == result
-// }
 
 // 转发API调用
-func Run(stack *hub.Stack, name string, private string) (jsonOutRspBody interface{}, ret int) {
+func run(stack *hub.Stack, name string, private string) (jsonOutRspBody interface{}, ret int) {
 	var err error
-	apiDef, err := unit.FindApiDef(stack, name)
+	HttpApi, err := util.FindApiDef(stack, name)
 
-	if apiDef == nil {
+	if HttpApi == nil {
 		klog.Errorln("获得API定义失败：", err)
 		panic(err)
 	}
 
-	privateDef, err := unit.FindPrivateDef(stack, private, apiDef.PrivateName)
+	privateDef, err := util.FindPrivateDef(stack, private, HttpApi.PrivateName)
 	if err != nil {
 		klog.Errorln("获得API定义失败：", err)
 		panic(err)
 	}
 
-	if apiDef.Cache != nil { //如果Json文件中配置了cache，表示支持缓存
-		if jsonOutRspBody = getCacheContentWithLock(apiDef); jsonOutRspBody == nil {
-			defer apiDef.Cache.Locker.Unlock()
-			apiDef.Cache.Locker.Lock()
+	if HttpApi.Cache != nil { //如果Json文件中配置了cache，表示支持缓存
+		if jsonOutRspBody = getCacheContentWithLock(HttpApi); jsonOutRspBody == nil {
+			defer HttpApi.Cache.Locker.Unlock()
+			HttpApi.Cache.Locker.Lock()
 
-			if jsonOutRspBody = getCacheContent(apiDef); jsonOutRspBody == nil {
+			if jsonOutRspBody = getCacheContent(HttpApi); jsonOutRspBody == nil {
 				klog.Infoln("获取缓存Cache ... ...")
-				jsonOutRspBody, _ = handleReq(stack, apiDef, privateDef)
+				jsonOutRspBody, _ = handleReq(stack, HttpApi, privateDef)
 			} else {
 				klog.Infoln("Cache缓存有效，直接回应")
 			}
@@ -347,10 +340,10 @@ func Run(stack *hub.Stack, name string, private string) (jsonOutRspBody interfac
 			klog.Infoln("Cache缓存有效，直接回应")
 		}
 	} else { //不支持缓存，直接请求
-		jsonOutRspBody, _ = handleReq(stack, apiDef, privateDef)
+		jsonOutRspBody, _ = handleReq(stack, HttpApi, privateDef)
 	}
 
-	klog.Infoln("处理", apiDef.Url, ":", http.StatusOK, "\r\n返回结果：", jsonOutRspBody)
+	klog.Infoln("处理", HttpApi.Url, ":", http.StatusOK, "\r\n返回结果：", jsonOutRspBody)
 	if jsonOutRspBody == nil {
 		return nil, 500
 	}
@@ -366,9 +359,34 @@ func runHttpApi(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	}
 
 	private := params["private"]
-	return Run(stack, name, private)
+	return run(stack, name, private)
 }
 
-func init() {
-	task.RegisterTasks(map[string]hub.TaskHandler{"httpApi": runHttpApi})
+func httpResponse(stack *hub.Stack, params map[string]string) (interface{}, int) {
+	name, OK := params["type"]
+	if !OK {
+		str := "缺少api名称"
+		klog.Errorln(str)
+		panic(str)
+	}
+
+	key, OK := params["key"]
+	if !OK {
+		str := "缺少api名称"
+		klog.Errorln(str)
+		panic(str)
+	}
+	result := stack.StepResult[key]
+	switch name {
+	case "html":
+		stack.GinContext.Header("Content-Type", "text/html; charset=utf-8")
+		stack.GinContext.String(http.StatusOK, "%s", result)
+	case "json":
+		stack.GinContext.IndentedJSON(http.StatusOK, result)
+	default:
+		stack.GinContext.Header("Content-Type", name)
+		stack.GinContext.String(http.StatusOK, "%s", result)
+
+	}
+	return nil, http.StatusOK
 }

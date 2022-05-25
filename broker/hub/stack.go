@@ -22,16 +22,17 @@ func (stack Stack) Query(name string) string {
 }
 
 // 从执行结果中获取查询参数
-func (stack Stack) QueryFromStepResult(name string) string {
+func (stack Stack) QueryFromStepResult(name string) (string, error) {
 	tmpl, err := template.New("key").Funcs(FuncMapForTemplate).Parse(name)
 	if err != nil {
 		klog.Infoln("QueryFromStepResult 创建并解析template失败:", err)
-		return ""
+		return "", err
 	}
 	buf := new(bytes.Buffer)
 	err = tmpl.Execute(buf, stack.StepResult)
 	if err != nil {
 		klog.Infoln("渲染template失败:", err)
+		return "", err
 	}
-	return buf.String()
+	return buf.String(), err
 }

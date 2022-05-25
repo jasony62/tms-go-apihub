@@ -1,4 +1,4 @@
-package unit
+package util
 
 import (
 	"crypto/md5"
@@ -11,17 +11,21 @@ import (
 )
 
 func init() {
-	hub.FuncMap = map[string](interface{}){
+	hub.FuncMap = map[string]hub.FuncHandler{
 		"utc": utc,
 		"md5": md5Func,
 	}
 	hub.FuncMapForTemplate = map[string](interface{}){
-		"utc": utc,
+		"utc": utcTemplate,
 		"md5": md5Template,
 	}
 }
 
-func utc() string {
+func utc(params []string) string {
+	return strconv.FormatInt(time.Now().Unix(), 10)
+}
+
+func utcTemplate(args ...interface{}) string {
 	return strconv.FormatInt(time.Now().Unix(), 10)
 }
 

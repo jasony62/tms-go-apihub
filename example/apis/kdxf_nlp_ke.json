@@ -9,7 +9,7 @@
     {
       "in": "header",
       "name": "X-Appid",
-      "from": {
+      "value": {
         "from": "private",
         "content": "appid"
       }
@@ -17,7 +17,7 @@
     {
       "in": "header",
       "name": "X-CurTime",
-      "from": {
+      "value": {
         "from": "func",
         "content": "utc"
       }
@@ -25,7 +25,7 @@
     {
       "in": "header",
       "name": "X-Param",
-      "from": {
+      "value": {
         "from": "literal",
         "content": "eyJ0eXBlIjoiZGVwZW5kZW50In0="
       }
@@ -33,7 +33,7 @@
     {
       "in": "vars",
       "name": "apikey",
-      "from": {
+      "value": {
         "from": "private",
         "content": "apikey"
       }
@@ -41,7 +41,7 @@
     {
       "in": "vars",
       "name": "XCurTime",
-      "from": {
+      "value": {
         "from": "json",
         "content": "{{index .vars \"X-CurTime\"}}"
       }
@@ -49,7 +49,7 @@
     {
       "in": "vars",
       "name": "XParam",
-      "from": {
+      "value": {
         "from": "json",
         "content": "{{index .vars \"X-Param\"}}"
       }
@@ -57,7 +57,7 @@
     {
       "in": "header",
       "name": "X-CheckSum",
-      "from": {
+      "value": {
         "from": "json",
         "content": "{{md5 .vars.apikey .vars.XCurTime .vars.XParam}}"
       }
@@ -65,7 +65,7 @@
     {
       "in": "body",
       "name": "text",
-      "from": {
+      "value": {
         "from": "origin",
         "content": "content"
       }

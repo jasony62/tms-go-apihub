@@ -2,7 +2,7 @@
     "name": "handle_send",
     "description": "处理输入并发送微信",
     "ConcurrentNum": 2,
-    "tasks": [
+    "steps": [
         {
             "type": "control",
             "name": "loop",
@@ -13,7 +13,7 @@
                 "from": "template",
                 "content": "{{len .origin.cities}}"
             },
-            "tasks": [
+            "steps": [
                 {
                     "type": "control",
                     "name": "switch",
@@ -24,7 +24,7 @@
                     "cases": [
                         {
                             "value": "sh",
-                            "tasks": [
+                            "steps": [
                                 {
                                     "type": "flow",
                                     "name": "amap_city_weather",
@@ -32,7 +32,7 @@
                                     "parameters": [
                                         {
                                             "name": "city",
-                                            "from": {
+                                            "value": {
                                                 "from": "literal",
                                                 "content": "上海"
                                             }
@@ -43,7 +43,7 @@
                         },
                         {
                             "value": "bj",
-                            "tasks": [
+                            "steps": [
                                 {
                                     "type": "flow",
                                     "name": "amap_city_weather",
@@ -51,7 +51,7 @@
                                     "parameters": [
                                         {
                                             "name": "city",
-                                            "from": {
+                                            "value": {
                                                 "from": "literal",
                                                 "content": "北京"
                                             }
@@ -72,7 +72,7 @@
             "parameters": [
                 {
                     "name": "content",
-                    "from": {
+                    "value": {
                         "from": "origin",
                         "content": "image"
                     }
@@ -85,28 +85,28 @@
             "parameters": [
                 {
                     "name": "content",
-                    "from": {
+                    "value": {
                         "from": "template",
                         "content": "{{range $i,$v := .myloop}}{{if $i}},{{end}}{{$v.data.region}} weather is {{$v.data.weather}}{{end}}, and image is {{(index .image.result 0).name}}"
                     }
                 },
                 {
                     "name": "touser",
-                    "from": {
+                    "value": {
                         "from": "literal",
                         "content": "YangYue"
                     }
                 },
                 {
                     "name": "msgtype",
-                    "from": {
+                    "value": {
                         "from": "literal",
                         "content": "text"
                     }
                 },
                 {
                     "name": "agentid",
-                    "from": {
+                    "value": {
                         "from": "literal",
                         "content": "1000002"
                     }

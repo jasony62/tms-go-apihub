@@ -11,7 +11,7 @@
     {
       "in": "body",
       "name": "body",
-      "from": {
+      "value": {
         "from": "json",
         "json": {
           "type": 1,
@@ -22,7 +22,7 @@
     }
   ],
   "respStatus": {
-    "from": {
+    "value": {
   		"from": "template",
   		"content": "{{.result.sms.status}}"
   	},

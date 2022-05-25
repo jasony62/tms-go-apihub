@@ -10,8 +10,11 @@ import (
 	klog "k8s.io/klog/v2"
 )
 
-func executeTemplate(source interface{}, rules interface{}) *bytes.Buffer {
-	byteTempl, _ := json.Marshal(rules)
+func executeTemplate(source interface{}, rules interface{}) (*bytes.Buffer, error) {
+	byteTempl, err := json.Marshal(rules)
+	if err != nil {
+		return nil, err
+	}
 
 	strTempl := string(byteTempl)
 
@@ -29,14 +32,14 @@ func executeTemplate(source interface{}, rules interface{}) *bytes.Buffer {
 	if err != nil {
 		klog.Infoln("get template result：", err)
 	}
-	return buf
+	return buf, err
 }
 
-func Json2Json(source interface{}, rules interface{}) interface{} {
-	buf := executeTemplate(source, rules)
+func Json2Json(source interface{}, rules interface{}) (interface{}, error) {
+	buf, err := executeTemplate(source, rules)
 	var target interface{}
-	json.Unmarshal(buf.Bytes(), &target)
-	return target
+	err = json.Unmarshal(buf.Bytes(), &target)
+	return target, err
 }
 
 func RemoveOutideQuote(s []byte) string {

@@ -1,10 +1,11 @@
-package task
+package core
 
 import (
+	"net/http"
 	"sync"
 
 	"github.com/jasony62/tms-go-apihub/hub"
-	"github.com/jasony62/tms-go-apihub/unit"
+	"github.com/jasony62/tms-go-apihub/util"
 	klog "k8s.io/klog/v2"
 )
 
@@ -28,8 +29,9 @@ func RegisterTasks(list map[string]hub.TaskHandler) {
 }
 
 // task调用
-func Run(stack *hub.Stack, task *hub.TaskDef) (jsonOutRspBody interface{}, ret int) {
+func ApiRun(stack *hub.Stack, task *hub.ApiDef) (result interface{}, ret int) {
 	function := taskMap[task.Command]
+	var err error
 	if function == nil {
 		str := "不能执行" + stack.ChildName
 		klog.Errorln(str)
@@ -43,7 +45,10 @@ func Run(stack *hub.Stack, task *hub.TaskDef) (jsonOutRspBody interface{}, ret i
 		parameters = make(map[string]string)
 		for index := range *task.Parameters {
 			item := (*task.Parameters)[index]
-			parameters[item.Name] = unit.GetParameterValue(stack, nil, item.From)
+			parameters[item.Name], err = util.GetParameterStringValue(stack, nil, &item.Value)
+			if err != nil {
+				return nil, http.StatusInternalServerError
+			}
 		}
 	}
 
@@ -51,7 +56,10 @@ func Run(stack *hub.Stack, task *hub.TaskDef) (jsonOutRspBody interface{}, ret i
 		origin = stack.StepResult[hub.OriginName].(map[string]interface{})
 		for index := range *task.OriginParameters {
 			item := (*task.OriginParameters)[index]
-			origin[item.Name] = unit.GetParameterValue(stack, nil, item.From)
+			origin[item.Name], err = util.GetParameterRawValue(stack, nil, &item.Value)
+			if err != nil {
+				return nil, http.StatusInternalServerError
+			}
 		}
 	}
 	return function(stack, parameters)

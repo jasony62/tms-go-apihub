@@ -9,7 +9,7 @@
      {
       "in": "query",
       "name": "grant_type",
-      "from": {
+      "value": {
         "from": "private",
         "content": "xgranttype"
       }
@@ -17,7 +17,7 @@
     {
       "in": "query",
       "name": "client_id",
-      "from": {
+      "value": {
         "from": "private",
         "content": "xappkey"
       }
@@ -25,7 +25,7 @@
 	{
       "in": "query",
       "name": "client_secret",
-      "from": {
+      "value": {
         "from": "private",
         "content": "xsecret"
       }
@@ -33,7 +33,7 @@
 
   ],
   "cache": {
-	"from": {
+	"expire": {
 		"from": "json",
 		"content": "{{.result.expires_in}}"
 	},

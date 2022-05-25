@@ -1,7 +1,7 @@
 {
   "name": "amap_city_weather",
   "description": "高德地图查询城市的天气",
-  "tasks": [
+  "steps": [
     {
       "name": "city_adcode",
       "description": "查询城市的区域码",
@@ -19,7 +19,7 @@
         "parameters": [
           {
             "name": "city",
-            "from": {
+            "value": {
               "from": "StepResult",
               "content": "adcodeResult.data.adcode"
             }
@@ -33,7 +33,7 @@
       "resultKey": "merged",
       "response": {
         "type": "html",
-        "from": {
+        "value": {
           "from": "template",
           "content": "<html><head><title>Hello API</title></head><body><p>status:{{.weatherResult.errCode}}</p><p>region:{{.weatherResult.data.region}}</p><p>weather:{{.weatherResult.data.weather}}</p><p>temperature:{{.weatherResult.data.temperature}}</p><p>winddirection:{{.weatherResult.data.winddirection}}</p><p>windpower:{{.weatherResult.data.windpower}}</p><p>humidity:{{.weatherResult.data.humidity}}</p></body></html>"
         }

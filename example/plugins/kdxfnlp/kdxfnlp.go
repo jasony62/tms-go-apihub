@@ -23,7 +23,7 @@ func init() {
 	}
 }
 
-func Register() (map[string](interface{}), map[string](interface{})) {
+func Register() (map[string]hub.FuncHandler, map[string](interface{})) {
 	return FuncMap, FuncMapForTemplate
 }
 

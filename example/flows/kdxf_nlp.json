@@ -2,7 +2,7 @@
   "name": "kdxf_nlp",
   "description": "处理用户输入文本",
   "concurrentNum": 2,
-  "tasks": [
+  "steps": [
     {
       "name": "input_cws",
       "description": "对输入内容进行分词",
@@ -27,7 +27,7 @@
       "resultKey": "merged",
       "response": {
         "type": "json",
-        "from": {
+        "value": {
           "from": "json",
           "json": {
             "errCode": "{{.pos.errCode}}",

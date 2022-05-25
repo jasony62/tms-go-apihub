@@ -7,7 +7,7 @@
     {
       "in": "query",
       "name": "access_token",
-      "from": {
+      "value": {
         "from": "origin",
         "content": "token"
       }
@@ -16,7 +16,7 @@
     {
       "in": "body",
       "name": "body",
-      "from": {
+      "value": {
         "from": "json",
         "json": {
           "touser": "{{.origin.touser}}",
