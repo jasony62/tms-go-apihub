@@ -3,7 +3,7 @@ package hub
 type ScheduleSwitchCaseDef struct {
 	Value         string             `json:"value"`
 	ConcurrentNum int                `json:"concurrentNum,omitempty"`
-	Tasks         *[]ScheduleTaskDef `json:"tasks"`
+	Steps         *[]ScheduleTaskDef `json:"apis"`
 }
 
 type ScheduleTaskDef struct {
@@ -12,7 +12,7 @@ type ScheduleTaskDef struct {
 	Description string `json:"description"`
 	ResultKey   string `json:"resultKey"`
 	//用于switch和loop
-	Key BaseDefParamValue `json:"key"`
+	Key BaseValueDef `json:"key"`
 	//用于switch和loop
 	ConcurrentNum int `json:"concurrentNum,omitempty"`
 	//用于loop
@@ -22,9 +22,9 @@ type ScheduleTaskDef struct {
 	//用于switch
 	Cases *[]ScheduleSwitchCaseDef `json:"cases,omitempty"`
 	//用于loop
-	Tasks *[]ScheduleTaskDef `json:"tasks,omitempty"`
+	Steps *[]ScheduleTaskDef `json:"apis,omitempty"`
 	//用于api，flow
-	Parameters *[]OriginDefParam `json:"parameters,omitempty"`
+	Parameters *[]BaseParamDef `json:"parameters,omitempty"`
 	//api
 	PrivateName string `json:"private"`
 }
@@ -33,5 +33,5 @@ type ScheduleDef struct {
 	Name          string             `json:"name"`
 	Description   string             `json:"description"`
 	ConcurrentNum int                `json:"concurrentNum"`
-	Tasks         *[]ScheduleTaskDef `json:"tasks"`
+	Steps         *[]ScheduleTaskDef `json:"apis"`
 }

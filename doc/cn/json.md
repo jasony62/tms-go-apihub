@@ -77,7 +77,7 @@ from是一个基础结构，用在多处
 | description   | SCHEDULE 的描述。                        | string   |  否    |
 | concurrentNum           | 最大允许的并行执行的数量。                               | int   | 否   |
 |          |      |
-| tasks    | 任务列表。                                object[] |      |
+| apis    | 任务列表。                                object[] |      |
 | --type          | control，api, flow| string   | 是   |
 | --name          | type为api, flow时，为对应的名字，control时可以是switch，loop| string   | 是   |
 |--description   | task 的描述。      | string   |  否    |
@@ -85,10 +85,10 @@ from是一个基础结构，用在多处
 |--key   |  switch时为要检查的值，loop时为循环的次数，标准from结构。      | object   |  否    |
 |--concurrentNum   |  control命令时最大允许的并行执行的数量。      | int   |  否    |
 | --concurrent   | 是否使用并行执行。                       | bool   | 否   |
-| --tasks   | control命令时的执行列表，结构同上层的tasks，为tasks的自身嵌套。                       | object[]   | 否   |
+| --apis   | control命令时的执行列表，结构同上层的tasks，为tasks的自身嵌套。                       | object[]   | 否   |
 | --parameters   | flow和control时用于改写origin，同flow的parameters。        | object[]   | 否   |
 | --private    | 用于覆盖原始API中的private。                            | string   | 否   | 
 | --cases   | switch时检查的case。                       | object[]   | 否   |
 | ----Value   | 上层的key等于本字段则执行tasks。                       | string   | 是   |
 | ----concurrentNum   |  control命令时最大允许的并行执行的数量。      | int   |  否    |
-| --tasks   | 结构同上层的tasks，为tasks的自身嵌套。                       | object[]   | 否   |
+| --apis   | 结构同上层的tasks，为tasks的自身嵌套。                       | object[]   | 否   |

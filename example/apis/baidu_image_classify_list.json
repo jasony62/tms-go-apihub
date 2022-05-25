@@ -8,7 +8,7 @@
     {
       "in": "query",
       "name": "access_token",
-      "from": {
+      "value": {
         "from": "origin",
         "content": "token"
       }
@@ -16,7 +16,7 @@
     {
       "in": "body",
       "name": "imgUrl",
-      "from": {
+      "value": {
         "from": "origin",
         "content": "content"
       }

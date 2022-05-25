@@ -1,31 +1,66 @@
 {
   "name": "baidu_image_classify",
   "description": "百度图片动物分类",
-  "tasks": [
+  "steps": [
     {
       "name": "gettoken",
       "description": "获得access_token",
-      "resultKey": "tokenResult",
-      "api": {
-        "id": "baidu_image_classify_token"
-      }
+      "command": "httpApi",
+      "parameters": [
+        {
+          "name": "name",
+          "value": {
+            "from": "literal",
+            "content": "baidu_image_classify_token"
+          }
+        }
+      ],
+      "resultKey": "tokenResult"
     },
     {
       "name": "getlist",
       "description": "获得动物图片列表",
-      "resultKey": "listResult",
-      "api": {
-        "id": "baidu_image_classify_list",
-        "parameters": [
-          {
-            "name": "token",
-            "from": {
-              "from": "StepResult",
-              "content": "tokenResult.access_token"
-            }
+      "command": "httpApi",
+      "parameters": [
+        {
+          "name": "name",
+          "value": {
+            "from": "literal",
+            "content": "baidu_image_classify_list"
           }
-        ]
-      }
-    }
+        }
+      ],
+      "origin": [
+        {
+          "name": "token",
+          "value": {
+            "from": "StepResult",
+            "content": "tokenResult.access_token"
+          }
+        }
+      ],
+      "resultKey": "listResult"
+    },
+    {
+      "name": "response",
+      "command": "httpResponse",
+      "description": "返回结果",    
+      "parameters": [
+        {
+          "name": "type",
+          "value": {
+            "from": "literal",
+            "content": "json"
+          }
+        },
+        {
+          "name": "key",
+          "value": {
+            "from": "literal",
+            "content": "listResult"
+          }
+        }        
+      ]
+    }    
   ]
 }

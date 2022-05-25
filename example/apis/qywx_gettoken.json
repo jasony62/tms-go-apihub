@@ -7,7 +7,7 @@
     {
       "in": "query",
       "name": "corpid",
-      "from": {
+      "value": {
         "from": "private",
         "content": "corpid"
       }
@@ -15,14 +15,14 @@
     {
       "in": "query",
       "name": "corpsecret",
-      "from": {
+      "value": {
         "from": "private",
         "content": "corpsecret"
       }
     }
   ],
   "cache": {
-  "from": {
+  "expire": {
 	  "from": "json",
 	  "content": "{{.result.expires_in}}"
     },

@@ -3,21 +3,18 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net/http"
 	"os"
 	"regexp"
 	"strconv"
 
-	klog "k8s.io/klog/v2"
-
 	"github.com/gin-gonic/gin"
-	"github.com/jasony62/tms-go-apihub/api"
-	"github.com/jasony62/tms-go-apihub/flow"
+	"github.com/jasony62/tms-go-apihub/apis"
+	"github.com/jasony62/tms-go-apihub/core"
 	"github.com/jasony62/tms-go-apihub/hub"
-	"github.com/jasony62/tms-go-apihub/schedule"
-	"github.com/jasony62/tms-go-apihub/tasks"
-	"github.com/jasony62/tms-go-apihub/unit"
 	"github.com/jasony62/tms-go-apihub/util"
 	"github.com/joho/godotenv"
+	klog "k8s.io/klog/v2"
 )
 
 // 1次请求的上下文
@@ -43,21 +40,21 @@ func newStack(c *gin.Context) *hub.Stack {
 }
 
 // 执行1个API调用
-func callApi(c *gin.Context) {
+func callHttpApi(c *gin.Context) {
 	// 调用api
 	tmpStack := newStack(c)
-	result, status := api.Run(tmpStack, tmpStack.ChildName, "")
+	params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: tmpStack.ChildName}}}
+
+	result, status := core.ApiRun(tmpStack, &hub.ApiDef{Name: "main", Command: "httpApi", Parameters: &params, ResultKey: "main"})
 	c.IndentedJSON(status, result)
 }
 
 // 执行一个调用流程
 func callFlow(c *gin.Context) {
 	// 执行编排
-	result, textType, status := flow.Run(newStack(c))
-	if textType == hub.RESP_TYPE_HTML || textType == hub.RESP_TYPE_TMPL {
-		c.Header("Content-Type", "text/html; charset=utf-8")
-		c.String(status, "%s", result)
-	} else { //目前默认其他均按json回应
+	result, status := core.RunFlow(newStack(c))
+	if status != http.StatusOK {
+		//成功时的回复应该定义在flow的step中
 		c.IndentedJSON(status, result)
 	}
 }
@@ -65,7 +62,7 @@ func callFlow(c *gin.Context) {
 // 执行一个计划流程
 func callSchedule(c *gin.Context) {
 	// 执行编排
-	result, status := schedule.Run(newStack(c))
+	result, status := core.RunSchedule(newStack(c))
 	c.IndentedJSON(status, result)
 }
 
@@ -115,7 +112,7 @@ func main() {
 			klog.Fatal(err)
 		}
 	}
-	tasks.Init()
+
 	host := os.Getenv("TGAH_HOST")
 	if host == "" {
 		hub.DefaultApp.Host = "0.0.0.0"
@@ -141,23 +138,26 @@ func main() {
 	if util.DownloadConf(basePath, os.Getenv("TGAH_REMOTE_CONF_UNZIP_PWD")) {
 		klog.Infoln("Download conf zip package from remote url OK")
 	}
-	unit.LoadConfigJsonData([]string{basePath + "privates", basePath + "apis", basePath + "flows",
+	util.LoadConfigJsonData([]string{basePath + "privates", basePath + "apis", basePath + "flows",
 		basePath + "schedules", basePath + "templates"})
 
-	unit.LoadConfigPluginData(basePath + "plugins")
+	util.LoadConfigPluginData(basePath + "plugins")
 	router := gin.Default()
 	if hub.DefaultApp.BucketEnable {
-		router.Any("/api/:bucket/:Id", callApi)
+		router.Any("/api/:bucket/:Id", callHttpApi)
 		router.Any("/flow:bucket/:Id", callFlow)
 		router.Any("/schedule:bucket/:Id", callSchedule)
 	} else {
-		router.Any("/api/:Id", callApi)
+		router.Any("/api/:Id", callHttpApi)
 		router.Any("/flow/:Id", callFlow)
 		router.Any("/schedule/:Id", callSchedule)
 	}
 
-	router.LoadHTMLGlob(basePath + "/templates/*.tmpl")
+	if needLoad, _ := pathExists(basePath + "templates"); needLoad {
+		router.LoadHTMLGlob(basePath + "templates/*.tmpl")
+	}
 
+	apis.Init()
 	if hub.DefaultApp.Port > 0 {
 		router.Run(fmt.Sprintf("%s:%d", hub.DefaultApp.Host, hub.DefaultApp.Port))
 	} else {

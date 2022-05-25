@@ -1,31 +1,100 @@
 {
   "name": "amap_city_weather",
   "description": "高德地图查询城市的天气",
-  "tasks": [
+  "steps": [
     {
       "name": "city_adcode",
+      "command": "httpApi",
       "description": "查询城市的区域码",
-      "resultKey": "adcodeResult",
-      "api": {
-        "id": "amap_district_test"
-      }
+      "parameters": [
+        {
+          "name": "name",
+          "value": {
+            "from": "literal",
+            "content": "amap_district_test"
+          }
+        }
+      ],
+      "resultKey": "adcodeResult"
     },
     {
-      "name": "city_adcode",
+      "name": "amap_weather",
+      "command": "httpApi",
+      "parameters": [
+        {
+          "name": "name",
+          "value": {
+            "from": "literal",
+            "content": "amap_weather_test"
+          }
+        }
+      ],
       "description": "查询城市的区域码",
       "resultKey": "weatherResult",
-      "api": {
-        "id": "amap_weather_test",
-        "parameters": [
-          {
-            "name": "city",
-            "from": {
-              "from": "StepResult",
-              "content": "adcodeResult.data.adcode"
+      "origin": [
+        {
+          "name": "city",
+          "value": {
+            "from": "template",
+            "content": "{{(index .adcodeResult.districts 0).adcode}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "merge_result",
+      "command": "createJson",
+      "description": "合并收到的结果",
+      "parameters": [
+        {
+          "name": "key",
+          "value": {
+            "from": "literal",
+            "content": "merge_result"
+          }
+        }
+      ],
+      "origin": [
+        {
+          "name": "merge_result",
+          "value": {
+            "from": "jsonRaw",
+            "json": {
+              "errCode": "{{.weatherResult.status}}",
+              "data": {
+                "region": "{{(index .weatherResult.lives 0).province}}",
+                "weather": "{{(index .weatherResult.lives 0).weather}}",
+                "temperature": "{{(index .weatherResult.lives 0).temperature}}",
+                "winddirection": "{{(index .weatherResult.lives 0).winddirection}}",
+                "windpower": "{{(index .weatherResult.lives 0).windpower}}",
+                "humidity": "{{(index .weatherResult.lives 0).humidity}}"
+              }
             }
           }
-        ]
-      }
+        }
+      ],      
+      "resultKey": "merged"
+    },
+    {
+      "name": "response",
+      "command": "httpResponse",
+      "description": "返回结果",    
+      "parameters": [
+        {
+          "name": "type",
+          "value": {
+            "from": "literal",
+            "content": "json"
+          }
+        },
+        {
+          "name": "key",
+          "value": {
+            "from": "literal",
+            "content": "merged"
+          }
+        }        
+      ]
     }
   ]
 }

@@ -1,4 +1,4 @@
-package unit
+package util
 
 import (
 	"bytes"
@@ -6,11 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"plugin"
 	"strings"
 
 	"github.com/jasony62/tms-go-apihub/hub"
-	"github.com/jasony62/tms-go-apihub/util"
 	klog "k8s.io/klog/v2"
 )
 
@@ -22,7 +22,7 @@ const (
 	TMPL_TYPE
 )
 
-func FindApiDef(stack *hub.Stack, id string) (*hub.ApiDef, error) {
+func FindApiDef(stack *hub.Stack, id string) (*hub.HttpApiDef, error) {
 	key := GetBucketKey(stack, id)
 	apiDef, ok := hub.DefaultApp.ApiMap[key]
 	if !ok {
@@ -88,24 +88,34 @@ func getArgsVal(stepResult map[string]interface{}, args []string) []string {
 	return argsV
 }
 
-func GetParameterValue(stack *hub.Stack, private *hub.PrivateArray, from *hub.BaseDefParamValue) (value string) {
+func GetParameterRawValue(stack *hub.Stack, private *hub.PrivateArray, from *hub.BaseValueDef) (value interface{}, err error) {
 	switch from.From {
 	case "literal":
 		value = from.Content
 	case "query":
 		value = stack.Query(from.Content)
 	case hub.OriginName:
-		value = stack.QueryFromStepResult("{{.origin." + from.Content + "}}")
+		value, err = stack.QueryFromStepResult("{{.origin." + from.Content + "}}")
 	case "private":
 		value = findPrivateValue(private, from.Content)
 	case "template":
-		value = stack.QueryFromStepResult(from.Content)
+		value, err = stack.QueryFromStepResult(from.Content)
 	case "StepResult":
-		value = stack.QueryFromStepResult("{{." + from.Content + "}}")
+		value, err = stack.QueryFromStepResult("{{." + from.Content + "}}")
 	case "json":
-		jsonOutBody := util.Json2Json(stack.StepResult, from.Json)
-		byteJson, _ := json.Marshal(jsonOutBody)
-		value = util.RemoveOutideQuote(byteJson)
+		jsonOutBody, err := Json2Json(stack.StepResult, from.Json)
+		if err != nil {
+			return "", err
+		}
+		byteJson, err := json.Marshal(jsonOutBody)
+		if err != nil {
+			return "", err
+		}
+		value = RemoveOutideQuote(byteJson)
+	case "jsonRaw":
+		value, err = Json2Json(stack.StepResult, from.Json)
+	case "env":
+		value = os.Getenv(from.Content)
 	case "func":
 		function := hub.FuncMap[from.Content]
 		if function == nil {
@@ -113,34 +123,36 @@ func GetParameterValue(stack *hub.Stack, private *hub.PrivateArray, from *hub.Ba
 			klog.Errorln(str)
 			panic(str)
 		}
-		switch funcV := function.(type) {
-		case func() string:
-			value = funcV()
-		case func([]string) string:
+		var params []string
+		if len(from.Args) > 0 {
 			strs := strings.Fields(from.Args)
-			argsV := getArgsVal(stack.StepResult, strs)
-			value = funcV(argsV)
-		default:
-			str := from.Content + "不能执行"
-			klog.Errorln(str)
-			panic(str)
+			params = getArgsVal(stack.StepResult, strs)
 		}
+		value = function(params)
 	case hub.ResultName:
-		value = stack.QueryFromStepResult("{{.result." + from.Content + "}}")
+		value, err = stack.QueryFromStepResult("{{.result." + from.Content + "}}")
 	default:
 		str := "不支持的type" + from.From
 		klog.Errorln(str)
 		panic(str)
 	}
-	return value
+	return
+}
+
+func GetParameterStringValue(stack *hub.Stack, private *hub.PrivateArray, from *hub.BaseValueDef) (value string, err error) {
+	result, err := GetParameterRawValue(stack, private, from)
+	if err == nil {
+		return result.(string), err
+	}
+	return "", err
 }
 
 func LoadConfigJsonData(paths []string) {
-	hub.DefaultApp.ApiMap = make(map[string]*hub.ApiDef)
+	hub.DefaultApp.ApiMap = make(map[string]*hub.HttpApiDef)
 	hub.DefaultApp.FlowMap = make(map[string]*hub.FlowDef)
 	hub.DefaultApp.ScheduleMap = make(map[string]*hub.ScheduleDef)
 	hub.DefaultApp.PrivateMap = make(map[string]*hub.PrivateArray)
-	hub.DefaultApp.TemplateMap = make(map[string]string)
+	hub.DefaultApp.SourceMap = make(map[string]string)
 
 	klog.Infoln("加载API def文件...")
 	LoadJsonDefData(JSON_TYPE_API, paths[JSON_TYPE_API], "")
@@ -200,7 +212,7 @@ func LoadJsonDefData(jsonType int, path string, prefix string) {
 			decoder := json.NewDecoder(bytes.NewReader(byteFile))
 			switch jsonType {
 			case JSON_TYPE_API:
-				def := new(hub.ApiDef)
+				def := new(hub.HttpApiDef)
 				decoder.Decode(&def)
 				hub.DefaultApp.ApiMap[key] = def
 			case JSON_TYPE_FLOW:
@@ -254,7 +266,7 @@ func LoadConfigPluginData(path string) {
 				klog.Errorln(err)
 				panic(err)
 			}
-			mapFunc, mapFuncForTemplate := registerFunc.(func() (map[string](interface{}), map[string](interface{})))()
+			mapFunc, mapFuncForTemplate := registerFunc.(func() (map[string]hub.FuncHandler, map[string](interface{})))()
 			loadPluginFuncs(mapFunc, mapFuncForTemplate)
 			klog.Infof("加载Json文件完成！\r\n")
 		}
@@ -277,7 +289,7 @@ func GetBucketKey(stack *hub.Stack, fileName string) string {
 	return key
 }
 
-func loadPluginFuncs(mapFunc map[string](interface{}), mapFuncForTemplate map[string](interface{})) {
+func loadPluginFuncs(mapFunc map[string]hub.FuncHandler, mapFuncForTemplate map[string](interface{})) {
 	for k, v := range mapFunc {
 		if _, ok := hub.FuncMap[k]; ok {
 			klog.Errorf("加载(%s)失败,FuncMap存在重名函数！\r\n", k)
@@ -328,7 +340,7 @@ func LoadTemplateData(jsonType int, path string, prefix string) {
 				key = prefix + "/" + fname
 			}
 
-			hub.DefaultApp.TemplateMap[key] = string(byteFile)
+			hub.DefaultApp.SourceMap[key] = string(byteFile)
 			klog.Infof("加载Template文件成功: key: %s\r\n", key)
 		}
 	}

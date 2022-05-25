@@ -1,4 +1,4 @@
-package tasks
+package apis
 
 import (
 	"github.com/jasony62/tms-go-apihub/hub"

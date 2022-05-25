@@ -1,7 +1,7 @@
 {
   "name": "qywx_message_send",
   "description": "给企业微信用户发送消息",
-  "tasks": [
+  "steps": [
     {
       "name": "gettoken",
       "description": "获得access_token",
@@ -9,7 +9,7 @@
       "parameters": [
         {
           "name": "name",
-          "from": {
+          "value": {
             "from": "literal",
             "content": "qywx_gettoken"
           }
@@ -24,7 +24,7 @@
       "parameters": [
         {
           "name": "",
-          "from": {
+          "value": {
             "from": "StepResult",
             "content": "tokenResult.access_token"
           }
@@ -38,7 +38,7 @@
       "parameters": [
         {
           "name": "name",
-          "from": {
+          "value": {
             "from": "literal",
             "content": "qywx_message_send"
           }
@@ -47,7 +47,7 @@
       "origin": [
         {
           "name": "token",
-          "from": {
+          "value": {
             "from": "StepResult",
             "content": "tokenResult.access_token"
           }
@@ -62,12 +62,33 @@
       "parameters": [
         {
           "name": "0",
-          "from": {
+          "value": {
             "from": "StepResult",
             "content": "sendResult.errcode"
           }
         }
       ]
-    }
+    },
+    {
+      "name": "response",
+      "command": "httpResponse",
+      "description": "返回结果",    
+      "parameters": [
+        {
+          "name": "type",
+          "value": {
+            "from": "literal",
+            "content": "json"
+          }
+        },
+        {
+          "name": "key",
+          "value": {
+            "from": "literal",
+            "content": "sendResult"
+          }
+        }        
+      ]
+    }    
   ]
 }

@@ -7,7 +7,7 @@
     {
       "in": "query",
       "name": "key",
-      "from": {
+      "value": {
         "from": "private",
         "content": "key1"
       }
@@ -15,23 +15,10 @@
     {
       "in": "query",
       "name": "city",
-      "from": {
+      "value": {
         "from": "origin",
         "content": "city"
       }
     }
-  ],
-  "response": {
-    "json": {
-      "errCode": "{{.status}}",
-      "data": {
-        "region": "{{(index .lives 0).province}}",
-        "weather": "{{(index .lives 0).weather}}",
-        "temperature": "{{(index .lives 0).temperature}}",
-        "winddirection": "{{(index .lives 0).winddirection}}",
-        "windpower": "{{(index .lives 0).windpower}}",
-        "humidity": "{{(index .lives 0).humidity}}"
-      }
-    }
-  }
+  ]
 }

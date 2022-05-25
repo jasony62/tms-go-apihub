@@ -8,7 +8,7 @@
     {
       "in": "header",
       "name": "X-APP-ID",
-      "from": {
+      "value": {
         "from": "private",
         "content": "xappid"
       }
@@ -16,7 +16,7 @@
     {
       "in": "header",
       "name": "X-APP-KEY",
-      "from": {
+      "value": {
         "from": "private",
         "content": "xappkey"
       }
@@ -24,7 +24,7 @@
     {
       "in": "vars",
       "name": "utc",
-      "from": {
+      "value": {
         "from": "func",
         "content": "utc"
       }
@@ -32,7 +32,7 @@
     {
       "in": "body",
       "name": "body",
-      "from": {
+      "value": {
         "from": "json",
         "json": {
           "text": "{{.origin.text}}",
