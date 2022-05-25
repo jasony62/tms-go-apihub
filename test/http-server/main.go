@@ -3,10 +3,9 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"log"
-	"strings"
-
 	klog "k8s.io/klog/v2"
+	"strings"
+	"time"
 
 	"github.com/fasthttp/router"
 	"github.com/valyala/fasthttp"
@@ -14,22 +13,29 @@ import (
 
 var (
 	addr = flag.String("addr", "127.0.0.1:6060", "TCP address to listen to")
+	conf = flag.String("f", "./conf", "config file name")
 )
 
 func main() {
 	flag.Parse()
+	readConfig(*conf, &userInfo)
+	hRouter := createRouter()
 
+	if err := fasthttp.ListenAndServe(*addr, hRouter.Handler); err != nil {
+		klog.Fatal("Error in ListenAndServe: %v", err)
+	}
+}
+
+func createRouter() *router.Router {
 	r := router.New()
 	r.GET("/", Echo)
 	r.GET("/joint", Joint)
 	r.GET("/split", Split)
+	r.GET("/register", Register)
 	// r.GET("/hello/{name}", Hello)v3/config/district
 	r.GET("/v3/config/district", AmapDistrict)
 	r.GET("/v3/weather/weatherInfo", AmapWeather)
-
-	if err := fasthttp.ListenAndServe(*addr, r.Handler); err != nil {
-		log.Fatalf("Error in ListenAndServe: %v", err)
-	}
+	return r
 }
 
 func AmapDistrict(ctx *fasthttp.RequestCtx) {
@@ -74,11 +80,33 @@ func AmapWeather(ctx *fasthttp.RequestCtx) {
 	// ctx.Response.SetBody(reqWeatherBytes)
 }
 
+func checkAccountAndTokenValid(ctx *fasthttp.RequestCtx, userInfo UserInfo) bool {
+	usr := AppUser(ctx.Request.URI().QueryArgs().Peek("app"))
+	userVerif, ok := userInfo.UsrSecurity[usr]
+	if !ok || userVerif.Pwd == "" {
+		klog.Warningln("This app is NOT recognized!")
+		ctx.Response.SetStatusCode(fasthttp.StatusBadRequest)
+		return false
+	}
+	reqToken := string(ctx.Request.Header.Peek("Authorization"))
+	if reqToken != userVerif.Token {
+		klog.Warningln("This app is Unauthorized!")
+		ctx.Response.SetStatusCode(fasthttp.StatusUnauthorized)
+		return false
+	}
+	return true
+}
+
 func Echo(ctx *fasthttp.RequestCtx) {
 	klog.Infof("%%%%%%%%Connection has been established at %s\n", ctx.ConnTime())
-	ctx.SetContentType("application/json; charset=utf-8")
-	ctx.Request.Header.Cookie()
 	klog.Infof("DEBUG Request: %s\n", ctx.Request.Body())
+	ctx.SetContentType("application/json; charset=utf-8")
+
+	//检查该usr是否已经配置了key,并验证token
+	if !checkAccountAndTokenValid(ctx, userInfo) {
+		return
+	}
+
 	ctx.Response.SetBody(ctx.Request.Body())
 }
 
@@ -86,6 +114,11 @@ func Joint(ctx *fasthttp.RequestCtx) {
 	klog.Infof("%%%%%%%%Connection has been established at %s\n", ctx.ConnTime())
 	ctx.SetContentType("application/json; charset=utf-8")
 	klog.Infof("DEBUG Request: %s\n", ctx.Request.Body())
+
+	//检查该usr是否已经配置了key,并验证token
+	if !checkAccountAndTokenValid(ctx, userInfo) {
+		return
+	}
 	reqBody := &Params{}
 	json.Unmarshal(ctx.Request.Body(), reqBody)
 
@@ -99,6 +132,10 @@ func Split(ctx *fasthttp.RequestCtx) {
 	klog.Infof("%%%%%%%%Connection has been established at %s\n", ctx.ConnTime())
 	ctx.SetContentType("application/json; charset=utf-8")
 	klog.Infof("DEBUG Request: %s\n", ctx.Request.Body())
+	//检查该usr是否已经配置了key,并验证token
+	if !checkAccountAndTokenValid(ctx, userInfo) {
+		return
+	}
 	reqBody := &Content{}
 	json.Unmarshal(ctx.Request.Body(), reqBody)
 	reqStr := strings.Fields(reqBody.Content)
@@ -108,6 +145,56 @@ func Split(ctx *fasthttp.RequestCtx) {
 	reqEntityBytes, _ := json.Marshal(respContent)
 	ctx.Response.SetBody(reqEntityBytes)
 
+}
+
+func Register(ctx *fasthttp.RequestCtx) {
+	klog.Infof("%%%%%%%%Connection has been established at %s\n", ctx.ConnTime())
+	ctx.SetContentType("application/json; charset=utf-8")
+	klog.Infof("DEBUG Request: %s\n", ctx.Request.Body())
+	reqBody := &RegistEntity{}
+	json.Unmarshal(ctx.Request.Body(), reqBody)
+	usr := AppUser(ctx.Request.URI().QueryArgs().Peek("app"))
+	curTime := time.Now().Unix()
+	//检查该usr是否已经配置了key
+	userVerif, ok := userInfo.UsrSecurity[usr]
+	if !ok || userVerif.Pwd == "" {
+		klog.Warningln("This app is NOT recognized!")
+		ctx.Response.SetStatusCode(fasthttp.StatusBadRequest)
+		return
+	}
+	//检查utc是否超时
+	if !checkUtcTimeValid(curTime, reqBody.Utc) {
+		ctx.Response.SetStatusCode(fasthttp.StatusBadRequest)
+		return
+	}
+	//checkSum校验
+	if !checkSumValid(userVerif.Pwd, reqBody) {
+		ctx.Response.SetStatusCode(fasthttp.StatusBadRequest)
+		return
+	}
+	//若已有的token的未失效
+	if userVerif.ExpireUtc >= curTime {
+		expire := userVerif.ExpireUtc - curTime
+		respContent := &RegistResp{
+			Token:   userVerif.Token,
+			Expires: expire}
+		reqEntityBytes, _ := json.Marshal(respContent)
+		ctx.Response.SetBody(reqEntityBytes)
+		ctx.Response.SetStatusCode(fasthttp.StatusOK)
+		klog.Infoln("%%%%%%%%Exist valid Token: ", *respContent)
+		return
+	}
+
+	//注册成功,更新当前用户的过期时间和token
+	userVerif.ExpireUtc = curTime + userVerif.Expires
+	userVerif.Token = generateToken(ctx.Path(), ctx.Method(), userVerif.Expires)
+	respContent := &RegistResp{
+		Token:   userVerif.Token,
+		Expires: userVerif.Expires}
+	reqEntityBytes, _ := json.Marshal(respContent)
+	ctx.Response.SetBody(reqEntityBytes)
+	ctx.Response.SetStatusCode(fasthttp.StatusOK)
+	klog.Infoln("%%%%%%%%Register succeed!")
 }
 
 // Set cookies
