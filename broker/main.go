@@ -31,6 +31,12 @@ func newStack(c *gin.Context) *hub.Stack {
 	}
 
 	name := c.Param(`Id`)
+	version := c.Param(`version`)
+	if len(version) > 0 {
+		name = name + "_" + version
+	}
+	klog.Infoln("Call name: ", name)
+
 	return &hub.Stack{
 		GinContext: c,
 		StepResult: map[string]interface{}{hub.OriginName: value},
@@ -145,12 +151,18 @@ func main() {
 	router := gin.Default()
 	if hub.DefaultApp.BucketEnable {
 		router.Any("/api/:bucket/:Id", callHttpApi)
+		router.Any("/api/:bucket/:Id/:version", callHttpApi)
 		router.Any("/flow:bucket/:Id", callFlow)
+		router.Any("/flow:bucket/:Id/:version", callFlow)
 		router.Any("/schedule:bucket/:Id", callSchedule)
+		router.Any("/schedule:bucket/:Id/:version", callSchedule)
 	} else {
 		router.Any("/api/:Id", callHttpApi)
+		router.Any("/api/:Id/:version", callHttpApi)
 		router.Any("/flow/:Id", callFlow)
+		router.Any("/flow/:Id/:version", callFlow)
 		router.Any("/schedule/:Id", callSchedule)
+		router.Any("/schedule/:Id/:version", callSchedule)
 	}
 
 	if needLoad, _ := pathExists(basePath + "templates"); needLoad {
