@@ -5,43 +5,89 @@
   "steps": [
     {
       "name": "input_cws",
+      "command": "httpApi",
       "description": "对输入内容进行分词",
-      "resultKey": "cws",
-      "concurrent": true,
-      "api": {
-        "id": "kdxf_nlp_cws"
-      }
+      "parameters": [
+        {
+          "name": "name",
+          "value": {
+            "from": "literal",
+            "content": "kdxf_nlp_cws"
+          }
+        }
+      ],
+      "resultKey": "cws"
     },
     {
       "name": "input_pos",
+      "command": "httpApi",
       "description": "对输入内容标注词性",
-      "concurrent": true,
-      "resultKey": "pos",
-      "api": {
-        "id": "kdxf_nlp_pos"
-      }
-    },
+      "parameters": [
+        {
+          "name": "name",
+          "value": {
+            "from": "literal",
+            "content": "kdxf_nlp_pos"
+          }
+        }
+      ],
+      "resultKey": "pos"
+    },    
     {
       "name": "merge_result",
+      "command": "createJson",
       "description": "合并收到的结果",
-      "resultKey": "merged",
-      "response": {
-        "type": "json",
-        "value": {
-          "from": "json",
-          "json": {
-            "errCode": "{{.pos.errCode}}",
-            "data": {
-              "word": [
-                "{{range $index,$elem := .cws.data.word}}{{if $index}},{{end}}\"{{.}}\"{{end}}"
-              ],
-              "pos": [
-                "{{range $index,$elem := .pos.data.pos}}{{if $index}},{{end}}\"{{.}}\"{{end}}"
-              ]
+      "parameters": [
+        {
+          "name": "key",
+          "value": {
+            "from": "literal",
+            "content": "merge_result"
+          }
+        }
+      ],
+      "origin": [
+        {
+          "name": "merge_result",
+          "value": {
+            "from": "jsonRaw",
+            "json": {
+              "errCode": "{{.pos.code}}",
+              "data": {
+                "word": [
+                  "{{range $index,$elem := .cws.data.word}}{{if $index}},{{end}}\"{{.}}\"{{end}}"
+                ],
+                "pos": [
+                  "{{range $index,$elem := .pos.data.pos}}{{if $index}},{{end}}\"{{.}}\"{{end}}"
+                ]
+              }
             }
           }
         }
-      }
-    }
+      ],      
+      "resultKey": "merge_result"
+    },
+    {
+      "name": "response",
+      "command": "httpResponse",
+      "description": "返回结果",    
+      "parameters": [
+        {
+          "name": "type",
+          "value": {
+            "from": "literal",
+            "content": "json"
+          }
+        },
+        {
+          "name": "key",
+          "value": {
+            "from": "literal",
+            "content": "merge_result"
+          }
+        }        
+      ]
+    }    
+
   ]
 }

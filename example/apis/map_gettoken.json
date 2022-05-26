@@ -1,0 +1,59 @@
+{
+  "id": "map_gettoken",
+  "url": "http://10.128.86.64:8000/serviceAgent/rest/account/gettoken",
+  "method": "POST",
+  "private": "map_keys",
+  "requestContentType": "json",
+  "parameters": [
+    {
+      "in": "header",
+      "name": "X-APP-ID",
+      "value": {
+        "from": "private",
+        "content": "appid"
+      }
+    },
+    {
+      "in": "header",
+      "name": "X-APP-KEY",
+      "value": {
+        "from": "private",
+        "content": "appkey"
+      }
+    },
+    {
+      "in": "vars",
+      "name": "user",
+      "value": {
+        "from": "private",
+        "content": "user"
+      }
+    },
+    {
+      "in": "vars",
+      "name": "password",
+      "value": {
+        "from": "private",
+        "content": "password"
+      }
+    },
+    {
+      "in": "body",
+      "name": "body",
+      "value": {
+        "from": "json",
+        "json": {
+          "userName": "{{.vars.user}}",
+          "passwd": "{{.vars.password}}"
+        }
+      }
+    }
+  ],
+  "cache": {
+    "expire": {
+      "from": "template",
+      "content": "{{.result.expireTime}}"
+    },
+    "format": "20060102150405"
+  }
+}

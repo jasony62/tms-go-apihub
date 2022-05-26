@@ -1,6 +1,7 @@
 package core
 
 import (
+	"net/http"
 	"strconv"
 
 	klog "k8s.io/klog/v2"
@@ -83,7 +84,7 @@ func handleSwitchTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{},
 			return handleTasks(stack, item.Steps, task.ConcurrentNum)
 		}
 	}
-	return nil, 500
+	return nil, http.StatusInternalServerError
 }
 
 func concurrentLoopWorker(apis chan concurrentLoopIn, out chan concurrentLoopOut) {

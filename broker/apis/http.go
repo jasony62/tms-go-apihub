@@ -36,7 +36,7 @@ func handleReq(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Privat
 	resp, err := client.Do(outReq)
 	if err != nil {
 		klog.Errorln("err", err)
-		return nil, 500
+		return nil, http.StatusInternalServerError
 	}
 	defer resp.Body.Close()
 	returnBody, _ := io.ReadAll(resp.Body)
@@ -46,13 +46,6 @@ func handleReq(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Privat
 	stack.StepResult[hub.ResultName] = jsonInRspBody
 
 	klog.Errorln("消息体: ", string(returnBody))
-
-	// if !handleRespStatus(stack, HttpApi) {
-	// 	klog.Errorln("消息体中返回码显示不成功，回应错误")
-	// 	return nil, 500
-	// }
-
-	// out := newOutRspBody(HttpApi, jsonInRspBody)
 
 	if HttpApi.Cache != nil {
 		//解析过期时间，如果存在则记录下来
@@ -345,7 +338,7 @@ func run(stack *hub.Stack, name string, private string) (jsonOutRspBody interfac
 
 	klog.Infoln("处理", HttpApi.Url, ":", http.StatusOK, "\r\n返回结果：", jsonOutRspBody)
 	if jsonOutRspBody == nil {
-		return nil, 500
+		return nil, http.StatusInternalServerError
 	}
 	return jsonOutRspBody, http.StatusOK
 }
@@ -386,7 +379,6 @@ func httpResponse(stack *hub.Stack, params map[string]string) (interface{}, int)
 	default:
 		stack.GinContext.Header("Content-Type", name)
 		stack.GinContext.String(http.StatusOK, "%s", result)
-
 	}
 	return nil, http.StatusOK
 }

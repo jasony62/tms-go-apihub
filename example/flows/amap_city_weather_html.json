@@ -4,40 +4,85 @@
   "steps": [
     {
       "name": "city_adcode",
+      "command": "httpApi",
       "description": "查询城市的区域码",
-      "resultKey": "adcodeResult",
-      "api": {
-        "id": "amap_district"
-      }
+      "parameters": [
+        {
+          "name": "name",
+          "value": {
+            "from": "literal",
+            "content": "amap_district"
+          }
+        }
+      ],
+      "resultKey": "adcodeResult"
     },
     {
-      "name": "city_adcode",
+      "name": "amap_weather",
+      "command": "httpApi",
+      "parameters": [
+        {
+          "name": "name",
+          "value": {
+            "from": "literal",
+            "content": "amap_weather"
+          }
+        }
+      ],
       "description": "查询城市的区域码",
       "resultKey": "weatherResult",
-      "api": {
-        "id": "amap_weather",
-        "parameters": [
-          {
-            "name": "city",
-            "value": {
-              "from": "StepResult",
-              "content": "adcodeResult.data.adcode"
-            }
+      "origin": [
+        {
+          "name": "city",
+          "value": {
+            "from": "template",
+            "content": "{{(index .adcodeResult.districts 0).adcode}}"
           }
-        ]
-      }
+        }
+      ]
     },
     {
       "name": "merge_result",
-      "description": "合并收到的结果",
-      "resultKey": "merged",
-      "response": {
-        "type": "html",
-        "value": {
-          "from": "template",
-          "content": "<html><head><title>Hello API</title></head><body><p>status:{{.weatherResult.errCode}}</p><p>region:{{.weatherResult.data.region}}</p><p>weather:{{.weatherResult.data.weather}}</p><p>temperature:{{.weatherResult.data.temperature}}</p><p>winddirection:{{.weatherResult.data.winddirection}}</p><p>windpower:{{.weatherResult.data.windpower}}</p><p>humidity:{{.weatherResult.data.humidity}}</p></body></html>"
+      "command": "createHtml",
+      "description": "创建html",
+      "resultKey": "mergedHtml",
+      "parameters": [
+        {
+          "name": "type",
+          "value": {
+            "from": "literal",
+            "content": "local"
+          }
+        },
+        {
+          "name": "content",
+          "value": {
+            "from": "literal",
+            "content": "<html><head><title>Hello API</title></head><body><p>status:{{.weatherResult.status}}</p><p>region:{{(index .weatherResult.lives 0).province}}</p><p>weather:{{(index .weatherResult.lives 0).weather}}</p><p>temperature:{{(index .weatherResult.lives 0).temperature}}</p><p>winddirection:{{(index .weatherResult.lives 0).winddirection}}</p><p>windpower:{{(index .weatherResult.lives 0).windpower}}</p><p>humidity:{{(index .weatherResult.lives 0).humidity}}</p></body></html>"
+          }
         }
-      }
-    }
+      ]
+    },
+    {
+      "name": "response",
+      "command": "httpResponse",
+      "description": "返回结果",    
+      "parameters": [
+        {
+          "name": "type",
+          "value": {
+            "from": "literal",
+            "content": "html"
+          }
+        },
+        {
+          "name": "key",
+          "value": {
+            "from": "literal",
+            "content": "mergedHtml"
+          }
+        }        
+      ]
+    }    
   ]
 }

@@ -9,11 +9,12 @@ import (
 	"github.com/jasony62/tms-go-apihub/util"
 )
 
-func handleOneTask(stack *hub.Stack, apiDef *hub.ApiDef) (result interface{}, ret int) {
+func handleOneApi(stack *hub.Stack, apiDef *hub.ApiDef) (result interface{}, ret int) {
 	if len(apiDef.Command) > 0 {
+		klog.Infoln("=========执行API name：" + apiDef.Name + ", command:" + apiDef.Command)
 		return ApiRun(stack, apiDef)
 	}
-	return nil, 500
+	return nil, http.StatusInternalServerError
 }
 
 func RunFlow(stack *hub.Stack) (result interface{}, ret int) {
@@ -27,7 +28,7 @@ func RunFlow(stack *hub.Stack) (result interface{}, ret int) {
 	for i := range flowDef.Steps {
 		apiDef := flowDef.Steps[i]
 
-		result, code = handleOneTask(stack, &apiDef)
+		result, code = handleOneApi(stack, &apiDef)
 		if code != http.StatusOK {
 			return nil, code
 		}
