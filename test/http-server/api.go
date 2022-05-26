@@ -1,8 +1,29 @@
 package main
 
+type AppUser string
 type Entity struct {
 	Id   int
 	Name string
+}
+type UserInfo struct {
+	UsrSecurity map[AppUser]*Verification `json:"usrSecurity"`
+}
+type Verification struct {
+	Pwd       string `json:"pwd"`
+	Token     string `json:"token"`
+	Expires   int64  `json:"expires"`
+	ExpireUtc int64  `json:"expireUtc"`
+}
+
+type RegistEntity struct {
+	Nonce    string `json:"nonce"`
+	Utc      string `json:"utc"`
+	Checksum string `json:"checksum"`
+}
+
+type RegistResp struct {
+	Token   string `json:"token"`
+	Expires int64  `json:"expires"`
 }
 
 type Content struct {
@@ -68,3 +89,5 @@ var reqWeather Amap = Amap{
 var apiMap map[string](interface{}) = map[string](interface{}){
 	"110100": reqWeather,
 }
+
+var userInfo UserInfo

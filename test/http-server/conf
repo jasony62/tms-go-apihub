@@ -1,0 +1,4 @@
+{"usrSecurity" : 
+    {"appid1" : {"pwd":"appkey1", "token": "123", "expires": 3600},
+    "appid2" : {"pwd":"appkey2", "token": "1234", "expires": 3600}}
+}
