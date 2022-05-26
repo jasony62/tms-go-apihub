@@ -6,7 +6,7 @@ import (
 	klog "k8s.io/klog/v2"
 )
 
-func Init() {
+func init() {
 	klog.Infof("Register apis\n")
 	core.RegisterTasks(map[string]hub.TaskHandler{"httpApi": runHttpApi,
 		"httpResponse":         httpResponse,

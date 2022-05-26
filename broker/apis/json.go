@@ -8,12 +8,12 @@ import (
 
 func createJson(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	if len(params) == 0 {
-		return nil, 500
+		return nil, http.StatusInternalServerError
 	}
 
 	key, OK := params["key"]
 	if !OK {
-		return nil, 500
+		return nil, http.StatusInternalServerError
 	}
 	tmp := stack.StepResult[hub.OriginName].(map[string]interface{})
 	result := tmp[key]

@@ -181,6 +181,10 @@ func LoadJsonDefData(jsonType int, path string, prefix string) {
 			prefix = fileInfoList[i].Name()
 			LoadJsonDefData(jsonType, path+"/"+prefix, prefix)
 		} else {
+			if !strings.HasSuffix(fileName, ".json") {
+				continue
+			}
+
 			prefix = oldPrefix
 
 			byteFile, err := ioutil.ReadFile(fileName)
@@ -266,7 +270,7 @@ func LoadConfigPluginData(path string) {
 				klog.Errorln(err)
 				panic(err)
 			}
-			mapFunc, mapFuncForTemplate := registerFunc.(func() (map[string]hub.FuncHandler, map[string](interface{})))()
+			mapFunc, mapFuncForTemplate := registerFunc.(func() (map[string]interface{}, map[string]interface{}))()
 			loadPluginFuncs(mapFunc, mapFuncForTemplate)
 			klog.Infof("加载Json文件完成！\r\n")
 		}
@@ -289,12 +293,12 @@ func GetBucketKey(stack *hub.Stack, fileName string) string {
 	return key
 }
 
-func loadPluginFuncs(mapFunc map[string]hub.FuncHandler, mapFuncForTemplate map[string](interface{})) {
+func loadPluginFuncs(mapFunc map[string]interface{}, mapFuncForTemplate map[string]interface{}) {
 	for k, v := range mapFunc {
 		if _, ok := hub.FuncMap[k]; ok {
 			klog.Errorf("加载(%s)失败,FuncMap存在重名函数！\r\n", k)
 		} else {
-			hub.FuncMap[k] = v
+			hub.FuncMap[k] = v.(hub.FuncHandler)
 		}
 	}
 

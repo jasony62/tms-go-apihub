@@ -9,12 +9,13 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jasony62/tms-go-apihub/apis"
+	"github.com/joho/godotenv"
+	klog "k8s.io/klog/v2"
+
+	_ "github.com/jasony62/tms-go-apihub/apis"
 	"github.com/jasony62/tms-go-apihub/core"
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/jasony62/tms-go-apihub/util"
-	"github.com/joho/godotenv"
-	klog "k8s.io/klog/v2"
 )
 
 // 1次请求的上下文
@@ -157,7 +158,6 @@ func main() {
 		router.LoadHTMLGlob(basePath + "templates/*.tmpl")
 	}
 
-	apis.Init()
 	if hub.DefaultApp.Port > 0 {
 		router.Run(fmt.Sprintf("%s:%d", hub.DefaultApp.Host, hub.DefaultApp.Port))
 	} else {

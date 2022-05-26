@@ -23,7 +23,7 @@ curl -X POST -d '{"content": "北京的天气"}' "http://localhost:8080/api/kdxf
 echo "\r\n对输入内容提取关键词:\r\n"
 curl -X POST -d '{"content": "北京的天气"}' "http://localhost:8080/api/kdxf_nlp_ke"
 
-echo "\r\n组合并行文本处理结果:\r\n"
+echo "\r\n组合文本处理结果:\r\n"
 curl -X POST -d '{"content": "北京的天气"}' "http://localhost:8080/flow/kdxf_nlp"
 
 echo "\r\n企业微信:"
@@ -54,14 +54,4 @@ curl  -H "Content-Type: application/json" -d '{"cities":["sh", "bj", "sh", "sh"]
 echo "\r\n地图服务查询"
 curl -H "Content-Type: application/json" -d '{"lat": "39.915599", "lng": "116.406568"}' "http://localhost:8080/flow/gis_base_map"
 
-echo "\r\n测试:"
-echo "\r\n查询城市区域编码:\r\n"
-curl -H "Content-Type: application/json" -d '{"city": "北京"}' "http://localhost:8080/api/amap_district_test"
 
-echo "\r\n测试:"
-echo "\r\n\r\n根据区域编码获得天气数据:\r\n"
-curl -H "Content-Type: application/json" -d '{"city": "110100"}' "http://localhost:8080/api/amap_weather_test"
-
-echo "\r\n测试:"
-echo "\r\n通过编排实现直接指定城市名称获得天气数据:\r\n"
-curl -H "Content-Type: application/json" -d '{"city": "北京"}' "http://localhost:8080/flow/amap_city_weather_test"

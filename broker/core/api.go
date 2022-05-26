@@ -19,7 +19,7 @@ func RegisterTasks(list map[string]hub.TaskHandler) {
 	for k, v := range list {
 		_, OK := taskMap[k]
 		if OK {
-			str := "task重名" + k
+			str := "task重名:" + k
 			klog.Errorln(str)
 			panic(str)
 		} else {

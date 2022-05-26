@@ -3,59 +3,93 @@
   "description": "基础地图",
   "steps": [
     {
-      "name": "merge_result",
-      "description": "返回的结果",
-      "resultKey": "returned",
-      "response": {
-        "type": "tmpl",
-        "private": "gis_base_map_keys",
-        "value": {
-          "from": "template",
-          "content": "beijing_map.tmpl"
-        },
-		"parameters": [
-		  {
-            "in": "query",
-            "name": "lat",
-            "value": {
-              "from": "origin",
-              "content": "lat"
-            }
-          },
-		  {
-            "in": "query",
-            "name": "lng",
-            "value": {
-              "from": "origin",
-              "content": "lng"
-            }
-          },
-          {
-            "in": "vars",
-            "name": "ak",
-            "value": {
-              "from": "private",
-              "content": "ak"
-            }
-          },
-          {
-            "in": "vars",
-            "name": "srcUrl",
-            "value": {
-              "from": "private",
-              "content": "srcUrl"
-            }
-          },
-	      {
-            "in": "vars",
-            "name": "tileLayer",
-            "value": {
-              "from": "private",
-              "content": "tileLayer"
-            }
+      "name": "gettoken",
+      "description": "获得access_token",
+      "command": "httpApi",
+      "parameters": [
+        {
+          "name": "name",
+          "value": {
+            "from": "literal",
+            "content": "map_gettoken"
           }
-        ]
-      }
+        }
+      ],
+      "resultKey": "tokenResult"
+    },
+    {
+      "name": "createHtml",
+      "command": "createHtml",
+      "description": "创建html",
+      "resultKey": "mergedHtml",
+      "parameters": [
+        {
+          "name": "type",
+          "value": {
+            "from": "literal",
+            "content": "resource"
+          }
+        },
+        {
+          "name": "content",
+          "value": {
+            "from": "literal",
+            "content": "beijing_map.tmpl"
+          }
+        }
+      ],
+      "origin": [
+        {
+          "name": "lat",
+          "value": {
+            "from": "query",
+            "content": "lat"
+          }
+        },
+        {
+          "name": "lng",
+          "value": {
+            "from": "query",
+            "content": "lng"
+          }
+        },
+        {
+          "name": "ak",
+          "value": {
+            "from": "template",
+            "content": "{{.tokenResult.ak}}"
+          }
+        },        
+        {
+          "name": "url",
+          "value": {
+            "from": "literal",
+            "content": "http://10.130.0.226:50000"
+          }
+        }       
+      ]
+    },
+    {
+      "name": "response",
+      "command": "httpResponse",
+      "description": "返回结果",
+      "parameters": [
+        {
+          "name": "type",
+          "value": {
+            "from": "literal",
+            "content": "html"
+          }
+        },
+        {
+          "name": "key",
+          "value": {
+            "from": "literal",
+            "content": "mergedHtml"
+          }
+        }
+      ]
     }
+
   ]
 }

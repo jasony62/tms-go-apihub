@@ -23,7 +23,7 @@
   ],
   "cache": {
   "expire": {
-	  "from": "json",
+	  "from": "template",
 	  "content": "{{.result.expires_in}}"
     },
 	"format": "second"
