@@ -32,14 +32,7 @@ func FindApiDef(stack *hub.Stack, id string) (*hub.HttpApiDef, error) {
 	return apiDef, nil
 }
 
-func FindPrivateDef(stack *hub.Stack, primary string, secondary string) (*hub.PrivateArray, error) {
-	var name string
-	if len(primary) > 0 {
-		name = primary
-	} else if len(secondary) > 0 {
-		name = secondary
-	}
-
+func FindPrivateDef(stack *hub.Stack, name string) (*hub.PrivateArray, error) {
 	if len(name) == 0 {
 		return nil, nil
 	}

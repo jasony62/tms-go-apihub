@@ -4,7 +4,6 @@
   "private": "baidu_image_classify_key",
   "method": "GET",
   "requestContentType": "json",
-  "expiresSrc": "header",
   "parameters": [
      {
       "in": "query",

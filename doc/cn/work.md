@@ -1,17 +1,13 @@
 ## 近期
-* 支持返回非json格式的http response
 * json schema
-* 支持api带数组的
-* 开发测试http server，postman或者apifox的测试脚本
-* pre/post func支持
+* postman或者apifox的测试脚本
+* 多租户支持,权限管理
 * 本地kv存储
 
 ## 中期
-* api version
 * 对输入数组的支持
 * 支持switch default case
 * 支持load API时候，检验private信息，load FLOW时候，检验API信息，load schedule时候，检验FLOW和API
-* 支持在http response中访问origin中的值
 * 在JSON，HTTP处理错误时能够返回HTTP错误给调用方
 * 支持http请求retry，timeout
  **"timeoutPolicy": "TIME_OUT_WF",
@@ -24,7 +20,7 @@
 * 支持单API并发限制，令牌桶限制
 * 支持对private文件秘钥加解密
 * 支持在parameters中引用之前的http错误码
-* 性能提升，使用fasthttp，fastjson/json-iterator等
+* 性能提升，fastjson/json-iterator等
 * 支持json文件动态下载并reload（全更新）
 * go async pool
 * graceful shutdown
@@ -59,3 +55,7 @@
 * 支持flow覆盖api中的private
 * 支持在url中使用private
 * 支持200OK + error code转错误码
+* 支持返回非json格式的http response
+* 开发测试http server
+* api version
+* 性能提升，使用fasthttp

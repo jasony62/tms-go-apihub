@@ -25,7 +25,7 @@ type BaseParamDef struct {
 	Name  string       `json:"name"`
 	Value BaseValueDef `json:"value,omitempty"`
 }
-type TaskHandler func(*Stack, map[string]string) (interface{}, int)
+type ApiHandler func(*Stack, map[string]string) (interface{}, int)
 type FuncHandler func(params []string) string
 type TemplateHandler func(args ...interface{}) string
 

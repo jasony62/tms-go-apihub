@@ -1,7 +1,7 @@
 {
-  "id": "kdxf_nlp_cws",
-  "description": "科大讯飞自然语言处理，文本分词。",
-  "url": "https://ltpapi.xfyun.cn/v1/cws",
+  "id": "kdxf_nlp_pos",
+  "description": "科大讯飞自然语言处理，词性标注。",
+  "url": "https://ltpapi.xfyun.cn/v1/pos",
   "method": "POST",
   "private": "kdxf_keys",
   "requestContentType": "form",
@@ -55,15 +55,5 @@
         "content": "content"
       }
     }
-  ],
-  "response": {
-    "json": {
-      "errCode": "{{.code}}",
-      "data": {
-        "word": [
-          "{{range $index,$elem := .data.word}}{{if $index}},{{end}}\"{{.}}\"{{end}}"
-        ]
-      }
-    }
-  }
+  ]
 }

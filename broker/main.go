@@ -52,14 +52,17 @@ func callHttpApi(c *gin.Context) {
 	tmpStack := newStack(c)
 	params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: tmpStack.ChildName}}}
 
-	result, status := core.ApiRun(tmpStack, &hub.ApiDef{Name: "main", Command: "httpApi", Parameters: &params, ResultKey: "main"})
+	result, status := core.ApiRun(tmpStack, &hub.ApiDef{Name: "main", Command: "httpApi", Parameters: &params, ResultKey: "main"}, "")
 	c.IndentedJSON(status, result)
 }
 
 // 执行一个调用流程
 func callFlow(c *gin.Context) {
 	// 执行编排
-	result, status := core.RunFlow(newStack(c))
+	tmpStack := newStack(c)
+	params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: tmpStack.ChildName}}}
+
+	result, status := core.ApiRun(tmpStack, &hub.ApiDef{Name: "main", Command: "flowApi", Parameters: &params, ResultKey: "main"}, "")
 	if status != http.StatusOK {
 		//成功时的回复应该定义在flow的step中
 		c.IndentedJSON(status, result)
@@ -69,8 +72,14 @@ func callFlow(c *gin.Context) {
 // 执行一个计划流程
 func callSchedule(c *gin.Context) {
 	// 执行编排
-	result, status := core.RunSchedule(newStack(c))
-	c.IndentedJSON(status, result)
+	tmpStack := newStack(c)
+	params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: tmpStack.ChildName}}}
+
+	result, status := core.ApiRun(tmpStack, &hub.ApiDef{Name: "main", Command: "scheduleApi", Parameters: &params, ResultKey: "main"}, "")
+	if status != http.StatusOK {
+		//成功时的回复应该定义在flow的step中
+		c.IndentedJSON(status, result)
+	}
 }
 
 func pathExists(path string) (bool, error) {
@@ -145,21 +154,21 @@ func main() {
 	if util.DownloadConf(basePath, os.Getenv("TGAH_REMOTE_CONF_UNZIP_PWD")) {
 		klog.Infoln("Download conf zip package from remote url OK")
 	}
-	util.LoadConfigJsonData([]string{basePath + "privates", basePath + "apis", basePath + "flows",
+	util.LoadConfigJsonData([]string{basePath + "privates", basePath + "httpapis", basePath + "flows",
 		basePath + "schedules", basePath + "templates"})
 
 	util.LoadConfigPluginData(basePath + "plugins")
 	router := gin.Default()
 	if hub.DefaultApp.BucketEnable {
-		router.Any("/api/:bucket/:Id", callHttpApi)
-		router.Any("/api/:bucket/:Id/:version", callHttpApi)
+		router.Any("/httpapi/:bucket/:Id", callHttpApi)
+		router.Any("/httpapi/:bucket/:Id/:version", callHttpApi)
 		router.Any("/flow:bucket/:Id", callFlow)
 		router.Any("/flow:bucket/:Id/:version", callFlow)
 		router.Any("/schedule:bucket/:Id", callSchedule)
 		router.Any("/schedule:bucket/:Id/:version", callSchedule)
 	} else {
-		router.Any("/api/:Id", callHttpApi)
-		router.Any("/api/:Id/:version", callHttpApi)
+		router.Any("/httpapi/:Id", callHttpApi)
+		router.Any("/httpapi/:Id/:version", callHttpApi)
 		router.Any("/flow/:Id", callFlow)
 		router.Any("/flow/:Id/:version", callFlow)
 		router.Any("/schedule/:Id", callSchedule)
