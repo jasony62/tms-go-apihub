@@ -154,21 +154,21 @@ func main() {
 	if util.DownloadConf(basePath, os.Getenv("TGAH_REMOTE_CONF_UNZIP_PWD")) {
 		klog.Infoln("Download conf zip package from remote url OK")
 	}
-	util.LoadConfigJsonData([]string{basePath + "privates", basePath + "apis", basePath + "flows",
+	util.LoadConfigJsonData([]string{basePath + "privates", basePath + "httpapis", basePath + "flows",
 		basePath + "schedules", basePath + "templates"})
 
 	util.LoadConfigPluginData(basePath + "plugins")
 	router := gin.Default()
 	if hub.DefaultApp.BucketEnable {
-		router.Any("/api/:bucket/:Id", callHttpApi)
-		router.Any("/api/:bucket/:Id/:version", callHttpApi)
+		router.Any("/httpapi/:bucket/:Id", callHttpApi)
+		router.Any("/httpapi/:bucket/:Id/:version", callHttpApi)
 		router.Any("/flow:bucket/:Id", callFlow)
 		router.Any("/flow:bucket/:Id/:version", callFlow)
 		router.Any("/schedule:bucket/:Id", callSchedule)
 		router.Any("/schedule:bucket/:Id/:version", callSchedule)
 	} else {
-		router.Any("/api/:Id", callHttpApi)
-		router.Any("/api/:Id/:version", callHttpApi)
+		router.Any("/httpapi/:Id", callHttpApi)
+		router.Any("/httpapi/:Id/:version", callHttpApi)
 		router.Any("/flow/:Id", callFlow)
 		router.Any("/flow/:Id/:version", callFlow)
 		router.Any("/schedule/:Id", callSchedule)
