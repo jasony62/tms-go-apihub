@@ -13,7 +13,7 @@ import (
 type concurrentLoopIn struct {
 	index int
 	stack *hub.Stack
-	task  *[]hub.ScheduleTaskDef
+	task  *[]hub.ScheduleApiDef
 }
 
 type concurrentLoopOut struct {
@@ -22,11 +22,11 @@ type concurrentLoopOut struct {
 }
 
 type concurrentScheIn struct {
-	task *hub.ScheduleTaskDef
+	task *hub.ScheduleApiDef
 }
 
 type concurrentScheOut struct {
-	task   *hub.ScheduleTaskDef
+	task   *hub.ScheduleApiDef
 	result interface{}
 }
 
@@ -38,19 +38,24 @@ func generateStepResult(stack *hub.Stack, parameters *[]hub.BaseParamDef) interf
 	return result
 }
 
-func copyScheduleStack(src *hub.Stack, task *hub.ScheduleTaskDef) *hub.Stack {
+func copyScheduleStack(src *hub.Stack, task *hub.ScheduleApiDef) *hub.Stack {
 	result := hub.Stack{
 		GinContext: src.GinContext,
 		RootName:   src.RootName,
-		ChildName:  task.Name,
 		StepResult: make(map[string]interface{}),
+	}
+
+	if task.Type == "api" {
+		result.ChildName = task.Api.Command
+	} else {
+		result.ChildName = task.Type
 	}
 
 	for k, v := range src.StepResult {
 		switch k {
 		case hub.OriginName:
-			if task.Parameters != nil {
-				result.StepResult[k] = generateStepResult(src, task.Parameters)
+			if task.Type == "api" && task.Api.Parameters != nil {
+				result.StepResult[k] = generateStepResult(src, task.Api.Parameters)
 			} else {
 				result.StepResult[k] = v
 			}
@@ -70,8 +75,8 @@ func copyScheduleStack(src *hub.Stack, task *hub.ScheduleTaskDef) *hub.Stack {
 	return &result
 }
 
-func handleSwitchTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{}, int) {
-	key, _ := util.GetParameterStringValue(stack, nil, &task.Key)
+func handleSwitchTask(stack *hub.Stack, task *hub.ScheduleApiDef) (interface{}, int) {
+	key, _ := util.GetParameterStringValue(stack, nil, &task.Control.Key)
 
 	if len(key) == 0 {
 		err := "invalid switch key"
@@ -79,9 +84,9 @@ func handleSwitchTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{},
 		panic(err)
 	}
 
-	for _, item := range *task.Cases {
+	for _, item := range *task.Control.Cases {
 		if item.Value == key {
-			return handleTasks(stack, item.Steps, task.ConcurrentNum)
+			return handleTasks(stack, item.Steps, task.Control.ConcurrentNum)
 		}
 	}
 	return nil, http.StatusInternalServerError
@@ -94,15 +99,15 @@ func concurrentLoopWorker(apis chan concurrentLoopIn, out chan concurrentLoopOut
 	}
 }
 
-func triggerConcurrentLoop(stack *hub.Stack, task *hub.ScheduleTaskDef, loopLength int, loop map[string]int, loopResult []interface{}) {
+func triggerConcurrentLoop(stack *hub.Stack, task *hub.ScheduleApiDef, loopLength int, loop map[string]int, loopResult []interface{}) {
 	var taskCount, msgCount int
 	counter := loopLength
 
-	if task.ConcurrentLoopNum > loopLength {
+	if task.Control.ConcurrentLoopNum > loopLength {
 		taskCount = loopLength
 		msgCount = loopLength
 	} else {
-		taskCount = task.ConcurrentLoopNum
+		taskCount = task.Control.ConcurrentLoopNum
 		msgCount = taskCount * 2
 		if msgCount > loopLength {
 			msgCount = loopLength
@@ -117,8 +122,8 @@ func triggerConcurrentLoop(stack *hub.Stack, task *hub.ScheduleTaskDef, loopLeng
 	i := 0
 
 	for ; i < msgCount; i++ {
-		loop[task.ResultKey] = i
-		in <- concurrentLoopIn{index: i, stack: copyScheduleStack(stack, task), task: task.Steps}
+		loop[task.Control.ResultKey] = i
+		in <- concurrentLoopIn{index: i, stack: copyScheduleStack(stack, task), task: task.Control.Steps}
 	}
 
 	for i = 0; i < taskCount; i++ {
@@ -130,9 +135,9 @@ func triggerConcurrentLoop(stack *hub.Stack, task *hub.ScheduleTaskDef, loopLeng
 		loopResult[result.index] = result.result
 		counter--
 		if i < loopLength {
-			loop[task.ResultKey] = i
+			loop[task.Control.ResultKey] = i
 			tmpStack := copyScheduleStack(stack, task)
-			in <- concurrentLoopIn{index: i, stack: tmpStack, task: task.Steps}
+			in <- concurrentLoopIn{index: i, stack: tmpStack, task: task.Control.Steps}
 			i++
 		} else {
 			if counter == 0 {
@@ -142,9 +147,9 @@ func triggerConcurrentLoop(stack *hub.Stack, task *hub.ScheduleTaskDef, loopLeng
 	}
 }
 
-func handleLoopTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{}, int) {
+func handleLoopTask(stack *hub.Stack, task *hub.ScheduleApiDef) (interface{}, int) {
 	var result interface{}
-	keyStr, _ := util.GetParameterStringValue(stack, nil, &task.Key)
+	keyStr, _ := util.GetParameterStringValue(stack, nil, &task.Control.Key)
 
 	if len(keyStr) == 0 {
 		err := "invalid loop key"
@@ -153,71 +158,50 @@ func handleLoopTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{}, i
 	}
 	loopLength, _ := strconv.Atoi(keyStr)
 	loopResult := make([]interface{}, loopLength)
-	if !task.Concurrent && len(task.ResultKey) > 0 {
-		stack.StepResult[task.ResultKey] = loopResult
+	if !task.Concurrent && len(task.Control.ResultKey) > 0 {
+		stack.StepResult[task.Control.ResultKey] = loopResult
 	}
 
 	loop := stack.StepResult[hub.LoopName].(map[string]int)
-	if task.ConcurrentLoopNum > 1 && loopLength > 1 {
+	if task.Control.ConcurrentLoopNum > 1 && loopLength > 1 {
 		triggerConcurrentLoop(stack, task, loopLength, loop, loopResult)
 	} else {
 		for i := 0; i < loopLength; i++ {
-			loop[task.Name] = i
-			result, _ = handleTasks(stack, task.Steps, task.ConcurrentNum)
+			loop[task.Control.Name] = i
+			result, _ = handleTasks(stack, task.Control.Steps, task.Control.ConcurrentNum)
 			loopResult[i] = result
 		}
 	}
 	return loopResult, 200
 }
 
-func handleControlTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (interface{}, int) {
-	switch task.Name {
-	case "switch":
-		if task.Cases != nil {
-			return handleSwitchTask(stack, task)
-		} else {
-			err := "No switch cases"
-			klog.Errorln(err)
-			panic(err)
-		}
-	case hub.LoopName:
-		return handleLoopTask(stack, task)
-	default:
-		err := "don't support command " + task.Type
-		klog.Errorln(err)
-		panic(err)
-	}
-}
-
-func handleFlowTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (result interface{}, status int) {
-	// 执行编排
-	result, status = RunFlow(copyScheduleStack(stack, task))
-
-	if !task.Concurrent && len(task.ResultKey) > 0 {
-		stack.StepResult[task.ResultKey] = result
-	}
-	return
-}
-
-func handleApiTask(stack *hub.Stack, task *hub.ScheduleTaskDef) (result interface{}, status int) {
+func handleApiTask(stack *hub.Stack, task *hub.ScheduleApiDef) (result interface{}, status int) {
 	// 执行API
-	params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: task.Name}}}
+	result, status = ApiRun(stack, task.Api, task.Private)
 
-	result, status = ApiRun(stack, &hub.ApiDef{Name: "main", Command: "httpApi", Parameters: &params, ResultKey: task.ResultKey})
-
-	if !task.Concurrent && len(task.ResultKey) > 0 {
-		stack.StepResult[task.ResultKey] = result
+	if !task.Concurrent && len(task.Api.ResultKey) > 0 {
+		stack.StepResult[task.Api.ResultKey] = result
 	}
 	return
 }
-func handleOneScheduleApi(stack *hub.Stack, task *hub.ScheduleTaskDef) (result interface{}, status int) {
-	if len(task.Type) > 0 && len(task.Name) > 0 {
+
+func handleOneScheduleApi(stack *hub.Stack, task *hub.ScheduleApiDef) (result interface{}, status int) {
+	if len(task.Type) > 0 {
 		switch task.Type {
-		case "control":
-			result, status = handleControlTask(stack, task)
-		case "flow":
-			result, status = handleFlowTask(stack, task)
+		case "switch":
+			klog.Infoln("运行 switch name：", task.Control.Name)
+			if task.Control.Cases != nil {
+				return handleSwitchTask(stack, task)
+			} else {
+				err := "No switch cases"
+				klog.Errorln(err)
+				panic(err)
+			}
+		case hub.LoopName:
+			klog.Infoln("运行 loop name", task.Control.Name)
+			return handleLoopTask(stack, task)
 		case "api":
+			klog.Infoln("运行 api name", task.Api.Name)
 			result, status = handleApiTask(stack, task)
 		default:
 			err := "don't support type " + task.Type
@@ -230,6 +214,7 @@ func handleOneScheduleApi(stack *hub.Stack, task *hub.ScheduleTaskDef) (result i
 
 func concurrentScheWorker(stack *hub.Stack, apis chan concurrentScheIn, out chan concurrentScheOut) {
 	for task := range apis {
+		klog.Infoln("并行运行 type：", task.task.Type)
 		result, _ := handleOneScheduleApi(stack, task.task)
 		out <- concurrentScheOut{task: task.task, result: result}
 	}
@@ -241,7 +226,14 @@ func waitConcurrentScheResult(stack *hub.Stack, out chan concurrentScheOut, coun
 	for counter > 0 {
 		//等待结果
 		result := <-out
-		key := result.task.ResultKey
+		var key string
+		switch result.task.Type {
+		case "api":
+			key = result.task.Api.ResultKey
+		default:
+			key = result.task.Control.ResultKey
+		}
+
 		if len(key) > 0 {
 			results[key] = result.result
 			lastKey = key
@@ -257,11 +249,10 @@ func waitConcurrentScheResult(stack *hub.Stack, out chan concurrentScheOut, coun
 	return results[lastKey]
 }
 
-func handleTasks(stack *hub.Stack, apis *[]hub.ScheduleTaskDef, concurrentNum int) (result interface{}, status int) {
+func handleTasks(stack *hub.Stack, apis *[]hub.ScheduleApiDef, concurrentNum int) (result interface{}, status int) {
 	var counter int
 	var in chan concurrentScheIn
 	var out chan concurrentScheOut
-
 	if concurrentNum > 1 {
 		/*假设所有的task都是并行的，多留buffer，提升性能*/
 		in = make(chan concurrentScheIn, len(*apis))
@@ -272,11 +263,16 @@ func handleTasks(stack *hub.Stack, apis *[]hub.ScheduleTaskDef, concurrentNum in
 			go concurrentScheWorker(stack, in, out)
 		}
 	}
-
+	if apis == nil {
+		klog.Errorln("apis nil")
+		panic("apis nil")
+	}
+	klog.Infoln("apis lens：", len(*apis))
 	for index := range *apis {
 		task := &(*apis)[index]
 		if concurrentNum > 1 {
 			if task.Concurrent {
+				klog.Infoln("准备并行运行 type：", task.Type, ",concurrent:", task.Concurrent, ",concurrentNum:", concurrentNum)
 				in <- concurrentScheIn{task: task}
 				counter++
 				continue
@@ -288,7 +284,7 @@ func handleTasks(stack *hub.Stack, apis *[]hub.ScheduleTaskDef, concurrentNum in
 				}
 			}
 		}
-
+		klog.Infoln("串行 type：", task.Type, ",concurrent:", task.Concurrent, ",concurrentNum:", concurrentNum)
 		result, status = handleOneScheduleApi(stack, task)
 	}
 
@@ -299,8 +295,8 @@ func handleTasks(stack *hub.Stack, apis *[]hub.ScheduleTaskDef, concurrentNum in
 	return result, status
 }
 
-func RunSchedule(stack *hub.Stack) (interface{}, int) {
-	scheduleDef, err := util.FindScheduleDef(stack, stack.ChildName)
+func runSchedule(stack *hub.Stack, name string, private string) (interface{}, int) {
+	scheduleDef, err := util.FindScheduleDef(stack, name)
 	if scheduleDef == nil || scheduleDef.Steps == nil {
 		klog.Errorln("获得Schedule定义失败：", err)
 		panic(err)
@@ -308,4 +304,16 @@ func RunSchedule(stack *hub.Stack) (interface{}, int) {
 	stack.StepResult[hub.LoopName] = make(map[string]int)
 
 	return handleTasks(stack, scheduleDef.Steps, scheduleDef.ConcurrentNum)
+}
+
+func runScheduleApi(stack *hub.Stack, params map[string]string) (interface{}, int) {
+	name, OK := params["name"]
+	if !OK {
+		str := "缺少flow名称"
+		klog.Errorln(str)
+		panic(str)
+	}
+	private := params["private"]
+
+	return runSchedule(stack, name, private)
 }

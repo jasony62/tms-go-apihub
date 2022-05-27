@@ -305,17 +305,23 @@ func getCacheContentWithLock(HttpApi *hub.HttpApiDef) interface{} {
 // 转发API调用
 func run(stack *hub.Stack, name string, private string) (jsonOutRspBody interface{}, ret int) {
 	var err error
+	var privateDef *hub.PrivateArray
 	HttpApi, err := util.FindApiDef(stack, name)
 
 	if HttpApi == nil {
 		klog.Errorln("获得API定义失败：", err)
 		panic(err)
 	}
+	if len(private) == 0 {
+		private = HttpApi.PrivateName
+	}
 
-	privateDef, err := util.FindPrivateDef(stack, private, HttpApi.PrivateName)
-	if err != nil {
-		klog.Errorln("获得API定义失败：", err)
-		panic(err)
+	if len(private) != 0 {
+		privateDef, err = util.FindPrivateDef(stack, private)
+		if err != nil {
+			klog.Errorln("获得private定义失败：", err)
+			panic(err)
+		}
 	}
 
 	if HttpApi.Cache != nil { //如果Json文件中配置了cache，表示支持缓存
@@ -351,6 +357,7 @@ func runHttpApi(stack *hub.Stack, params map[string]string) (interface{}, int) {
 		panic(str)
 	}
 
+	/*private may doesn't exist*/
 	private := params["private"]
 	return run(stack, name, private)
 }

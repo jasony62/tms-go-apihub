@@ -10,27 +10,27 @@ import (
 )
 
 var mapLock sync.Mutex
-var taskMap = make(map[string]hub.TaskHandler)
+var apiMap = make(map[string]hub.ApiHandler)
 
-func RegisterTasks(list map[string]hub.TaskHandler) {
+func RegisterApis(list map[string]hub.ApiHandler) {
 	mapLock.Lock()
 	defer mapLock.Unlock()
 
 	for k, v := range list {
-		_, OK := taskMap[k]
+		_, OK := apiMap[k]
 		if OK {
 			str := "task重名:" + k
 			klog.Errorln(str)
 			panic(str)
 		} else {
-			taskMap[k] = v
+			apiMap[k] = v
 		}
 	}
 }
 
 // task调用
-func ApiRun(stack *hub.Stack, task *hub.ApiDef) (result interface{}, ret int) {
-	function := taskMap[task.Command]
+func ApiRun(stack *hub.Stack, api *hub.ApiDef, private string) (result interface{}, ret int) {
+	function := apiMap[api.Command]
 	var err error
 	if function == nil {
 		str := "不能执行" + stack.ChildName
@@ -38,25 +38,33 @@ func ApiRun(stack *hub.Stack, task *hub.ApiDef) (result interface{}, ret int) {
 		panic(str)
 	}
 
-	var parameters map[string]string
 	var origin map[string]interface{}
+	parameters := make(map[string]string)
+	var privateDef *hub.PrivateArray
+	if len(api.Private) > 0 {
+		parameters["private"] = api.Private
+		privateDef, err = util.FindPrivateDef(stack, api.Private)
+		if err != nil {
+			klog.Errorln("获得private定义失败：", err)
+			panic(err)
+		}
+	}
 
-	if task.Parameters != nil {
-		parameters = make(map[string]string)
-		for index := range *task.Parameters {
-			item := (*task.Parameters)[index]
-			parameters[item.Name], err = util.GetParameterStringValue(stack, nil, &item.Value)
+	if api.Parameters != nil {
+		for index := range *api.Parameters {
+			item := (*api.Parameters)[index]
+			parameters[item.Name], err = util.GetParameterStringValue(stack, privateDef, &item.Value)
 			if err != nil {
 				return nil, http.StatusInternalServerError
 			}
 		}
 	}
 
-	if task.OriginParameters != nil {
+	if api.OriginParameters != nil {
 		origin = stack.StepResult[hub.OriginName].(map[string]interface{})
-		for index := range *task.OriginParameters {
-			item := (*task.OriginParameters)[index]
-			origin[item.Name], err = util.GetParameterRawValue(stack, nil, &item.Value)
+		for index := range *api.OriginParameters {
+			item := (*api.OriginParameters)[index]
+			origin[item.Name], err = util.GetParameterRawValue(stack, privateDef, &item.Value)
 			if err != nil {
 				return nil, http.StatusInternalServerError
 			}

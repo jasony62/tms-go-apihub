@@ -24,9 +24,9 @@ type HttpApiDef struct {
 	Url                string             `json:"url"`
 	DynamicUrl         *BaseValueDef      `json:"dynamicUrl"`
 	Description        string             `json:"description"`
-	Method             string             `json:"method"`
 	PrivateName        string             `json:"private"`
-	Parameters         *[]HttpApiDefParam `json:"parameters"`
+	Method             string             `json:"method"`
 	RequestContentType string             `json:"requestContentType"`
+	Parameters         *[]HttpApiDefParam `json:"parameters"`
 	Cache              *ApiCache          `json:"cache"`
 }

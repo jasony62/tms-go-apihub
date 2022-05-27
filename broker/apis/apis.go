@@ -7,8 +7,8 @@ import (
 )
 
 func init() {
-	klog.Infof("Register apis\n")
-	core.RegisterTasks(map[string]hub.TaskHandler{"httpApi": runHttpApi,
+	klog.Infof("APIs register apis\n")
+	core.RegisterApis(map[string]hub.ApiHandler{"httpApi": runHttpApi,
 		"httpResponse":         httpResponse,
 		"checkStringsEqual":    checkStringsEqual,
 		"checkStringsNotEqual": checkStringsNotEqual,

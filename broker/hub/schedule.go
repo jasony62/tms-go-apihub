@@ -1,37 +1,35 @@
 package hub
 
 type ScheduleSwitchCaseDef struct {
-	Value         string             `json:"value"`
-	ConcurrentNum int                `json:"concurrentNum,omitempty"`
-	Steps         *[]ScheduleTaskDef `json:"apis"`
+	Value         string            `json:"value"`
+	ConcurrentNum int               `json:"concurrentNum,omitempty"`
+	Steps         *[]ScheduleApiDef `json:"steps"`
 }
 
-type ScheduleTaskDef struct {
-	Type        string `json:"type"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	ResultKey   string `json:"resultKey"`
-	//用于switch和loop
-	Key BaseValueDef `json:"key"`
-	//用于switch和loop
-	ConcurrentNum int `json:"concurrentNum,omitempty"`
-	//用于loop
-	ConcurrentLoopNum int `json:"concurrentLoopNum,omitempty"`
-	//用于switch，loop，api，flow
-	Concurrent bool `json:"concurrent,omitempty"`
-	//用于switch
-	Cases *[]ScheduleSwitchCaseDef `json:"cases,omitempty"`
-	//用于loop
-	Steps *[]ScheduleTaskDef `json:"apis,omitempty"`
-	//用于api，flow
-	Parameters *[]BaseParamDef `json:"parameters,omitempty"`
-	//api
-	PrivateName string `json:"private"`
+type ScheduleControlDef struct {
+	Name              string                   `json:"name"`
+	Private           string                   `json:"private"`
+	Description       string                   `json:"description"`
+	ResultKey         string                   `json:"resultKey"`
+	Key               BaseValueDef             `json:"key"`
+	ConcurrentNum     int                      `json:"concurrentNum,omitempty"`
+	ConcurrentLoopNum int                      `json:"concurrentLoopNum,omitempty"`
+	Cases             *[]ScheduleSwitchCaseDef `json:"cases,omitempty"`
+	Steps             *[]ScheduleApiDef        `json:"steps,omitempty"`
+}
+type ScheduleApiDef struct {
+	Type       string `json:"type"`
+	Mode       string `json:"mode"`
+	Concurrent bool   `json:"concurrent,omitempty"`
+	/*只用于Api*/
+	Private string              `json:"private"`
+	Api     *ApiDef             `json:"api"`
+	Control *ScheduleControlDef `json:"control"`
 }
 
 type ScheduleDef struct {
-	Name          string             `json:"name"`
-	Description   string             `json:"description"`
-	ConcurrentNum int                `json:"concurrentNum"`
-	Steps         *[]ScheduleTaskDef `json:"apis"`
+	Name          string            `json:"name"`
+	Description   string            `json:"description"`
+	ConcurrentNum int               `json:"concurrentNum"`
+	Steps         *[]ScheduleApiDef `json:"steps"`
 }

@@ -55,15 +55,5 @@
         "content": "content"
       }
     }
-  ],
-  "response": {
-    "json": {
-      "errCode": "{{.code}}",
-      "data": {
-        "word": [
-          "{{range $index,$elem := .data.word}}{{if $index}},{{end}}\"{{.}}\"{{end}}"
-        ]
-      }
-    }
-  }
+  ]
 }

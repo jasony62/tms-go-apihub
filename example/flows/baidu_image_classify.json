@@ -3,39 +3,15 @@
   "description": "百度图片动物分类",
   "steps": [
     {
-      "name": "gettoken",
-      "description": "获得access_token",
-      "command": "httpApi",
+      "name": "getname",
+      "description": "获得动物名称",
+      "command": "flowApi",
       "parameters": [
         {
           "name": "name",
           "value": {
             "from": "literal",
-            "content": "baidu_image_classify_token"
-          }
-        }
-      ],
-      "resultKey": "tokenResult"
-    },
-    {
-      "name": "getlist",
-      "description": "获得动物图片列表",
-      "command": "httpApi",
-      "parameters": [
-        {
-          "name": "name",
-          "value": {
-            "from": "literal",
-            "content": "baidu_image_classify_list"
-          }
-        }
-      ],
-      "origin": [
-        {
-          "name": "token",
-          "value": {
-            "from": "StepResult",
-            "content": "tokenResult.access_token"
+            "content": "baidu_image_classify_base"
           }
         }
       ],

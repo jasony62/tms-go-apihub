@@ -4,76 +4,18 @@
   "steps": [
     {
       "name": "city_adcode",
-      "command": "httpApi",
-      "description": "查询城市的区域码",
+      "command": "flowApi",
+      "description": "查询城市天气",
       "parameters": [
         {
           "name": "name",
           "value": {
             "from": "literal",
-            "content": "amap_district"
+            "content": "amap_city_weather_base"
           }
         }
       ],
-      "resultKey": "adcodeResult"
-    },
-    {
-      "name": "amap_weather",
-      "command": "httpApi",
-      "parameters": [
-        {
-          "name": "name",
-          "value": {
-            "from": "literal",
-            "content": "amap_weather"
-          }
-        }
-      ],
-      "description": "查询城市的区域码",
-      "resultKey": "weatherResult",
-      "origin": [
-        {
-          "name": "city",
-          "value": {
-            "from": "template",
-            "content": "{{(index .adcodeResult.districts 0).adcode}}"
-          }
-        }
-      ]
-    },
-    {
-      "name": "merge_result",
-      "command": "createJson",
-      "description": "合并收到的结果",
-      "parameters": [
-        {
-          "name": "key",
-          "value": {
-            "from": "literal",
-            "content": "merge_result"
-          }
-        }
-      ],
-      "origin": [
-        {
-          "name": "merge_result",
-          "value": {
-            "from": "jsonRaw",
-            "json": {
-              "errCode": "{{.weatherResult.status}}",
-              "data": {
-                "region": "{{(index .weatherResult.lives 0).province}}",
-                "weather": "{{(index .weatherResult.lives 0).weather}}",
-                "temperature": "{{(index .weatherResult.lives 0).temperature}}",
-                "winddirection": "{{(index .weatherResult.lives 0).winddirection}}",
-                "windpower": "{{(index .weatherResult.lives 0).windpower}}",
-                "humidity": "{{(index .weatherResult.lives 0).humidity}}"
-              }
-            }
-          }
-        }
-      ],      
-      "resultKey": "merged"
+      "resultKey": "weatherResult"
     },
     {
       "name": "response",
@@ -91,7 +33,7 @@
           "name": "key",
           "value": {
             "from": "literal",
-            "content": "merged"
+            "content": "weatherResult"
           }
         }        
       ]
