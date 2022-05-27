@@ -2,9 +2,6 @@ package apis
 
 import (
 	"encoding/json"
-	"io"
-	"io/ioutil"
-	"net/http"
 	"net/url"
 	"strconv"
 
@@ -15,6 +12,7 @@ import (
 
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/jasony62/tms-go-apihub/util"
+	"github.com/valyala/fasthttp"
 
 	jsoniter "github.com/json-iterator/go"
 )
@@ -29,18 +27,19 @@ func handleReq(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Privat
 
 	outReq, err := newRequest(stack, HttpApi, privateDef)
 	if err != nil {
-		return nil, http.StatusInternalServerError
+		return nil, fasthttp.StatusInternalServerError
 	}
 	// 发出请求
-	client := &http.Client{}
-	resp, err := client.Do(outReq)
+	client := &fasthttp.Client{}
+	resp := fasthttp.AcquireResponse()
+	err = client.Do(outReq, resp)
+	defer fasthttp.ReleaseRequest(outReq)
 	if err != nil {
-		klog.Errorln("err", err)
-		return nil, http.StatusInternalServerError
+		klog.Errorln("ERR Connection error: ", err)
+		return nil, fasthttp.StatusInternalServerError
 	}
-	defer resp.Body.Close()
-	returnBody, _ := io.ReadAll(resp.Body)
-
+	defer fasthttp.ReleaseResponse(resp)
+	returnBody := resp.Body()
 	// 将收到的结果转为JSON对象
 	jsonEx.Unmarshal(returnBody, &jsonInRspBody)
 	stack.StepResult[hub.ResultName] = jsonInRspBody
@@ -59,21 +58,21 @@ func handleReq(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Privat
 		}
 	}
 
-	return jsonInRspBody, http.StatusOK
+	return jsonInRspBody, fasthttp.StatusOK
 }
 
-func newRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.PrivateArray) (formBody *http.Request, err error) {
+func newRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.PrivateArray) (*fasthttp.Request, error) {
 	var outBody string
 	var hasBody bool
+	var err error
 	// 要发送的请求
-	outReq, _ := http.NewRequest(HttpApi.Method, "", nil)
+	outReq := fasthttp.AcquireRequest()
+	outReq.Header.SetMethod(HttpApi.Method)
 	hasBody = len(HttpApi.RequestContentType) > 0 && HttpApi.RequestContentType != "none"
 	if hasBody {
 		switch HttpApi.RequestContentType {
 		case "form":
 			outReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-			formBody = new(http.Request)
-			formBody.ParseForm()
 		case "json":
 			outReq.Header.Set("Content-Type", "application/json")
 		case hub.OriginName:
@@ -89,6 +88,7 @@ func newRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Priva
 
 	// 发出请求的URL
 	var finalUrl string
+	var args fasthttp.Args
 	if len(HttpApi.Url) == 0 {
 		if HttpApi.DynamicUrl != nil {
 			finalUrl, err = util.GetParameterStringValue(stack, privateDef, HttpApi.DynamicUrl)
@@ -129,7 +129,7 @@ func newRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Priva
 					case "body":
 						if hasBody && HttpApi.RequestContentType != hub.OriginName {
 							if HttpApi.RequestContentType == "form" {
-								formBody.Form.Add(param.Name, value)
+								args.Set(param.Name, value)
 							} else {
 								if len(outBody) == 0 {
 									if value == "null" {
@@ -157,23 +157,23 @@ func newRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Priva
 			outReqURL.RawQuery = q.Encode()
 		}
 	}
-
-	outReq.URL = outReqURL
+	outReq.SetRequestURI(outReqURL.String())
 
 	// 处理要发送的消息体
 	if HttpApi.Method == "POST" {
 		if HttpApi.RequestContentType != "none" {
 			if HttpApi.RequestContentType == "form" {
-				outBody = formBody.Form.Encode()
+				args.WriteTo(outReq.BodyWriter())
+			} else {
+				outReq.SetBodyString(outBody)
 			}
-			outReq.Body = ioutil.NopCloser(strings.NewReader(outBody))
 		}
 	}
 
 	return outReq, nil
 }
 
-func handleExpireTime(stack *hub.Stack, HttpApi *hub.HttpApiDef, resp *http.Response) (time.Time, bool) {
+func handleExpireTime(stack *hub.Stack, HttpApi *hub.HttpApiDef, resp *fasthttp.Response) (time.Time, bool) {
 	klog.Infoln("获得参数，[src]:", HttpApi.Cache.Expire.From, "; [key]:", HttpApi.Cache.Expire.Content, "; [format]:", HttpApi.Cache.Format)
 	if strings.EqualFold(HttpApi.Cache.Expire.From, "header") {
 		return handleHeaderExpireTime(HttpApi, resp)
@@ -182,7 +182,7 @@ func handleExpireTime(stack *hub.Stack, HttpApi *hub.HttpApiDef, resp *http.Resp
 	}
 }
 
-func handleHeaderExpireTime(HttpApi *hub.HttpApiDef, resp *http.Response) (time.Time, bool) {
+func handleHeaderExpireTime(HttpApi *hub.HttpApiDef, resp *fasthttp.Response) (time.Time, bool) {
 	//首先在api 的json文件中配置参数 cache
 	// "cache": {
 	// 	"value": {
@@ -204,17 +204,17 @@ func handleHeaderExpireTime(HttpApi *hub.HttpApiDef, resp *http.Response) (time.
 	if strings.Contains(key, "Set-Cookie.") {
 		key = strings.TrimPrefix(key, "Set-Cookie.")
 		//判断Set-Cookie中是否含有Expires 的header
-		cookie := resp.Header.Get("Set-Cookie")
+		cookie := resp.Header.Peek("Set-Cookie")
 		klog.Infoln("Header中Set-Cookie: ", cookie)
 		if len(cookie) > 0 {
-			expiresIndex := strings.Index(cookie, key) //"expires="
+			expiresIndex := strings.Index(string(cookie), key) //"expires="
 			if expiresIndex >= 0 {
-				semicolonIndex := strings.Index(cookie[expiresIndex:], ";")
+				semicolonIndex := strings.Index(string(cookie[expiresIndex:]), ";")
 				if semicolonIndex < 0 {
 					semicolonIndex = 0
 				}
 
-				expires, err := parseExpireTime(cookie[expiresIndex+len(key)+1:expiresIndex+semicolonIndex], format)
+				expires, err := parseExpireTime(string(cookie[expiresIndex+len(key)+1:expiresIndex+semicolonIndex]), format)
 				if err == nil {
 					return expires, true
 				}
@@ -222,7 +222,7 @@ func handleHeaderExpireTime(HttpApi *hub.HttpApiDef, resp *http.Response) (time.
 		}
 	} else {
 		//判断是否含有Expires 的header
-		expires, err := parseExpireTime(resp.Header.Get(key), format)
+		expires, err := parseExpireTime(string(resp.Header.Peek(key)), format)
 		if err == nil {
 			return expires, true
 		}
@@ -336,11 +336,11 @@ func run(stack *hub.Stack, name string, private string) (jsonOutRspBody interfac
 		jsonOutRspBody, _ = handleReq(stack, HttpApi, privateDef)
 	}
 
-	klog.Infoln("处理", HttpApi.Url, ":", http.StatusOK, "\r\n返回结果：", jsonOutRspBody)
+	klog.Infoln("处理", HttpApi.Url, ":", fasthttp.StatusOK, "\r\n返回结果：", jsonOutRspBody)
 	if jsonOutRspBody == nil {
-		return nil, http.StatusInternalServerError
+		return nil, fasthttp.StatusInternalServerError
 	}
-	return jsonOutRspBody, http.StatusOK
+	return jsonOutRspBody, fasthttp.StatusOK
 }
 
 func runHttpApi(stack *hub.Stack, params map[string]string) (interface{}, int) {
@@ -373,12 +373,12 @@ func httpResponse(stack *hub.Stack, params map[string]string) (interface{}, int)
 	switch name {
 	case "html":
 		stack.GinContext.Header("Content-Type", "text/html; charset=utf-8")
-		stack.GinContext.String(http.StatusOK, "%s", result)
+		stack.GinContext.String(fasthttp.StatusOK, "%s", result)
 	case "json":
-		stack.GinContext.IndentedJSON(http.StatusOK, result)
+		stack.GinContext.IndentedJSON(fasthttp.StatusOK, result)
 	default:
 		stack.GinContext.Header("Content-Type", name)
-		stack.GinContext.String(http.StatusOK, "%s", result)
+		stack.GinContext.String(fasthttp.StatusOK, "%s", result)
 	}
-	return nil, http.StatusOK
+	return nil, fasthttp.StatusOK
 }
