@@ -5,7 +5,7 @@
     "steps": [
         {
             "type": "loop",
-            "concurrent": true,
+            "mode": "concurrent",
             "control": {
                 "name": "city_loop",
                 "resultKey": "myloop",
@@ -94,7 +94,7 @@
         },
         {
             "type": "api",
-            "concurrent": true,
+            "mode": "concurrent",
             "api": {
                 "name": "baidu_image_classify",
                 "command": "flowApi",
