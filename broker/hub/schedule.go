@@ -18,9 +18,8 @@ type ScheduleControlDef struct {
 	Steps             *[]ScheduleApiDef        `json:"steps,omitempty"`
 }
 type ScheduleApiDef struct {
-	Type       string `json:"type"`
-	Mode       string `json:"mode"`
-	Concurrent bool   `json:"concurrent,omitempty"`
+	Type string `json:"type"`
+	Mode string `json:"mode"`
 	/*只用于Api*/
 	Private string              `json:"private"`
 	Api     *ApiDef             `json:"api"`

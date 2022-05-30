@@ -52,6 +52,6 @@ curl -i -H "Content-Type: application/json" -d '{"cities":["sh", "bj", "sh", "sh
 
 
 echo "\r\n地图服务查询"
-curl -i -H "Content-Type: application/json" -d '{"lat": "39.915599", "lng": "116.406568"}' "http://localhost:8080/flow/gis_base_map"
+curl -i -H "Content-Type: application/json" "http://localhost:8080/flow/gis_base_map?lat=39.915599&lng=116.406568"
 
 

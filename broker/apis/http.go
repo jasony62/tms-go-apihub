@@ -29,16 +29,16 @@ func handleReq(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Privat
 	if err != nil {
 		return nil, fasthttp.StatusInternalServerError
 	}
+	defer fasthttp.ReleaseRequest(outReq)
 	// 发出请求
 	client := &fasthttp.Client{}
 	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp)
 	err = client.Do(outReq, resp)
-	defer fasthttp.ReleaseRequest(outReq)
 	if err != nil {
 		klog.Errorln("ERR Connection error: ", err)
 		return nil, fasthttp.StatusInternalServerError
 	}
-	defer fasthttp.ReleaseResponse(resp)
 	returnBody := resp.Body()
 	// 将收到的结果转为JSON对象
 	jsonEx.Unmarshal(returnBody, &jsonInRspBody)

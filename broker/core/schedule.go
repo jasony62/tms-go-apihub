@@ -30,6 +30,11 @@ type concurrentScheOut struct {
 	result interface{}
 }
 
+func isNormalMode(task *hub.ScheduleApiDef) bool {
+	mode := task.Mode
+	return (mode != "concurrent") && (mode != "background")
+}
+
 func generateStepResult(stack *hub.Stack, parameters *[]hub.BaseParamDef) interface{} {
 	result := make(map[string]interface{}, len(*parameters))
 	for _, parameter := range *parameters {
@@ -158,7 +163,7 @@ func handleLoopTask(stack *hub.Stack, task *hub.ScheduleApiDef) (interface{}, in
 	}
 	loopLength, _ := strconv.Atoi(keyStr)
 	loopResult := make([]interface{}, loopLength)
-	if !task.Concurrent && len(task.Control.ResultKey) > 0 {
+	if isNormalMode(task) && len(task.Control.ResultKey) > 0 {
 		stack.StepResult[task.Control.ResultKey] = loopResult
 	}
 
@@ -179,7 +184,7 @@ func handleApiTask(stack *hub.Stack, task *hub.ScheduleApiDef) (result interface
 	// 执行API
 	result, status = ApiRun(stack, task.Api, task.Private)
 
-	if !task.Concurrent && len(task.Api.ResultKey) > 0 {
+	if isNormalMode(task) && len(task.Api.ResultKey) > 0 {
 		stack.StepResult[task.Api.ResultKey] = result
 	}
 	return
@@ -271,8 +276,8 @@ func handleTasks(stack *hub.Stack, apis *[]hub.ScheduleApiDef, concurrentNum int
 	for index := range *apis {
 		task := &(*apis)[index]
 		if concurrentNum > 1 {
-			if task.Concurrent {
-				klog.Infoln("准备并行运行 type：", task.Type, ",concurrent:", task.Concurrent, ",concurrentNum:", concurrentNum)
+			if task.Mode == "concurrent" {
+				klog.Infoln("准备并行运行 type：", task.Type, ",concurrentNum:", concurrentNum)
 				in <- concurrentScheIn{task: task}
 				counter++
 				continue
@@ -284,8 +289,13 @@ func handleTasks(stack *hub.Stack, apis *[]hub.ScheduleApiDef, concurrentNum int
 				}
 			}
 		}
-		klog.Infoln("串行 type：", task.Type, ",concurrent:", task.Concurrent, ",concurrentNum:", concurrentNum)
-		result, status = handleOneScheduleApi(stack, task)
+		if task.Mode == "background" {
+			klog.Infoln("后台 type：", task.Type)
+			go handleOneScheduleApi(stack, task)
+		} else {
+			klog.Infoln("串行 type：", task.Type, ", concurrentNum:", concurrentNum)
+			result, status = handleOneScheduleApi(stack, task)
+		}
 	}
 
 	//防止都是并行任务
