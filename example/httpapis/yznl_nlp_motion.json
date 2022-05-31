@@ -4,7 +4,7 @@
   "private": "yznl_nlp_motion_keys",
   "method": "POST",
   "requestContentType": "json",
-  "parameters": [
+  "args": [
     {
       "in": "header",
       "name": "X-APP-ID",

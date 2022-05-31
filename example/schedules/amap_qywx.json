@@ -33,7 +33,7 @@
                                                 "name": "shanghai weather",
                                                 "command": "flowApi",
                                                 "resultKey": "weather",
-                                                "parameters": [
+                                                "args": [
                                                     {
                                                         "name": "name",
                                                         "value": {
@@ -64,7 +64,7 @@
                                                 "name": "beijing weather",
                                                 "command": "flowApi",
                                                 "resultKey": "weather",
-                                                "parameters": [
+                                                "args": [
                                                     {
                                                         "name": "name",
                                                         "value": {
@@ -99,7 +99,7 @@
                 "name": "baidu_image_classify",
                 "command": "flowApi",
                 "resultKey": "image",
-                "parameters": [
+                "args": [
                     {
                         "name": "name",
                         "value": {
@@ -125,7 +125,7 @@
             "api": {
                 "name": "baidu_image_classify",
                 "command": "flowApi",
-                "parameters": [
+                "args": [
                     {
                         "name": "name",
                         "value": {

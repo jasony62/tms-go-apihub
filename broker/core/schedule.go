@@ -35,9 +35,9 @@ func isNormalMode(task *hub.ScheduleApiDef) bool {
 	return (mode != "concurrent") && (mode != "background")
 }
 
-func generateStepResult(stack *hub.Stack, parameters *[]hub.BaseParamDef) interface{} {
-	result := make(map[string]interface{}, len(*parameters))
-	for _, parameter := range *parameters {
+func generateStepResult(stack *hub.Stack, args *[]hub.BaseParamDef) interface{} {
+	result := make(map[string]interface{}, len(*args))
+	for _, parameter := range *args {
 		result[parameter.Name], _ = util.GetParameterRawValue(stack, nil, &parameter.Value)
 	}
 	return result
@@ -59,8 +59,8 @@ func copyScheduleStack(src *hub.Stack, task *hub.ScheduleApiDef) *hub.Stack {
 	for k, v := range src.StepResult {
 		switch k {
 		case hub.OriginName:
-			if task.Type == "api" && task.Api.Parameters != nil {
-				result.StepResult[k] = generateStepResult(src, task.Api.Parameters)
+			if task.Type == "api" && task.Api.Args != nil {
+				result.StepResult[k] = generateStepResult(src, task.Api.Args)
 			} else {
 				result.StepResult[k] = v
 			}
@@ -306,7 +306,7 @@ func handleTasks(stack *hub.Stack, apis *[]hub.ScheduleApiDef, concurrentNum int
 }
 
 func runSchedule(stack *hub.Stack, name string, private string) (interface{}, int) {
-	scheduleDef, err := util.FindScheduleDef(stack, name)
+	scheduleDef, err := util.FindScheduleDef(name)
 	if scheduleDef == nil || scheduleDef.Steps == nil {
 		klog.Errorln("获得Schedule定义失败：", err)
 		panic(err)

@@ -20,7 +20,6 @@ const (
 )
 
 func downloadFile(fileUrl string) (string, error) {
-
 	klog.Infoln("downloadFile url: ", fileUrl)
 	url, err := url.ParseRequestURI(fileUrl)
 	if err != nil {
@@ -134,28 +133,24 @@ func bytesToSize(length int) string {
 	return strconv.FormatFloat(r, 'f', 3, 64) + " " + sizes[int(i)]
 }
 
-func DownloadConf(confStoreFolder string, confUnzipPwd string) bool {
+func downloadConf(confUrl string, confStoreFolder string, confUnzipPwd string) bool {
 	//从远端下载conf
-	confUrl := os.Getenv("TGAH_REMOTE_CONF_URL")
-	if len(confUrl) > 0 {
-		filename, err := downloadFile(confUrl)
-		if err != nil {
-			klog.Errorln("Download conf file err: ", err)
-			return false
-		} else {
-			//解压缩
-			//filename = os.Getenv("TGAH_REMOTE_CONF_NAME")
-			klog.Infoln("filename: ", filename)
-			klog.Infoln("confStoreFolder: ", confStoreFolder)
-			klog.Infoln("confUnzipPwd: ", confUnzipPwd)
+	filename, err := downloadFile(confUrl)
+	if err != nil {
+		klog.Errorln("Download conf file err: ", err)
+		return false
+	} else {
+		//解压缩
+		//filename = os.Getenv("TGAH_REMOTE_CONF_NAME")
+		klog.Infoln("filename: ", filename)
+		klog.Infoln("confStoreFolder: ", confStoreFolder)
+		klog.Infoln("confUnzipPwd: ", confUnzipPwd)
 
-			err = deCompressZip(filename, confStoreFolder, confUnzipPwd, nil, 0)
-			if err != nil {
-				klog.Errorln(err)
-				return false
-			}
+		err = deCompressZip(filename, confStoreFolder, confUnzipPwd, nil, 0)
+		if err != nil {
+			klog.Errorln(err)
+			return false
 		}
-		return true
 	}
-	return false
+	return true
 }

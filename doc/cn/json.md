@@ -26,7 +26,7 @@ from是一个基础结构，用在多处
 | method        | HTTP 请求方法，支持`POST`和`GET`。                                                                    | string   | 是   |
 |requestContentType | json映射为`application/json`，form映射为`application/x-www-form-urlencoded`，origin为取输入报文的ContentType，并直接转发输入报文的http body，none表示没有body,其他值则直接写入ContentType|string |是|
 |               |                                                                                                       |          |      |
-| parameters    | HTTP 请求的参数。                                                                                     | object[] |    否  |
+| args    | HTTP 请求的参数。                                                                                     | object[] |    否  |
 | --in          | 参数位置。支持`query`，`header`,`body`, `vars`。前三者的值除了会放到发送报文里，还可以在模板通过.vars.访问，vars表示只进入.vars| string| 是   |
 | --name        | 参数名称。                                                                                            | string   | 是   |
 | --from        | 指定参数值的获取位置，标准from结构。          | object   | 否   |
@@ -61,7 +61,7 @@ from是一个基础结构，用在多处
 | --api          | 步骤对应的 API 定义。                                    | object   | 是   |
 | ----private    | 用于覆盖原始API中的private。                            | string   | 否   |
 | ----id         | API 定义的 ID。                            | string   | 是   |
-| ----parameters | 放在这里的定义会补充或者覆盖输入报文里的json参数。`from.from`可以指定为`StepResult`，代表从之前执行步骤的结果（和 resultKey）中提取数据。 | object[] | 否   |
+| ----args | 放在这里的定义会补充或者覆盖输入报文里的json参数。`from.from`可以指定为`StepResult`，代表从之前执行步骤的结果（和 resultKey）中提取数据。 | object[] | 否   |
 |                |          |      ||
 | ------name        | 参数名称。                          | string   | 是   |
 | ------from        | 指定参数值的获取位，标准from结构置。                               | object   | 否   |
@@ -86,7 +86,7 @@ from是一个基础结构，用在多处
 |--concurrentNum   |  control命令时最大允许的并行执行的数量。      | int   |  否    |
 | --concurrent   | 是否使用并行执行。                       | bool   | 否   |
 | --apis   | control命令时的执行列表，结构同上层的tasks，为tasks的自身嵌套。                       | object[]   | 否   |
-| --parameters   | flow和control时用于改写origin，同flow的parameters。        | object[]   | 否   |
+| --args   | flow和control时用于改写origin，同flow的parameters。        | object[]   | 否   |
 | --private    | 用于覆盖原始API中的private。                            | string   | 否   | 
 | --cases   | switch时检查的case。                       | object[]   | 否   |
 | ----Value   | 上层的key等于本字段则执行tasks。                       | string   | 是   |

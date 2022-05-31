@@ -4,7 +4,7 @@
   "method": "POST",
   "private": "map_keys",
   "requestContentType": "json",
-  "parameters": [
+  "args": [
     {
       "in": "header",
       "name": "X-APP-ID",

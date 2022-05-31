@@ -27,6 +27,6 @@ type HttpApiDef struct {
 	PrivateName        string             `json:"private"`
 	Method             string             `json:"method"`
 	RequestContentType string             `json:"requestContentType"`
-	Parameters         *[]HttpApiDefParam `json:"parameters"`
+	Args               *[]HttpApiDefParam `json:"args"`
 	Cache              *ApiCache          `json:"cache"`
 }

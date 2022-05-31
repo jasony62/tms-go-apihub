@@ -7,7 +7,7 @@
   },
   "method": "POST",
   "requestContentType": "json",
-  "parameters": [
+  "args": [
     {
       "in": "body",
       "name": "body",

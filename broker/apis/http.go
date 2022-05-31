@@ -104,7 +104,7 @@ func newRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Priva
 	}
 	outReqURL, _ := url.Parse(finalUrl)
 	// 设置请求参数
-	outReqParamRules := HttpApi.Parameters
+	outReqParamRules := HttpApi.Args
 	if outReqParamRules != nil {
 		paramLen := len(*outReqParamRules)
 		if paramLen > 0 {
@@ -306,7 +306,7 @@ func getCacheContentWithLock(HttpApi *hub.HttpApiDef) interface{} {
 func run(stack *hub.Stack, name string, private string) (jsonOutRspBody interface{}, ret int) {
 	var err error
 	var privateDef *hub.PrivateArray
-	HttpApi, err := util.FindApiDef(stack, name)
+	HttpApi, err := util.FindHttpApiDef(name)
 
 	if HttpApi == nil {
 		klog.Errorln("获得API定义失败：", err)
@@ -317,7 +317,7 @@ func run(stack *hub.Stack, name string, private string) (jsonOutRspBody interfac
 	}
 
 	if len(private) != 0 {
-		privateDef, err = util.FindPrivateDef(stack, private)
+		privateDef, err = util.FindPrivateDef(private)
 		if err != nil {
 			klog.Errorln("获得private定义失败：", err)
 			panic(err)

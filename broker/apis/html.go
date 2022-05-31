@@ -23,7 +23,7 @@ func createHtml(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	}
 
 	if name == "resource" {
-		content, OK = hub.DefaultApp.SourceMap[content]
+		content, OK = util.FindResourceDef(content)
 		if !OK {
 			return nil, http.StatusInternalServerError
 		}

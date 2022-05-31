@@ -6,7 +6,7 @@
       "name": "gettoken",
       "description": "获得access_token",
       "command": "httpApi",
-      "parameters": [
+      "args": [
         {
           "name": "name",
           "value": {
@@ -21,7 +21,7 @@
       "name": "getlist",
       "description": "获得动物图片列表",
       "command": "httpApi",
-      "parameters": [
+      "args": [
         {
           "name": "name",
           "value": {

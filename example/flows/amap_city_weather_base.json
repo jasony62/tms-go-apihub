@@ -6,7 +6,7 @@
       "name": "city_adcode",
       "command": "httpApi",
       "description": "查询城市的区域码",
-      "parameters": [
+      "args": [
         {
           "name": "name",
           "value": {
@@ -22,7 +22,7 @@
       "command": "httpApi",
       "description": "查询城市的区域码",
       "resultKey": "weatherResult",
-      "parameters": [
+      "args": [
         {
           "name": "name",
           "value": {
@@ -45,7 +45,7 @@
       "name": "merge_result",
       "command": "createJson",
       "description": "合并收到的结果",
-      "parameters": [
+      "args": [
         {
           "name": "key",
           "value": {

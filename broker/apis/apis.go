@@ -3,6 +3,7 @@ package apis
 import (
 	"github.com/jasony62/tms-go-apihub/core"
 	"github.com/jasony62/tms-go-apihub/hub"
+	"github.com/jasony62/tms-go-apihub/util"
 	klog "k8s.io/klog/v2"
 )
 
@@ -14,5 +15,7 @@ func init() {
 		"checkStringsNotEqual": checkStringsNotEqual,
 		"createJson":           createJson,
 		"createHtml":           createHtml,
+		"loadConf":             util.LoadConf,
+		"apiGateway":           apiGateway,
 	})
 }

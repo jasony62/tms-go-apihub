@@ -11,16 +11,19 @@ import (
 
 func handleOneApi(stack *hub.Stack, apiDef *hub.ApiDef, private string) (result interface{}, ret int) {
 	if len(apiDef.Command) > 0 {
-		klog.Infoln("=========执行API name："+apiDef.Name+", command:"+apiDef.Command, " parameters:", apiDef.Parameters)
-		return ApiRun(stack, apiDef, private)
+		klog.Infoln("=========执行API name："+apiDef.Name+", command:"+apiDef.Command, " args:", apiDef.Args)
+		result, ret = ApiRun(stack, apiDef, private)
+	} else {
+		result, ret = nil, http.StatusInternalServerError
 	}
-	return nil, http.StatusInternalServerError
+	klog.Infoln("=========完成API name："+apiDef.Name+", command:"+apiDef.Command, " result:", result)
+	return
 }
 
 func runFlow(stack *hub.Stack, name string, private string) (result interface{}, ret int) {
 	var code int
 	var lastResult string
-	flowDef, err := util.FindFlowDef(stack, name)
+	flowDef, err := util.FindFlowDef(name)
 	if flowDef == nil {
 		klog.Errorln("获得Flow定义失败：", err)
 		panic(err)

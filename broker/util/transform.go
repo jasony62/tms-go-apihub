@@ -6,7 +6,6 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/jasony62/tms-go-apihub/hub"
 	klog "k8s.io/klog/v2"
 )
 
@@ -23,7 +22,7 @@ func executeTemplate(source interface{}, rules interface{}) (*bytes.Buffer, erro
 	strTempl = strings.ReplaceAll(strTempl, "end}}\"", "end}}")
 	strTempl = strings.ReplaceAll(strTempl, "\\\"", "\"")
 
-	tmpl, err := template.New("json").Funcs(hub.FuncMapForTemplate).Parse(strTempl)
+	tmpl, err := template.New("json").Funcs(funcMapForTemplate).Parse(strTempl)
 	if err != nil {
 		klog.Infoln("get template result：", strTempl, byteTempl, " error: ", err)
 	}

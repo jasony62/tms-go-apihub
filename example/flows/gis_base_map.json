@@ -6,7 +6,7 @@
       "name": "gettoken",
       "description": "获得access_token",
       "command": "httpApi",
-      "parameters": [
+      "args": [
         {
           "name": "name",
           "value": {
@@ -22,7 +22,7 @@
       "command": "createHtml",
       "description": "创建html",
       "resultKey": "mergedHtml",
-      "parameters": [
+      "args": [
         {
           "name": "type",
           "value": {
@@ -73,7 +73,7 @@
       "name": "response",
       "command": "httpResponse",
       "description": "返回结果",
-      "parameters": [
+      "args": [
         {
           "name": "type",
           "value": {

@@ -6,7 +6,7 @@
       "name": "getname",
       "description": "获得动物名称",
       "command": "flowApi",
-      "parameters": [
+      "args": [
         {
           "name": "name",
           "value": {
@@ -21,7 +21,7 @@
       "name": "response",
       "command": "httpResponse",
       "description": "返回结果",    
-      "parameters": [
+      "args": [
         {
           "name": "type",
           "value": {
