@@ -4,7 +4,7 @@
   "private": "baidu_image_classify_key",
   "method": "GET",
   "requestContentType": "json",
-  "parameters": [
+  "args": [
      {
       "in": "query",
       "name": "grant_type",

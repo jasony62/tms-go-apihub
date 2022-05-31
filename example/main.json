@@ -1,26 +1,30 @@
 {
-  "name": "amap_city_weather",
-  "description": "高德地图查询城市的天气",
+  "name": "main",
+  "description": "main for apigateway",
   "steps": [
-    {
-      "name": "city_adcode",
-      "command": "flowApi",
-      "description": "查询城市天气",
+	      {
+      "name": "welcome",
+      "command": "welcome",
+      "description": "welcome",
       "args": [
         {
-          "name": "name",
+          "name": "content",
           "value": {
             "from": "literal",
-            "content": "amap_city_weather_base"
+            "content": "welcome to use apihub"
           }
         }
-      ],
-      "resultKey": "weatherResult"
+      ]
     },
     {
-      "name": "response",
-      "command": "httpResponse",
-      "description": "返回结果",    
+      "name": "loadConf",
+      "command": "loadConf",
+      "description": "loadConf"
+    },
+    {
+      "name": "apiGateway",
+      "command": "apiGateway",
+      "description": "apiGateway",    
       "args": [
         {
           "name": "type",

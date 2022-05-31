@@ -6,7 +6,7 @@
       "name": "city_adcode",
       "command": "httpApi",
       "description": "查询城市的区域码",
-      "parameters": [
+      "args": [
         {
           "name": "name",
           "value": {
@@ -20,7 +20,7 @@
     {
       "name": "amap_weather",
       "command": "httpApi",
-      "parameters": [
+      "args": [
         {
           "name": "name",
           "value": {
@@ -46,7 +46,7 @@
       "command": "createHtml",
       "description": "创建html",
       "resultKey": "mergedHtml",
-      "parameters": [
+      "args": [
         {
           "name": "type",
           "value": {
@@ -67,7 +67,7 @@
       "name": "response",
       "command": "httpResponse",
       "description": "返回结果",    
-      "parameters": [
+      "args": [
         {
           "name": "type",
           "value": {

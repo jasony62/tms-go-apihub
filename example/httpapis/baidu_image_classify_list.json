@@ -4,7 +4,7 @@
   "private": "baidu_image_classify_key",
   "method": "POST",
   "requestContentType": "form",
-  "parameters": [
+  "args": [
     {
       "in": "query",
       "name": "access_token",

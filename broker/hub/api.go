@@ -11,6 +11,6 @@ type ApiDef struct {
 	Private          string          `json:"private"`
 	Description      string          `json:"description"`
 	ResultKey        string          `json:"resultKey"`
-	Parameters       *[]BaseParamDef `json:"parameters"`
+	Args             *[]BaseParamDef `json:"args"`
 	OriginParameters *[]BaseParamDef `json:"origin"`
 }

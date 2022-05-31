@@ -19,7 +19,7 @@ type ZipCrypto struct {
 	Keys     [3]uint32
 }
 
-func NewZipCrypto(passphrase []byte) *ZipCrypto {
+func newZipCrypto(passphrase []byte) *ZipCrypto {
 	z := &ZipCrypto{}
 	z.password = passphrase
 	z.init()
@@ -74,8 +74,8 @@ func crc32update(pCrc32 uint32, bval byte) uint32 {
 	return crc32.IEEETable[(pCrc32^uint32(bval))&0xff] ^ (pCrc32 >> 8)
 }
 
-func ZipCryptoDecryptor(r *io.SectionReader, password []byte) (*io.SectionReader, error) {
-	z := NewZipCrypto(password)
+func zipCryptoDecryptor(r *io.SectionReader, password []byte) (*io.SectionReader, error) {
+	z := newZipCrypto(password)
 	b := make([]byte, r.Size())
 
 	r.Read(b)
@@ -158,14 +158,14 @@ func deCompressZip(zipFile, dest, passwd string, includes []string, offset int64
 		// Register a custom Deflate compressor.
 		zr.RegisterDecompressor(zip.Deflate, func(r io.Reader) io.ReadCloser {
 			rs := r.(*io.SectionReader)
-			r, _ = ZipCryptoDecryptor(rs, []byte(passwd))
+			r, _ = zipCryptoDecryptor(rs, []byte(passwd))
 			klog.Infoln("DeCompressZip: Register Deflate compressor")
 			return flate.NewReader(r)
 		})
 
 		zr.RegisterDecompressor(zip.Store, func(r io.Reader) io.ReadCloser {
 			rs := r.(*io.SectionReader)
-			r, _ = ZipCryptoDecryptor(rs, []byte(passwd))
+			r, _ = zipCryptoDecryptor(rs, []byte(passwd))
 			klog.Infoln("DeCompressZip: Register Deflate decompressor")
 			return ioutil.NopCloser(r)
 		})

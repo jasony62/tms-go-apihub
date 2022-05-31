@@ -148,15 +148,15 @@ e2=>end: 返回http错误码
 e3=>end: 将结果返回主协程
 
 op查找=>operation: 根据api.id查找api定义
-op遍历参数=>operation: parameters
+op遍历参数=>operation: args
 op执行=>operation: 执行api
-op遍历参数=>operation: 遍历api.parameters
+op遍历参数=>operation: 遍历api.args
 op生成入参=>operation: 生成API的入参
 op存入结果=>operation: 将返回的json存入StepResult
 op改写=>operation: 生成一个新的response
 op记录文本格式=>operation: 记录返回的文本格式
 
-c参数=>condition: 有api.parameters
+c参数=>condition: 有api.args
 c参数结束=>condition: 遍历api.parameters结束
 c成功=>condition: API返回成功
 cresultKey=>condition: 有resultKey

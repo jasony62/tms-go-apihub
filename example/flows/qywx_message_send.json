@@ -6,7 +6,7 @@
       "name": "gettoken",
       "description": "获得access_token",
       "command": "httpApi",
-      "parameters": [
+      "args": [
         {
           "name": "name",
           "value": {
@@ -21,7 +21,7 @@
       "name": "checkTokenResult",
       "description": "检查token是否有效",
       "command": "checkStringsNotEqual",
-      "parameters": [
+      "args": [
         {
           "name": "",
           "value": {
@@ -35,7 +35,7 @@
       "name": "message_send",
       "description": "查询城市的区域码",
       "command": "httpApi",
-      "parameters": [
+      "args": [
         {
           "name": "name",
           "value": {
@@ -59,7 +59,7 @@
       "name": "checkResult",
       "description": "检查返回值",
       "command": "checkStringsEqual",
-      "parameters": [
+      "args": [
         {
           "name": "0",
           "value": {
@@ -73,7 +73,7 @@
       "name": "response",
       "command": "httpResponse",
       "description": "返回结果",    
-      "parameters": [
+      "args": [
         {
           "name": "type",
           "value": {

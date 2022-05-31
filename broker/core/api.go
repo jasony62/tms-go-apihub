@@ -39,21 +39,21 @@ func ApiRun(stack *hub.Stack, api *hub.ApiDef, private string) (result interface
 	}
 
 	var origin map[string]interface{}
-	parameters := make(map[string]string)
+	args := make(map[string]string)
 	var privateDef *hub.PrivateArray
 	if len(api.Private) > 0 {
-		parameters["private"] = api.Private
-		privateDef, err = util.FindPrivateDef(stack, api.Private)
+		args["private"] = api.Private
+		privateDef, err = util.FindPrivateDef(api.Private)
 		if err != nil {
 			klog.Errorln("获得private定义失败：", err)
 			panic(err)
 		}
 	}
 
-	if api.Parameters != nil {
-		for index := range *api.Parameters {
-			item := (*api.Parameters)[index]
-			parameters[item.Name], err = util.GetParameterStringValue(stack, privateDef, &item.Value)
+	if api.Args != nil {
+		for index := range *api.Args {
+			item := (*api.Args)[index]
+			args[item.Name], err = util.GetParameterStringValue(stack, privateDef, &item.Value)
 			if err != nil {
 				return nil, http.StatusInternalServerError
 			}
@@ -70,5 +70,5 @@ func ApiRun(stack *hub.Stack, api *hub.ApiDef, private string) (result interface
 			}
 		}
 	}
-	return function(stack, parameters)
+	return function(stack, args)
 }

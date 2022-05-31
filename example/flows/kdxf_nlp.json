@@ -7,7 +7,7 @@
       "name": "input_cws",
       "command": "httpApi",
       "description": "对输入内容进行分词",
-      "parameters": [
+      "args": [
         {
           "name": "name",
           "value": {
@@ -22,7 +22,7 @@
       "name": "input_pos",
       "command": "httpApi",
       "description": "对输入内容标注词性",
-      "parameters": [
+      "args": [
         {
           "name": "name",
           "value": {
@@ -37,7 +37,7 @@
       "name": "merge_result",
       "command": "createJson",
       "description": "合并收到的结果",
-      "parameters": [
+      "args": [
         {
           "name": "key",
           "value": {
@@ -71,7 +71,7 @@
       "name": "response",
       "command": "httpResponse",
       "description": "返回结果",    
-      "parameters": [
+      "args": [
         {
           "name": "type",
           "value": {

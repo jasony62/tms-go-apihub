@@ -5,7 +5,7 @@
   "method": "POST",
   "private": "kdxf_keys",
   "requestContentType": "form",
-  "parameters": [
+  "args": [
     {
       "in": "header",
       "name": "X-Appid",

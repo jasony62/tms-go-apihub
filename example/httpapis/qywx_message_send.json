@@ -3,7 +3,7 @@
   "url": "https://qyapi.weixin.qq.com/cgi-bin/message/send",
   "method": "POST",
   "requestContentType": "json",
-  "parameters": [
+  "args": [
     {
       "in": "query",
       "name": "access_token",

@@ -3,7 +3,7 @@
   "url": "http://localhost:6060/v3/weather/weatherInfo",
   "method": "GET",
   "private": "amap_keys",
-  "parameters": [
+  "args": [
     {
       "in": "query",
       "name": "key",
