@@ -54,4 +54,14 @@ curl -i -H "Content-Type: application/json" -d '{"cities":["sh", "bj", "sh", "sh
 echo "\r\n地图服务查询"
 curl -i -H "Content-Type: application/json" "http://localhost:8080/flow/gis_base_map?lat=39.915599&lng=116.406568"
 
+#需要配置rights目录下的json文件，目前配置支持user为001,002
+echo "\r\n带用户appID的地区查询"   
+curl -i -H "Content-Type: application/json" -d '{"city": "北京"}' "http://localhost:8080/httpapi/amap_district?appID=001"
+
+echo "\r\n带用户appID的城市天气查询"   
+curl -i -H "Content-Type: application/json" -d '{"city": "北京"}' "http://localhost:8080/flow/amap_city_weather?appID=001"
+
+echo "\r\n带用户appID的企业微信schedule查询"  
+curl  -H "Content-Type: application/json" -d '{"cities":["sh", "bj", "sh", "sh"], "image":"https://img.zcool.cn/community2193a37cjpg"}ttp://localhost:8080/schedule/amap_qywx?appID=001"
+
 

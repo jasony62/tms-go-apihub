@@ -313,6 +313,18 @@ func runSchedule(stack *hub.Stack, name string, private string) (interface{}, in
 	}
 	stack.StepResult[hub.LoopName] = make(map[string]int)
 
+	//判断执行权限
+	api := new(hub.ApiDef)
+	api.Command = "checkRight"
+	api.Name = name
+	api.Type = "schedule"
+	api.DefaultRight = scheduleDef.DefaultRight
+	_, code := RightRun(stack, api)
+	if code != http.StatusOK {
+		klog.Errorln("runSchedule have no right")
+		return nil, code
+	}
+
 	return handleTasks(stack, scheduleDef.Steps, scheduleDef.ConcurrentNum)
 }
 

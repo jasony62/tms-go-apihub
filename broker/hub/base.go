@@ -19,3 +19,11 @@ const OriginName = "origin"
 const VarsName = "vars"
 const LoopName = "loop"
 const ResultName = "result"
+
+const Right_Access = "access"
+const Right_Deny = "deny"
+
+const Right_Pulbic = "public"
+const Right_Internal = "internal"
+const Right_Whitelist = "whitelist"
+const Right_Blacklist = "blacklist"

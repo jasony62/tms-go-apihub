@@ -45,13 +45,11 @@ func md5Func(params []string) string {
 	return checksum
 }
 
-//当from.from为"funcs"时，直接调用函数
 var funcMap map[string]hub.FuncHandler = map[string]hub.FuncHandler{
 	"utc": utc,
 	"md5": md5Func,
 }
 
-//用于template调用Funcs时，解析函数并调用
 var funcMapForTemplate map[string](interface{}) = map[string](interface{}){
 	"utc": utcTemplate,
 	"md5": md5Template,
