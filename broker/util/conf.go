@@ -324,7 +324,7 @@ func CheckRight(stack *hub.Stack, name string, callType string) bool {
 	var rightInfo *hub.RightArray
 	var ok bool
 	mapkey := name + "_right"
-	if callType == "api" {
+	if callType == "httpapi" {
 		rightInfo, ok = defaultConfMap.ApiRightMap[mapkey]
 	} else if callType == "flow" {
 		rightInfo, ok = defaultConfMap.FlowRightMap[mapkey]

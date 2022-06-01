@@ -8,6 +8,8 @@
 | flows            | 文件夹，存放FLOW定义文件                               |
 | schedules             | 文件夹，存放SCHEDULE定义文件                                         |
 | plugins             | 文件夹，存放动态注册func的.so                                         |
+| templates | 文件夹，存放html tmpl文件 |
+| rights | 文件夹，存放httpapi，flow和schedule对应的权限列表 |
 
 ## 命令行
 通过`--env`指定使用的环境变量文件，通过`--base`指定conf文件夹的路径，默认为./conf/。

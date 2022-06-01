@@ -68,7 +68,7 @@ func callHttpApi(c *gin.Context) {
 	//判断执行权限
 	args := make(map[string]string)
 	args["name"] = tmpStack.RootName
-	args["type"] = "api"
+	args["type"] = "httpapi"
 	_, code := checkRight(tmpStack, args)
 	if code != http.StatusOK {
 		c.IndentedJSON(code, nil)

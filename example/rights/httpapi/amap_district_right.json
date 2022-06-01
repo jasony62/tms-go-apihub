@@ -1,5 +1,5 @@
 {
-  "type": "flow",
+  "type": "httpapi",
   "right": "whitelist",
   "default": "deny",
   "list": [
