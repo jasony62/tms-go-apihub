@@ -8,7 +8,6 @@ type ScheduleSwitchCaseDef struct {
 
 type ScheduleControlDef struct {
 	Name              string                   `json:"name"`
-	Private           string                   `json:"private"`
 	Description       string                   `json:"description"`
 	ResultKey         string                   `json:"resultKey"`
 	Key               BaseValueDef             `json:"key"`
@@ -18,10 +17,10 @@ type ScheduleControlDef struct {
 	Steps             *[]ScheduleApiDef        `json:"steps,omitempty"`
 }
 type ScheduleApiDef struct {
-	Type string `json:"type"`
-	Mode string `json:"mode"`
+	Type    string `json:"type"`
+	Mode    string `json:"mode"`
+	Private string `json:"private"`
 	/*只用于Api*/
-	Private string              `json:"private"`
 	Api     *ApiDef             `json:"api"`
 	Control *ScheduleControlDef `json:"control"`
 }

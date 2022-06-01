@@ -18,7 +18,7 @@ var basePath string
 
 func init() {
 	flag.StringVar(&envfile, "env", "", "指定环境变量文件")
-	flag.StringVar(&basePath, "base", "./conf/", "指定p配置路径")
+	flag.StringVar(&basePath, "base", "./conf/", "指定启动路径")
 }
 
 func welcome(stack *hub.Stack, params map[string]string) (interface{}, int) {

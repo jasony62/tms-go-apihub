@@ -31,18 +31,7 @@ c6(no)->op3
 c7(no)->op3
 op3->e2
 ```
-## API调用流程
-```mermaid
-graph LR
-
-   client(调用发起方)
-   执行1(apihub)
-   执行2(HTTP server)
-   client--1.http request-1-->执行1--2.http request-1a-->执行2
-   执行2--3.http response-1a-->执行1--4.http response-1-->client
-```
-API是指根据输入http request生成新的http request(注意不是改写原http request)，然后根据返回的http response，生成新的http response，发送回调用方。
-只支持回应报文为json格式。
+## HTTPAPI调用流程
 ```flow
 st=>start: api.Run
 e1=>end: 返回结果(json格式)
@@ -101,19 +90,6 @@ c15(no)->e2
 
 ```
 ## flow调用流程
-```mermaid
-graph LR
-
-   client(调用发起方)
-   执行1(apihub)
-   执行2(HTTP server1)
-   执行3(HTTP server2)
-
-   client--1.http request-1-->执行1--2.http request-1a-->执行2--3.http response-1a-->执行1
-   执行1--4.http request-1b-->执行3--5.http response-1b-->执行1--7.http response-1-->client
-   执行1--6.聚合response-->执行1
-```
-flow是处理一组API调用（支持串线/并行/并行串行交替），并且后续串行API可以使用前序API的返回结果，也支持将多个API的返回结果聚合成一个http response。
 ```flow
 st=>start: flow.Run
 e1=>end: 返回结果(json或HTML)

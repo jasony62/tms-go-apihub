@@ -1,16 +1,16 @@
-# 特性
-APIHUB是一款基于 Golang 开发的微服务网关，能够实现基于JSON定义的灵活的编排能力和高性能 HTTP API的转发能力。   
+APIHUB是一款基于 Golang 开发的API调度平台，能够实现基于JSON定义的灵活的编排能力。
+第一阶段主要是提供微服务网关功能，充分利用了Go协程的高并发性能。   
 未来可以对接低代码平台，大大简化对API调用的管理。
-# [流程说明](https://github.com/jasony62/tms-go-apihub/blob/main/doc/cn/flow.md)
-
+# [基本概念](https://github.com/jasony62/tms-go-apihub/blob/main/doc/cn/base.md)
 # [启动](https://github.com/jasony62/tms-go-apihub/blob/main/doc/cn/start.md)
+# [API列表](https://github.com/jasony62/tms-go-apihub/blob/main/doc/cn/apis.md)
 # [JSON定义](https://github.com/jasony62/tms-go-apihub/blob/main/doc/cn/json.md)
-# [功能](https://github.com/jasony62/tms-go-apihub/blob/main/doc/cn/function.md)
-# 隔离
-使用`bucket`进行数据隔离。
-
+# [函数](https://github.com/jasony62/tms-go-apihub/blob/main/doc/cn/function.md)
+# [流程说明](https://github.com/jasony62/tms-go-apihub/blob/main/doc/cn/flow.md)
 # [测试](https://github.com/jasony62/tms-go-apihub/blob/main/doc/cn/test.md)
 # [开发计划](https://github.com/jasony62/tms-go-apihub/blob/main/doc/cn/work.md)
+# 隔离
+使用`bucket`进行数据隔离。
 
 # 参考
 基于go的低代码平台
