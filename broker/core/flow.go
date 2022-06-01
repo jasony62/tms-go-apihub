@@ -32,23 +32,16 @@ func runFlow(stack *hub.Stack, name string, private string) (result interface{},
 	for i := range flowDef.Steps {
 		apiDef := flowDef.Steps[i]
 
-		if apiDef.Command == "checkRight" {
-			klog.Infoln("RunFlow check right ...")
-			apiDef.DefaultRight = flowDef.DefaultRight
-			RightRun(stack, &apiDef)
-		} else {
-			result, code = handleOneApi(stack, &apiDef, private)
-			if code != http.StatusOK {
-				klog.Errorln("运行API：" + apiDef.Name + "失败")
-				return nil, code
-			}
-
-			if len(apiDef.ResultKey) > 0 {
-				stack.StepResult[apiDef.ResultKey] = result
-				lastResult = apiDef.ResultKey
-			}
+		result, code = handleOneApi(stack, &apiDef, private)
+		if code != http.StatusOK {
+			klog.Errorln("运行API：" + apiDef.Name + "失败")
+			return nil, code
 		}
 
+		if len(apiDef.ResultKey) > 0 {
+			stack.StepResult[apiDef.ResultKey] = result
+			lastResult = apiDef.ResultKey
+		}
 	}
 
 	if len(lastResult) > 0 {

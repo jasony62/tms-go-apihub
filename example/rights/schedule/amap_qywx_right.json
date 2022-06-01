@@ -1,6 +1,7 @@
 {
   "type": "schedule",
   "right": "whitelist",
+  "default": "access",
   "list": [
     {
       "user": "001"

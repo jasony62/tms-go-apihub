@@ -313,16 +313,6 @@ func run(stack *hub.Stack, name string, private string) (jsonOutRspBody interfac
 		panic(err)
 	}
 
-	//判断执行权限
-	args := make(map[string]string)
-	args["name"] = name
-	args["type"] = "api"
-	args["defaultRight"] = HttpApi.DefaultRight
-	_, code := checkRight(stack, args)
-	if code != fasthttp.StatusOK {
-		return nil, code
-	}
-
 	if len(private) == 0 {
 		private = HttpApi.PrivateName
 	}
@@ -398,65 +388,5 @@ func httpResponse(stack *hub.Stack, params map[string]string) (interface{}, int)
 		stack.GinContext.Header("Content-Type", name)
 		stack.GinContext.String(fasthttp.StatusOK, "%s", result)
 	}
-	return nil, fasthttp.StatusOK
-}
-
-func checkRight(stack *hub.Stack, params map[string]string) (interface{}, int) {
-	var name string
-	var apiType string
-	var OK bool
-	var defaultRight string
-
-	name, OK = params["name"]
-	if !OK {
-		str := "缺少api名称"
-		klog.Errorln(str)
-		panic(str)
-	}
-
-	apiType, OK = params["type"]
-	if !OK {
-		str := "缺少type类型"
-		klog.Errorln(str)
-		panic(str)
-	}
-
-	defaultRight, OK = params["defaultRight"]
-	if !OK {
-		if apiType == "api" {
-			httpApi, err := util.FindHttpApiDef(name)
-			if httpApi == nil {
-				klog.Errorln("获得API定义失败：", err)
-				panic(err)
-			}
-
-			defaultRight = httpApi.DefaultRight
-		} else if apiType == "flow" {
-			flowDef, err := util.FindFlowDef(name)
-			if flowDef == nil {
-				klog.Errorln("获得Flow定义失败：", err)
-				panic(err)
-			}
-			defaultRight = flowDef.DefaultRight
-		} else if apiType == "schedule" {
-			scheduleDef, err := util.FindScheduleDef(name)
-			if scheduleDef == nil {
-				klog.Errorln("获得Schedule定义失败：", err)
-				panic(err)
-			}
-			defaultRight = scheduleDef.DefaultRight
-		}
-	}
-
-	klog.Infoln("checkRight name: ", name, " type: ", apiType, " defaultRight:", defaultRight)
-
-	//判断执行权限
-	if !util.CheckRight(apiType, stack, name) {
-		if defaultRight == hub.Right_Deny {
-			klog.Errorln("Run API default right: ", defaultRight)
-			return nil, fasthttp.StatusInternalServerError
-		}
-	}
-
 	return nil, fasthttp.StatusOK
 }

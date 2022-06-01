@@ -65,9 +65,18 @@ func callHttpApi(c *gin.Context) {
 	// 调用api
 	tmpStack := newStack(c)
 	params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: tmpStack.ChildName}}}
+	//判断执行权限
+	args := make(map[string]string)
+	args["name"] = tmpStack.RootName
+	args["type"] = "api"
+	_, code := checkRight(tmpStack, args)
+	if code != http.StatusOK {
+		c.IndentedJSON(code, nil)
+	} else {
+		result, status := core.ApiRun(tmpStack, &hub.ApiDef{Name: "main", Command: "httpApi", Args: &params, ResultKey: "main"}, "")
+		c.IndentedJSON(status, result)
+	}
 
-	result, status := core.ApiRun(tmpStack, &hub.ApiDef{Name: "main", Command: "httpApi", Args: &params, ResultKey: "main"}, "")
-	c.IndentedJSON(status, result)
 }
 
 // 执行一个调用流程
