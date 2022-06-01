@@ -1,7 +1,14 @@
 {
   "name": "amap_city_weather",
   "description": "高德地图查询城市的天气",
+  "defaultRight" : "access",
   "steps": [
+    {
+      "name": "check_right",
+      "command": "checkRight",
+      "description": "查询执行权限",
+	   "type": "flow"
+    },
     {
       "name": "city_adcode",
       "command": "flowApi",

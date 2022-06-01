@@ -39,7 +39,21 @@
             "from": "literal",
             "content": "weatherResult"
           }
-        }        
+        },
+        {
+          "name": "host",
+          "value": {
+            "from": "literal",
+            "content": "192.168.0.34"
+          }
+        },
+        {
+          "name": "port",
+          "value": {
+            "from": "literal",
+            "content": "8080"
+          }
+        }         
       ]
     }
   ]

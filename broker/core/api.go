@@ -72,3 +72,18 @@ func ApiRun(stack *hub.Stack, api *hub.ApiDef, private string) (result interface
 	}
 	return function(stack, args)
 }
+
+func RightRun(stack *hub.Stack, api *hub.ApiDef) (result interface{}, ret int) {
+	function := apiMap[api.Command]
+	if function == nil {
+		str := "不能执行" + stack.ChildName
+		klog.Errorln(str)
+		panic(str)
+	}
+
+	args := make(map[string]string)
+	args["name"] = api.Name
+	args["type"] = api.Type
+	args["defaultRight"] = api.DefaultRight
+	return function(stack, args)
+}

@@ -8,4 +8,6 @@ type ApiDef struct {
 	ResultKey        string          `json:"resultKey"`
 	Args             *[]BaseParamDef `json:"args"`
 	OriginParameters *[]BaseParamDef `json:"origin"`
+	DefaultRight     string          `json:"defaultRight"`
+	Type             string          `json:"type"`
 }

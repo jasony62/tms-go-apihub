@@ -29,4 +29,5 @@ type HttpApiDef struct {
 	RequestContentType string             `json:"requestContentType"`
 	Args               *[]HttpApiDefParam `json:"args"`
 	Cache              *ApiCache          `json:"cache"`
+	DefaultRight       string             `json:"defaultRight"`
 }
