@@ -1,10 +1,5 @@
 package hub
 
-type FlowStepResponseDef struct {
-	Type  string       `json:"type"`
-	Value BaseValueDef `json:"value,omitempty"`
-}
-
 type ApiDef struct {
 	Name             string          `json:"name"`
 	Command          string          `json:"command"`

@@ -1,7 +1,6 @@
 
 # fast-http-server
-fast-http-server is a service which receives messages from fast-http-client, once received the service:
-* 
+fast-http-server is a service which receives messages from http and handle it.
 
 ## how to run
 cd test

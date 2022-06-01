@@ -1,26 +1,17 @@
 
-## 环境变量
-
-| 环境变量                      | 用途                                                         | 默认值  |
-| ----------------------------- | ------------------------------------------------------------ | ------- |
-| TGAH_HOST                     | 服务的主机名                                                 | 0.0.0.0 |
-| TGAH_PORT                     | 服务的端口号                                                 | 8080    |
-| TGAH_BUCKET_ENABLE            | API 和 FLOW 是否按 bucket 隔离                               | no      |
-| TGAH_CONF_BASE_PATH             | API 定义文件存放位置                                         | ./conf       |
-| TGAH_REMOTE_CONF_URL          | 从远端http服务器下载conf压缩包的路径，未配置则不下载，直接使用本地文件                         | -       |
-| TGAH_REMOTE_CONF_UNZIP_PWD    | 下载文件解压密码，如果有密码则写解压密码，如果没有则不填     | -       |
 ## CONF目录结构
-| 环境变量                      | 用途                                                         |
+| 名称                     | 用途                                                         |
 | ----------------------------- | ------------------------------------------------------------ |
-| privates                     | 存放密码文件                                                 |
-| apis                         | 存放API定义文件|
-| flows            | 存放FLOW定义文件                               |
-| schedules             | 存放SCHEDULE定义文件                                         |
-| plugins             | 存放动态注册func的.so                                         |
+| main.json | 启动文件 |
+| privates                     | 文件夹，存放密码文件                                                 |
+| httpapis                         | 文件夹，存放HTTPAPI定义文件|
+| flows            | 文件夹，存放FLOW定义文件                               |
+| schedules             | 文件夹，存放SCHEDULE定义文件                                         |
+| plugins             | 文件夹，存放动态注册func的.so                                         |
 
 ## 命令行
-
-通过`--env`指定使用的环境变量文件。
+通过`--env`指定使用的环境变量文件，通过`--base`指定conf文件夹的路径，默认为./conf/。
+启动时读取base路径下的main.json启动，其定义为通用的flow结构，文件里的变量可以写死，也可以从env里获取。
 
 ```
 run go . --env envfile
@@ -31,7 +22,7 @@ run build -o tms-gah-broker
 ```
 
 ```
-./tms-gah-broker --env envfile
+./tms-gah-broker --env envfile --base ./conf/
 ```
 
 ## docker
