@@ -1,0 +1,13 @@
+{
+  "type": "flow",
+  "right": "whitelist",
+  "default": "deny",
+  "list": [
+    {
+      "user": "001"
+    },
+    {
+      "user": "002"
+    }
+  ]
+}
