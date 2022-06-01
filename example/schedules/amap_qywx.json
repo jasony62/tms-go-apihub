@@ -2,6 +2,7 @@
     "name": "handle_send",
     "description": "处理输入并发送微信",
     "ConcurrentNum": 2,
+    "defaultRight" : "access",
     "steps": [
         {
             "type": "loop",

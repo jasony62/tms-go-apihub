@@ -4,6 +4,7 @@
   "url": "https://restapi.amap.com/v3/config/district",
   "method": "GET",
   "private": "amap_keys",
+  "defaultRight" : "access",
   "args": [
     {
       "in": "query",

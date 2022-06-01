@@ -17,5 +17,6 @@ func init() {
 		"createHtml":           createHtml,
 		"loadConf":             util.LoadConf,
 		"apiGateway":           apiGateway,
+		"checkRight":           checkRight,
 	})
 }

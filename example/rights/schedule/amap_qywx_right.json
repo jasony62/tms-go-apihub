@@ -1,0 +1,12 @@
+{
+  "type": "schedule",
+  "right": "whitelist",
+  "list": [
+    {
+      "user": "001"
+    },
+    {
+      "user": "002"
+    }
+  ]
+}

@@ -16,21 +16,27 @@ import (
 
 // 应用的基本信息
 type confMap struct {
-	BasePath    string
-	ApiMap      map[string]*hub.HttpApiDef
-	PrivateMap  map[string]*hub.PrivateArray
-	FlowMap     map[string]*hub.FlowDef
-	ScheduleMap map[string]*hub.ScheduleDef
-	SourceMap   map[string]string
+	BasePath         string
+	ApiMap           map[string]*hub.HttpApiDef
+	PrivateMap       map[string]*hub.PrivateArray
+	FlowMap          map[string]*hub.FlowDef
+	ScheduleMap      map[string]*hub.ScheduleDef
+	SourceMap        map[string]string
+	ApiRightMap      map[string]*hub.RightArray
+	FlowRightMap     map[string]*hub.RightArray
+	ScheduleRightMap map[string]*hub.RightArray
 }
 
 var defaultConfMap = confMap{
-	BasePath:    "./conf/",
-	ApiMap:      make(map[string]*hub.HttpApiDef),
-	FlowMap:     make(map[string]*hub.FlowDef),
-	ScheduleMap: make(map[string]*hub.ScheduleDef),
-	PrivateMap:  make(map[string]*hub.PrivateArray),
-	SourceMap:   make(map[string]string),
+	BasePath:         "./conf/",
+	ApiMap:           make(map[string]*hub.HttpApiDef),
+	FlowMap:          make(map[string]*hub.FlowDef),
+	ScheduleMap:      make(map[string]*hub.ScheduleDef),
+	PrivateMap:       make(map[string]*hub.PrivateArray),
+	SourceMap:        make(map[string]string),
+	ApiRightMap:      make(map[string]*hub.RightArray),
+	FlowRightMap:     make(map[string]*hub.RightArray),
+	ScheduleRightMap: make(map[string]*hub.RightArray),
 }
 
 func loadConfigJsonData(paths []string) {
@@ -42,8 +48,10 @@ func loadConfigJsonData(paths []string) {
 	loadJsonDefData(JSON_TYPE_SCHEDULE, paths[JSON_TYPE_SCHEDULE], "", true)
 	klog.Infoln("加载Private def文件...")
 	loadJsonDefData(JSON_TYPE_PRIVATE, paths[JSON_TYPE_PRIVATE], "", true)
-	klog.Infoln("加载Template文件...")
-	loadTemplateData(TMPL_TYPE, paths[TMPL_TYPE], "")
+	klog.Infoln("加载Rights文件...")
+	loadJsonDefData(JSON_TYPE_API_RIGHT, paths[JSON_TYPE_API_RIGHT], "", false)
+	loadJsonDefData(JSON_TYPE_FLOW_RIGHT, paths[JSON_TYPE_FLOW_RIGHT], "", false)
+	loadJsonDefData(JSON_TYPE_SCHEDULE_RIGHT, paths[JSON_TYPE_SCHEDULE_RIGHT], "", false)
 }
 
 func loadJsonDefData(jsonType int, path string, prefix string, includeDir bool) {
@@ -111,6 +119,18 @@ func loadJsonDefData(jsonType int, path string, prefix string, includeDir bool) 
 				def := new(hub.PrivateArray)
 				decoder.Decode(&def)
 				defaultConfMap.PrivateMap[key] = def
+			case JSON_TYPE_API_RIGHT:
+				def := new(hub.RightArray)
+				decoder.Decode(&def)
+				defaultConfMap.ApiRightMap[key] = def
+			case JSON_TYPE_FLOW_RIGHT:
+				def := new(hub.RightArray)
+				decoder.Decode(&def)
+				defaultConfMap.FlowRightMap[key] = def
+			case JSON_TYPE_SCHEDULE_RIGHT:
+				def := new(hub.RightArray)
+				decoder.Decode(&def)
+				defaultConfMap.ScheduleRightMap[key] = def
 			default:
 			}
 
@@ -175,7 +195,8 @@ func loadPluginFuncs(mapFunc map[string]interface{}, mapFuncForTemplate map[stri
 	}
 }
 
-func loadTemplateData(jsonType int, path string, prefix string) {
+func loadTemplateData(path string, prefix string) {
+	klog.Infoln("加载Template文件...")
 	fileInfoList, err := ioutil.ReadDir(path)
 	if err != nil {
 		str := "invalid path " + path
@@ -189,7 +210,7 @@ func loadTemplateData(jsonType int, path string, prefix string) {
 
 		if fileInfoList[i].IsDir() {
 			prefix = fileInfoList[i].Name()
-			loadJsonDefData(jsonType, path+"/"+prefix, prefix, true)
+			loadTemplateData(path+"/"+prefix, prefix)
 		} else {
 			prefix = oldPrefix
 
@@ -275,9 +296,13 @@ func LoadConf(stack *hub.Stack, params map[string]string) (interface{}, int) {
 			klog.Infoln("Download conf zip package from remote url OK")
 		}
 	}
-	loadConfigJsonData([]string{basePath + "privates", basePath + "httpapis", basePath + "flows",
-		basePath + "schedules", basePath + "templates"})
 
+	loadConfigJsonData([]string{basePath + "privates",
+		basePath + "httpapis", basePath + "flows",
+		basePath + "schedules", basePath + "rights/httpapi",
+		basePath + "rights/flow", basePath + "rights/schedule"})
+
+	loadTemplateData(basePath+"templates", "")
 	loadConfigPluginData(basePath + "plugins")
 
 	return nil, 200
@@ -289,4 +314,52 @@ func LoadMainFlow(path string) {
 	}
 	klog.Infof("Load main flow from %s\n", defaultConfMap.BasePath)
 	loadJsonDefData(JSON_TYPE_FLOW, defaultConfMap.BasePath, "", false)
+}
+
+func CheckRight(callType string, stack *hub.Stack, name string) bool {
+	// check是否有权限
+	user := stack.GinContext.Query("appID")
+	//map
+	var rightInfo *hub.RightArray
+	var ok bool
+	mapkey := name + "_right"
+	if callType == "api" {
+		rightInfo, ok = defaultConfMap.ApiRightMap[mapkey]
+	} else if callType == "flow" {
+		rightInfo, ok = defaultConfMap.FlowRightMap[mapkey]
+	} else if callType == "schedule" {
+		rightInfo, ok = defaultConfMap.ScheduleRightMap[mapkey]
+	}
+
+	haveRight := false
+	if ok {
+		switch rightInfo.Right {
+		case hub.Right_Pulbic:
+			haveRight = true
+		case hub.Right_Internal:
+			haveRight = false
+		case hub.Right_Whitelist:
+			haveRight = userInList(rightInfo, user)
+		case hub.Right_Blacklist:
+			haveRight = !userInList(rightInfo, user)
+		default:
+			klog.Infoln("CheckRight invalid right: ", rightInfo.Right)
+			haveRight = false
+		}
+	}
+
+	klog.Infoln("CheckRight user:", user, " mapkey:", mapkey, " haveRight:", haveRight)
+	return haveRight
+}
+
+func userInList(arr *hub.RightArray, user string) bool {
+	if arr.List != nil {
+		for _, u := range *arr.List {
+			if user == u.User {
+				klog.Infoln("userInList find the user:", user)
+				return true
+			}
+		}
+	}
+	return false
 }

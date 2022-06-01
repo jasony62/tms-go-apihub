@@ -30,5 +30,6 @@ type ScheduleDef struct {
 	Name          string            `json:"name"`
 	Description   string            `json:"description"`
 	ConcurrentNum int               `json:"concurrentNum"`
+	DefaultRight  string            `json:"defaultRight"`
 	Steps         *[]ScheduleApiDef `json:"steps"`
 }
