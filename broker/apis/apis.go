@@ -18,5 +18,6 @@ func init() {
 		"loadConf":             util.LoadConf,
 		"apiGateway":           apiGateway,
 		"checkRight":           checkRight,
+		"confValidator":        confValidator,
 	})
 }

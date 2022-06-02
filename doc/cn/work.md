@@ -1,19 +1,22 @@
 ## 近期
-* 重构，将api降级为httpapi，api将泛指一起
 * json schema
+  - 根据 json 生成 schema — https://tooltt.com/json2schema/
+  - 校验 jsonschema 是否合法 — https://www.jsonschemavalidator.net/
+  -  校验某个 json 是否符合指定的 json schema 定义 — https://www.jsonschemavalidator.net/
+
 * postman或者apifox的测试脚本
-* 多租户支持,权限管理
-* 本地kv存储
-* 根据http response content type查看是否需要分解json
+* 多租户异步回调：本地kv存储
 * 支持http请求retry，timeout
- **"timeoutPolicy": "TIME_OUT_WF",
- **"retryLogic": "FIXED",
- **"retryDelaySeconds": 600,
- **"responseTimeoutSeconds": 3600
+ - "timeoutPolicy": "TIME_OUT_WF",
+ - "retryLogic": "FIXED",
+ - "retryDelaySeconds": 600,
+ - "responseTimeoutSeconds": 3600
+* 根据http response content type查看是否需要分解json
 
 ## 中期
+* 支持更好的http error msg返回
+* 支持query数组转json数组
 * http put
-* 对输入数组的支持
 * 支持switch default case
 * 支持load API时候，检验private信息，load FLOW时候，检验API信息，load schedule时候，检验FLOW和API
 * 在JSON，HTTP处理错误时能够返回HTTP错误给调用方
@@ -55,6 +58,7 @@ https://goframe.org/pages/viewpage.action?pageId=1114270
 
 ## 已经完成：
 ###未分类
+* 重构，将api降级为httpapi，api将泛指一起
 * 支持从远端http下载压缩包，解压作为conf，支持压缩包密码
 * json文件load一次，反复使用
 * json文件合法性检查
@@ -72,6 +76,7 @@ https://goframe.org/pages/viewpage.action?pageId=1114270
 * httpapi支持返回非json格式的http response
 * httpapi支持api version
 * httpapi性能提升，南向使用fasthttp
+* 多租户支持,权限管理
 
 ###util
 * 支持func

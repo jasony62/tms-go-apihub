@@ -5,6 +5,7 @@
   "method": "GET",
   "private": "amap_keys",
   "defaultRight" : "access",
+  "requestContentType": "none",  
   "args": [
     {
       "in": "query",

@@ -3,6 +3,7 @@
   "url": "https://qyapi.weixin.qq.com/cgi-bin/gettoken",
   "method": "GET",
   "private": "qywx_keys",
+  "requestContentType": "none",      
   "args": [
     {
       "in": "query",
