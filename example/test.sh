@@ -62,6 +62,6 @@ echo "\r\n带用户appID的城市天气查询"
 curl -i -H "Content-Type: application/json" -d '{"city": "北京"}' "http://localhost:8080/flow/amap_city_weather?appID=001"
 
 echo "\r\n带用户appID的企业微信schedule查询"  
-curl  -H "Content-Type: application/json" -d '{"cities":["sh", "bj", "sh", "sh"], "image":"https://img.zcool.cn/community2193a37cjpg"}ttp://localhost:8080/schedule/amap_qywx?appID=001"
+curl -i -H "Content-Type: application/json" -d '{"cities":["sh", "bj", "sh", "sh"], "image":"https://img.zcool.cn/community/01ff2059770a25a8012193a37c7695.jpg"}' "http://localhost:8080/schedule/amap_qywx?appID=001"
 
 
