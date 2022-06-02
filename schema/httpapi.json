@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["id", "method", "requestContentType"],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string"
+    },
+    "private": {
+      "type": "string"
+    },
+    "method": {
+      "type": "string",
+      "enum": ["POST", "GET"]
+    },
+    "requestContentType": {
+      "type": "string"
+    },
+    "args": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["in", "name", "value"],
+        "properties": {
+          "in": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "object",
+            "required": ["from"],
+            "properties": {
+              "from": {
+                "type": "string"
+              },
+              "content": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "cache": {
+      "type": "object",
+      "required": ["expire", "format"],
+      "properties": {
+        "expire": {
+          "type": "object",
+          "required": ["from", "content"],
+          "properties": {
+            "from": {
+              "type": "string"
+            },
+            "content": {
+              "type": "string"
+            }
+          }
+        },
+        "format": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

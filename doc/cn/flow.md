@@ -45,32 +45,27 @@ c4=>condition: 有timeout配置
 c5=>condition: http response OK
 c6=>condition: 有重试
 c7=>condition: 超过重试次数
-c8=>condition: 需要改写http response
 c9=>condition: 遍历结束
 c10=>condition: 检查是否支持缓存Cache
 c11=>condition: 检查缓存Cache是否过期
 c12=>condition: 解析过期时间正确
 c13=>condition: 支持缓存Cache
-c14=>condition: 报文是否需要errcode检查
-c15=>condition: 报文中errcode是否成功
 
 opa=>operation: 获取api定义
 op0=>operation: 设置HTTP method
 op1=>operation: 设置HTTP content type
 op2=>operation: 载入秘钥信息
-op3=>operation: 遍历parameters列表
+op3=>operation: 遍历args列表
 op4=>operation: 根据from生成value
 op5=>operation: 根据in设置到发送的http报文的相应位置
 op6=>operation: 设置http request timeout
 op7=>operation: 将最终报文发送到url
-op8=>operation: 改写http response
 op9=>operation: 读取缓存Cache报文
 op10=>operation: 解析报文过期时间
 op11=>operation: 缓存记录http response报文
 op12=>operation: 记录回复报文body
-op13=>operation: 解析报文中errcode
 
-st->opa->c10(yes)->c11(yes)->c0(yes)->c1(yes)->c2(no)->op3->c3(yes,right)->op5->c9(yes)->c4(yes)->op6->op7->c5(yes)->op12->c14(yes)->c15(yes)->c8(no)->c13(yes)->op10->c12(yes)->op11->e1
+st->opa->c10(yes)->c11(yes)->c0(yes)->c1(yes)->c2(no)->op3->c3(yes,right)->op5->c9(yes)->c4(yes)->op6->op7->c5(yes)->op12->c13(yes)->op10->c12(yes)->op11->e1
 c9(no)->op3
 c0(no)->e2
 c1(no)->e2
@@ -80,14 +75,10 @@ c4(no)->op7
 c5(no)->c6(yes,right)->c7(yes)->e2
 c7(no)->op7
 c6(no)->e2
-c8(yes)->op8->c13
 c10(no)->c0
 c11(no)->op9->e1
 c12(no)->e1
 c13(no)->e1
-c14(no)->c8
-c15(no)->e2
-
 ```
 ## flow调用流程
 ```flow
@@ -133,7 +124,7 @@ op改写=>operation: 生成一个新的response
 op记录文本格式=>operation: 记录返回的文本格式
 
 c参数=>condition: 有api.args
-c参数结束=>condition: 遍历api.parameters结束
+c参数结束=>condition: 遍历api.args
 c成功=>condition: API返回成功
 cresultKey=>condition: 有resultKey
 c并行=>condition: concurrent==true
@@ -150,12 +141,6 @@ c并行(yes)->e3
 
 ```
 ## schedule调用流程
-schedule封装了两种控制命令switch/case和loop，并且能够调用底层的flow和api.
-
-类似flow的并行，schedule也支持上述四种命令的并行执行。建议不要在schedule层次嵌套使用多层并行，未进行相关测试。
-loop循环支持多个条目并行执行，可以和上面的并行嵌套。
-
-由于schedule的并行逻辑和flow的并行逻辑基本相同（并行API的结果会在所有并行API都执行后写入stepResult;在执行串行API之前，会等到所有并行API执行结束），下图中只描述了串行流程，没有并行相关逻辑。
 ```mermaid
 graph TB
    client(http schedule调用)

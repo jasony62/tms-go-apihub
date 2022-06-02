@@ -2,7 +2,7 @@
   "name": "main",
   "description": "main for apigateway",
   "steps": [
-	      {
+    {
       "name": "welcome",
       "command": "welcome",
       "description": "welcome",
@@ -17,6 +17,20 @@
       ]
     },
     {
+      "name": "confValidator",
+      "command": "confValidator",
+      "description": "confValidator",
+      "args": [
+        {
+          "name": "schema",
+          "value": {
+            "from": "literal",
+            "content": "../schema"
+          }
+        }
+      ]
+    },
+    {
       "name": "loadConf",
       "command": "loadConf",
       "description": "loadConf"
@@ -24,27 +38,13 @@
     {
       "name": "apiGateway",
       "command": "apiGateway",
-      "description": "apiGateway",    
+      "description": "apiGateway",
       "args": [
-        {
-          "name": "type",
-          "value": {
-            "from": "literal",
-            "content": "json"
-          }
-        },
-        {
-          "name": "key",
-          "value": {
-            "from": "literal",
-            "content": "weatherResult"
-          }
-        },
         {
           "name": "host",
           "value": {
             "from": "literal",
-            "content": "192.168.0.34"
+            "content": "0.0.0.0"
           }
         },
         {
@@ -53,7 +53,7 @@
             "from": "literal",
             "content": "8080"
           }
-        }         
+        }
       ]
     }
   ]

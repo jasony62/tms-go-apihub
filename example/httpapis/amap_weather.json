@@ -3,6 +3,7 @@
   "url": "https://restapi.amap.com/v3/weather/weatherInfo",
   "method": "GET",
   "private": "amap_keys",
+  "requestContentType": "none",      
   "args": [
     {
       "in": "query",
