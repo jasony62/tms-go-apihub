@@ -1,7 +1,7 @@
 {
   "type": "httpapi",
   "right": "whitelist",
-  "default": "access",
+  "default": "deny",
   "list": [
     {
       "user": "001"
