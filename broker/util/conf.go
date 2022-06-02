@@ -316,19 +316,22 @@ func LoadMainFlow(path string) {
 	loadJsonDefData(JSON_TYPE_FLOW, defaultConfMap.BasePath, "", false)
 }
 
-func CheckRight(callType string, stack *hub.Stack, name string) bool {
+func CheckRight(stack *hub.Stack, name string, callType string) bool {
 	// check是否有权限
 	user := stack.GinContext.Query("appID")
+	klog.Infoln("CheckRight user:", user, " callType:", callType)
 	//map
 	var rightInfo *hub.RightArray
 	var ok bool
 	mapkey := name + "_right"
-	if callType == "api" {
+	if callType == "httpapi" {
 		rightInfo, ok = defaultConfMap.ApiRightMap[mapkey]
 	} else if callType == "flow" {
 		rightInfo, ok = defaultConfMap.FlowRightMap[mapkey]
 	} else if callType == "schedule" {
 		rightInfo, ok = defaultConfMap.ScheduleRightMap[mapkey]
+	} else {
+		rightInfo, ok = defaultConfMap.ApiRightMap[mapkey]
 	}
 
 	haveRight := false
@@ -349,6 +352,13 @@ func CheckRight(callType string, stack *hub.Stack, name string) bool {
 	}
 
 	klog.Infoln("CheckRight user:", user, " mapkey:", mapkey, " haveRight:", haveRight)
+	if !haveRight {
+		if rightInfo.Default == hub.Right_Deny {
+			klog.Errorln("Run API default right: ", rightInfo.Default)
+		} else {
+			haveRight = true
+		}
+	}
 	return haveRight
 }
 

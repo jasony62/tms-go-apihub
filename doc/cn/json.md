@@ -91,3 +91,12 @@ control结构体定义为
 | --value   | 上层的key等于本字段则执行tasks。                       | string   | 是   |
 | --concurrentNum   |  最大允许的并行执行的数量。      | int   |  否    |
 | --steps   | 结构同上层的tasks，为tasks的自身嵌套。                       | object[]   | 否   |
+
+# RIGHT
+
+| 字段    | 用途                                                         | 类型     | 必选 |
+| ------- | ------------------------------------------------------------ | -------- | ---- |
+| type    | 权限文件对应的执行类型，httpapi，flow，schedule              | string   | 是   |
+| right   | 权限类型：public（所有人都允许调用），internal（只允许内部调用，不允许外部调用），whitelist（只有list中的才允许访问），blacklist（非list中的才允许访问） | string   | 是   |
+| default | 默认权限：access，deny，默认为access                         | string   | 否   |
+| list    | user list数组                                                | object[] | 是   |
