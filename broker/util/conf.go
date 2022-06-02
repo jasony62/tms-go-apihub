@@ -353,7 +353,7 @@ func CheckRight(stack *hub.Stack, name string, callType string) bool {
 
 	klog.Infoln("CheckRight user:", user, " mapkey:", mapkey, " haveRight:", haveRight)
 	if !haveRight {
-		if rightInfo.Default == hub.Right_Deny {
+		if rightInfo != nil && rightInfo.Default == hub.Right_Deny {
 			klog.Errorln("Run API default right: ", rightInfo.Default)
 		} else {
 			haveRight = true
