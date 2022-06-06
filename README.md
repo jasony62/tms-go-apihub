@@ -3,6 +3,7 @@ APIHUB是一款基于 Golang 开发的API调度平台，能够实现基于JSON�
 未来可以对接低代码平台，大大简化对API调用的管理。
 # [基本概念](https://github.com/jasony62/tms-go-apihub/blob/main/doc/cn/base.md)
 # [启动](https://github.com/jasony62/tms-go-apihub/blob/main/doc/cn/start.md)
+# [apigateway](https://github.com/jasony62/tms-go-apihub/blob/main/doc/cn/apigateway.md)
 # [API列表](https://github.com/jasony62/tms-go-apihub/blob/main/doc/cn/apis.md)
 # [JSON定义](https://github.com/jasony62/tms-go-apihub/blob/main/doc/cn/json.md)
 # [函数](https://github.com/jasony62/tms-go-apihub/blob/main/doc/cn/function.md)
