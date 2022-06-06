@@ -1,0 +1,198 @@
+{
+  "name": "amap_city_weather",
+  "description": "高德地图查询城市的天气",
+  "steps": [
+    {
+      "name": "city_adcode",
+      "command": "httpApi",
+      "description": "查询城市的区域码",
+      "args": [
+        {
+          "name": "name",
+          "value": {
+            "from": "literal",
+            "content": "amap_district"
+          }
+        }
+      ],
+      "resultKey": "adcodeResult"
+    },
+    {
+      "name": "amap_weather",
+      "command": "httpApi",
+      "args": [
+        {
+          "name": "name",
+          "value": {
+            "from": "literal",
+            "content": "amap_weather"
+          }
+        }
+      ],
+      "description": "查询城市的区域码",
+      "resultKey": "weatherResult",
+      "origin": [
+        {
+          "name": "city",
+          "value": {
+            "from": "template",
+            "content": "{{(index .adcodeResult.districts 0).adcode}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "storage_store",
+      "command": "storageStore",
+      "description": "保存查询到的城市码",
+      "args": [
+        {
+          "name": "user",
+          "value": {
+            "from": "query",
+            "content": "appID"
+          }
+        },
+        {
+          "name": "key",
+          "value": {
+            "from": "literal",
+            "content": "store_result"
+          }
+        },
+        {
+          "name": "index",
+          "value": {
+            "from": "template",
+            "content": "{{(index .adcodeResult.districts 0).adcode}}"
+          }
+        },
+		    {
+          "name": "source",
+          "value": {
+            "from": "literal",
+            "content": "local"
+          }
+        },
+		    {
+          "name": "content",
+          "value": {
+            "from": "template",
+            "content": "json"
+          }
+        }
+      ],
+      "origin": [
+        {
+          "name": "store_result",
+          "value": {
+            "from": "jsonRaw",
+            "json": {
+              "errCode": "{{.weatherResult.status}}",
+              "data": {
+                "region": "{{(index .weatherResult.lives 0).province}}",
+                "weather": "{{(index .weatherResult.lives 0).weather}}",
+                "temperature": "{{(index .weatherResult.lives 0).temperature}}",
+                "winddirection": "{{(index .weatherResult.lives 0).winddirection}}",
+                "windpower": "{{(index .weatherResult.lives 0).windpower}}",
+                "humidity": "{{(index .weatherResult.lives 0).humidity}}"
+              }
+            }
+          }
+        }
+      ],      
+      "resultKey": "storaged"
+    },
+    {
+      "name": "storage_load",
+      "command": "storageLoad",
+      "description": "查询城市码",
+      "args": [
+        {
+          "name": "key",
+          "value": {
+            "from": "literal",
+            "content": "load_result"
+          }
+        },
+        {
+          "name": "index",
+          "value": {
+            "from": "template",
+            "content": "{{(index .adcodeResult.districts 0).adcode}}"
+          }
+        },
+		    {
+          "name": "source",
+          "value": {
+            "from": "literal",
+            "content": "local"
+          }
+        },
+        {
+          "name": "content",
+          "value": {
+            "from": "template",
+            "content": "json"
+          }
+        }
+      ],     
+      "resultKey": "loaded"
+    },
+    {
+      "name": "merge_result",
+      "command": "createJson",
+      "description": "合并收到的结果",
+      "args": [
+        {
+          "name": "key",
+          "value": {
+            "from": "literal",
+            "content": "merge_result"
+          }
+        }
+      ],
+      "origin": [
+        {
+          "name": "merge_result",
+          "value": {
+            "from": "jsonRaw",
+            "json": {
+              "errCode": "{{.weatherResult.status}}",
+              "data": {
+                "region": "{{(index .weatherResult.lives 0).province}}",
+                "weather": "{{(index .weatherResult.lives 0).weather}}",
+                "temperature": "{{(index .weatherResult.lives 0).temperature}}",
+                "winddirection": "{{(index .weatherResult.lives 0).winddirection}}",
+                "windpower": "{{(index .weatherResult.lives 0).windpower}}",
+                "humidity": "{{(index .weatherResult.lives 0).humidity}}"
+              }
+            }
+          }
+        }
+      ],      
+      "resultKey": "merged"
+    },
+    {
+      "name": "response",
+      "command": "httpResponse",
+      "description": "返回结果",    
+      "args": [
+        {
+          "name": "type",
+          "value": {
+            "from": "literal",
+            "content": "json"
+          }
+        },
+        {
+          "name": "key",
+          "value": {
+            "from": "literal",
+            "content": "loaded"
+          }
+        }        
+      ]
+    }
+  ]
+}

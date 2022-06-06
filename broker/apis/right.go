@@ -9,9 +9,23 @@ import (
 )
 
 func checkRight(stack *hub.Stack, params map[string]string) (interface{}, int) {
+	var user string
 	var name string
 	var apiType string
 	var OK bool
+
+	user, OK = params["user"]
+	if !OK {
+		str := "缺少user定义"
+		klog.Errorln(str)
+		panic(str)
+	}
+
+	klog.Infoln("checkRight user: ", user)
+	if len(user) == 0 {
+		klog.Errorln("checkRight user is null")
+		return nil, fasthttp.StatusOK
+	}
 
 	name, OK = params["name"]
 	if !OK {
@@ -30,7 +44,7 @@ func checkRight(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	klog.Infoln("checkRight name: ", name, " type: ", apiType)
 
 	//判断执行权限
-	if !util.CheckRight(stack, name, apiType) {
+	if !util.CheckRight(stack, user, name, apiType) {
 		return nil, fasthttp.StatusInternalServerError
 	}
 

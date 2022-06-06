@@ -2,7 +2,6 @@
     "name": "handle_send",
     "description": "处理输入并发送微信",
     "ConcurrentNum": 2,
-    "defaultRight" : "access",
     "steps": [
         {
             "type": "loop",
@@ -28,6 +27,37 @@
                                 {
                                     "value": "sh",
                                     "steps": [
+                                        {
+                                          "type": "api",
+                                          "api": {
+                                            "name": "amap_city_weather_base",
+                                            "command": "checkRight",
+                                            "description": "查询执行权限",
+                                             "args": [
+                                              {
+                                                "name": "user",
+                                                "value": {
+                                                  "from": "query",
+                                                  "content": "appID"
+                                                }
+                                              },
+                                              {
+                                                "name": "name",
+                                                "value": {
+                                                  "from": "literal",
+                                                  "content": "amap_city_weather_base"
+                                                }
+                                              },
+                                              {
+                                                "name": "type",
+                                                "value": {
+                                                  "from": "literal",
+                                                  "content": "flow"
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        },
                                         {
                                             "type": "api",
                                             "api": {
