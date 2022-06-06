@@ -7,6 +7,13 @@
       "command": "checkRight",
       "description": "查询执行权限",
 	  "args": [
+	    {
+          "name": "userKey",
+          "value": {
+            "from": "literal",
+            "content": "appID"
+          }
+        },
         {
           "name": "name",
           "value": {
