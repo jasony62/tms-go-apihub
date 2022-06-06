@@ -11,12 +11,13 @@
 | templates | 文件夹，存放html tmpl文件 |
 | rights | 文件夹，存放httpapi，flow和schedule对应的权限列表 |
 
+json文件定义参考[JSON定义](https://github.com/jasony62/tms-go-apihub/blob/main/doc/cn/json.md)
 ## 命令行
-通过`--env`指定使用的环境变量文件，通过`--base`指定conf文件夹的路径，默认为./conf/。
-启动时读取base路径下的main.json启动，其定义为通用的flow结构，文件里的变量可以写死，也可以从env里获取。
+通过`--env`指定使用的环境变量文件，通过`--base`指定conf文件夹的路径，默认为../example/。
+启动时读取base路径下的main.json启动，其定义为通用的flow结构，文件里的参数可以写死，也可以从env里获取。
 
 ```
-run go . --env envfile
+run go .
 ```
 
 ```
@@ -24,7 +25,7 @@ run build -o tms-gah-broker
 ```
 
 ```
-./tms-gah-broker --env envfile --base ./conf/
+./tms-gah-broker --base ../example/
 ```
 
 ## docker
@@ -35,6 +36,8 @@ docker build -t tms/gah-broker .
 
 ```
 docker run -it --rm --name tms-gah-broker -p 8080:8080 tms/gah-broker sh
+cd broker/
+./tms-gah-broker
 ```
 
 ```
