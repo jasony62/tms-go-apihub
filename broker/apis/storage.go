@@ -27,21 +27,25 @@ func storageStore(stack *hub.Stack, params map[string]string) (interface{}, int)
 		   *origin：store时候为json时要存入的信息
 	*/
 
-	var userKey string
+	var user string
 	var key string
 	var index string
 	var source string
 	var content string
 	var OK bool
 
-	userKey, OK = params["userKey"]
+	user, OK = params["user"]
 	if !OK {
-		str := "缺少userKey定义"
+		str := "缺少user定义"
 		klog.Errorln(str)
 		panic(str)
 	}
 
-	user := stack.GinContext.Query(userKey)
+	klog.Infoln("storageStore user: ", user)
+	if len(user) == 0 {
+		klog.Errorln("storageStore user is null")
+		return nil, fasthttp.StatusInternalServerError
+	}
 
 	key, OK = params["key"]
 	if !OK {

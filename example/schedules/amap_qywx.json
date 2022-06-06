@@ -28,6 +28,37 @@
                                     "value": "sh",
                                     "steps": [
                                         {
+                                          "type": "api",
+                                          "api": {
+                                            "name": "amap_city_weather_base",
+                                            "command": "checkRight",
+                                            "description": "查询执行权限",
+                                             "args": [
+                                              {
+                                                "name": "user",
+                                                "value": {
+                                                  "from": "query",
+                                                  "content": "appID"
+                                                }
+                                              },
+                                              {
+                                                "name": "name",
+                                                "value": {
+                                                  "from": "literal",
+                                                  "content": "amap_city_weather_base"
+                                                }
+                                              },
+                                              {
+                                                "name": "type",
+                                                "value": {
+                                                  "from": "literal",
+                                                  "content": "flow"
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        {
                                             "type": "api",
                                             "api": {
                                                 "name": "shanghai weather",

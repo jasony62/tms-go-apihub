@@ -67,7 +67,6 @@ func callHttpApi(c *gin.Context) {
 	params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: tmpStack.ChildName}}}
 	//判断执行权限
 	args := make(map[string]string)
-	args["userKey"] = "appID"
 	args["name"] = tmpStack.RootName
 	args["type"] = "httpapi"
 	_, code := checkRight(tmpStack, args)

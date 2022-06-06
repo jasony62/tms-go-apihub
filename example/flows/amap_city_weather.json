@@ -8,9 +8,9 @@
       "description": "查询执行权限",
 	  "args": [
 	    {
-          "name": "userKey",
+          "name": "user",
           "value": {
-            "from": "literal",
+            "from": "query",
             "content": "appID"
           }
         },
