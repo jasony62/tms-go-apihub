@@ -13,7 +13,8 @@
 
 json文件定义参考[JSON定义](https://github.com/jasony62/tms-go-apihub/blob/main/doc/cn/json.md)
 ## 命令行
-通过`--env`指定使用的环境变量文件，通过`--base`指定conf文件夹的路径，默认为../example/。
+通过`--env`指定使用的环境变量文件(后续可以通过args里的from env访问)，通过`--base`指定conf文件夹的路径，默认为./conf/。
+因为用例在example下，需要将其软链接或者拷贝到broker/conf下
 启动时读取base路径下的main.json启动，其定义为通用的flow结构，文件里的参数可以写死，也可以从env里获取。
 
 ```
