@@ -61,6 +61,8 @@ func GetParameterRawValue(stack *hub.Stack, private *hub.PrivateArray, from *hub
 		value = from.Content
 	case "query":
 		value = stack.Query(from.Content)
+	case "header":
+		stack.GinContext.Request.Header.Get(from.Content)
 	case hub.OriginName:
 		value, err = queryFromStepResult(stack, "{{.origin."+from.Content+"}}")
 	case "private":
