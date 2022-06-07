@@ -42,7 +42,7 @@
       "in": "vars",
       "name": "XCurTime",
       "value": {
-        "from": "json",
+        "from": "template",
         "content": "{{index .vars \"X-CurTime\"}}"
       }
     },
@@ -50,7 +50,7 @@
       "in": "vars",
       "name": "XParam",
       "value": {
-        "from": "json",
+        "from": "template",
         "content": "{{index .vars \"X-Param\"}}"
       }
     },
@@ -58,7 +58,7 @@
       "in": "header",
       "name": "X-CheckSum",
       "value": {
-        "from": "json",
+        "from": "template",
         "content": "{{md5 .vars.apikey .vars.XCurTime .vars.XParam}}"
       }
     },
