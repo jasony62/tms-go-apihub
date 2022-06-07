@@ -23,11 +23,11 @@ private用于存储秘钥类信息，和API相对独立，不同部署，值会�
 
 | 字段          | 用途 | 类型     | 必选 |
 | -------------- | ------------- | ----- | ---- |
-| id            | API 定义的标识。  | string   | 是   |
-| url           | API 的目标地址。不包括任何查询参数。 | string   | 否   |
+| id            | HTTPAPI，而是根据指定 定义的标识。  | string   | 是   |
+| url           | HTTPAPI，而是根据指定 的目标地址。不包括任何查询参数。 | string   | 否   |
 | dynamicUrl    | 当url为空时，必须提供这个结构，用来动态生成URL（比如路径中含有appId），结构为标准的value结构。    | object   | 否   |
-| private       | API 秘钥文件名。| string   | 否   |
-| description   | API 的描述。 | string   |  否    |
+| private       | HTTPAPI，而是根据指定 秘钥文件名。| string   | 否   |
+| description   | HTTPAPI，而是根据指定 的描述。 | string   |  否    |
 | method        | HTTP 请求方法，支持`POST`和`GET`。                                                                    | string   | 是   |
 |requestContentType | json映射为`application/json`，form映射为`application/x-www-form-urlencoded`，origin为取输入报文的ContentType，并直接转发输入报文的http body，none表示没有body,其他值则直接写入ContentType|string |是|
 |  |  |  |  |
@@ -41,9 +41,10 @@ private用于存储秘钥类信息，和API相对独立，不同部署，值会�
 | ----from | 差异：获取过期时间的位置，是从header域中获取的话，则设置为“header”，如果从body中获取，则设置为“template” | string | 是 |
 |          |                                        |        |    |
 
-目前系统并未使用`id`字段定位选择的 API，而是根据指定 API 定义文件的名称。
+目前系统并未使用`id`字段定位选择的 HTTPAPI，而是根据指定 HTTPAPI 定义文件的名称。
 
 # API
+用于FLOW和SCHEDULE中
 | 字段           | 用途  | 类型     | 必选 |
 | ------------- | ----- | -------- | ---- |
 | name           | API的名称。| string   | 是   |
@@ -94,7 +95,6 @@ control结构体定义为
 | --steps   | 结构同上层的tasks，为tasks的自身嵌套。                       | object[]   | 否   |
 
 # RIGHT
-
 | 字段    | 用途                                                         | 类型     | 必选 |
 | ------- | ------------------------------------------------------------ | -------- | ---- |
 | type    | 权限文件对应的执行类型，httpapi，flow，schedule              | string   | 是   |

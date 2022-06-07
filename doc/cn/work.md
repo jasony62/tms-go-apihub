@@ -22,6 +22,8 @@
  - "retryDelaySeconds": 600,
  - "responseTimeoutSeconds": 3600
 * 根据http response content type查看是否需要分解json
+* 将http down和解压独立出来作为独立API
+* 考虑如何设置全局default right
 
 ## 中期
 * 支持更好的http error msg返回
