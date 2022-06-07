@@ -316,9 +316,8 @@ func LoadMainFlow(path string) {
 	loadJsonDefData(JSON_TYPE_FLOW, defaultConfMap.BasePath, "", false)
 }
 
-func CheckRight(stack *hub.Stack, name string, callType string) bool {
+func CheckRight(stack *hub.Stack, user string, name string, callType string) bool {
 	// check是否有权限
-	user := stack.GinContext.Query("appID")
 	klog.Infoln("CheckRight user:", user, " callType:", callType)
 	//map
 	var rightInfo *hub.RightArray

@@ -59,6 +59,8 @@ func GetParameterRawValue(stack *hub.Stack, private *hub.PrivateArray, from *hub
 	switch from.From {
 	case "literal":
 		value = from.Content
+	case "header":
+		value = stack.GinContext.GetHeader(from.Content)
 	case "query":
 		value = stack.Query(from.Content)
 	case "header":
