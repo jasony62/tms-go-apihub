@@ -4,6 +4,9 @@ echo "\r\n高德地图:"
 echo "\r\n查询城市区域编码:\r\n"
 curl -i -H "Content-Type: application/json" -d '{"city": "北京"}' "http://localhost:8080/httpapi/amap_district"
 
+echo "\r\n查询城市区域编码(带API版本号):\r\n"
+curl -i -H "Content-Type: application/json" -d '{"city": "北京"}' "http://localhost:8080/httpapi/amap_district/v1?appID=001"
+
 echo "\r\n\r\n根据区域编码获得天气数据:\r\n"
 curl -i -H "Content-Type: application/json" -d '{"city": "110100"}' "http://localhost:8080/httpapi/amap_weather"
 
@@ -30,7 +33,7 @@ echo "\r\n企业微信:"
 echo "\r\n获得 access_token:\r\n"
 curl -i "http://localhost:8080/httpapi/qywx_gettoken"
 
-echo "\r\n发送文本消息\r\n"
+echo "\r\n发送消息\r\n"
 curl -i -X POST -d '{"touser": "YangYue","msgtype": "text","agentid": "1000002", "content": "试试企业微信" }' "http://localhost:8080/flow/qywx_message_send"
 
 

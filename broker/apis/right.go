@@ -16,12 +16,44 @@ func checkRight(stack *hub.Stack, params map[string]string) (interface{}, int) {
 
 	user, OK = params["user"]
 	if !OK {
-		str := "缺少user定义"
-		klog.Errorln(str)
-		panic(str)
+		//	user = stack.GinContext.Query("appID")
+		// 作为api执行时，params["user"]不会定义，需要去apidef 中查询是否定义了query或者header中有user
+		var err error
+		var value string
+		HttpApi, err := util.FindHttpApiDef(stack.RootName)
+		if err != nil {
+			klog.Errorln("获得private定义失败：", err)
+			panic(err)
+		}
+
+		if HttpApi.Args != nil {
+			paramLen := len(*HttpApi.Args)
+			if paramLen > 0 {
+				for _, param := range *HttpApi.Args {
+					if len(param.Name) > 0 {
+						value, err = util.GetParameterStringValue(stack, nil, &param.Value)
+						if err != nil {
+							return nil, fasthttp.StatusOK
+						}
+
+						if param.Name == "user" {
+							if len(value) > 0 {
+								user = value
+								klog.Infoln("查找到user定义：", user)
+							}
+							break
+						}
+					}
+				}
+			}
+		}
+
+		if len(user) == 0 {
+			klog.Infoln("缺少user定义，不检查权限")
+			return nil, fasthttp.StatusOK
+		}
 	}
 
-	klog.Infoln("checkRight user: ", user)
 	if len(user) == 0 {
 		klog.Errorln("checkRight user is null")
 		return nil, fasthttp.StatusOK
@@ -40,8 +72,6 @@ func checkRight(stack *hub.Stack, params map[string]string) (interface{}, int) {
 		klog.Errorln(str)
 		panic(str)
 	}
-
-	klog.Infoln("checkRight name: ", name, " type: ", apiType)
 
 	//判断执行权限
 	if !util.CheckRight(stack, user, name, apiType) {

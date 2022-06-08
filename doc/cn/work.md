@@ -1,17 +1,29 @@
 ## 近期
+* 继续修订readme
+  - 【readme.md】中应该站在用户的角度解释一下，每个文件有什么用，是解决什么问题的
+  - 【apis.md】应该提供一下示例。api的描述应该更规范些，参照一下互联网上开放api的描述。
+  - 关于内容模版应该有个说明，说明一些模板的基本逻辑
+
 * json schema
   - 根据 json 生成 schema — https://tooltt.com/json2schema/
   - 校验 jsonschema 是否合法 — https://www.jsonschemavalidator.net/
   -  校验某个 json 是否符合指定的 json schema 定义 — https://www.jsonschemavalidator.net/
+  解决：
+  - 部分字段没有
+  - 部分字段需要设置enum
+  - required： url or dynamicUrl, 
+  - from为json 或者jsonRaw时required json，其他required content
+  - requestContentType   可选json，form，orgin，none，或者其他任意值
 
 * postman或者apifox的测试脚本
-* 多租户异步回调：本地kv存储
 * 支持http请求retry，timeout
  - "timeoutPolicy": "TIME_OUT_WF",
  - "retryLogic": "FIXED",
  - "retryDelaySeconds": 600,
  - "responseTimeoutSeconds": 3600
 * 根据http response content type查看是否需要分解json
+* 将http down和解压独立出来作为独立API
+* 考虑如何设置全局default right
 
 ## 中期
 * 支持更好的http error msg返回
@@ -63,6 +75,7 @@ https://goframe.org/pages/viewpage.action?pageId=1114270
 * json文件load一次，反复使用
 * json文件合法性检查
 * 支持flow覆盖api中的private
+* 多租户异步回调：本地kv存储
 
 ###schedule
 * schedule支持SWITCH/loop循环命令
@@ -82,7 +95,7 @@ https://goframe.org/pages/viewpage.action?pageId=1114270
 * 支持func
      * 支持无输入参数 utc
      * 支持有输入参数 md5
-     * 支持template使用func（FuncMap）
+     * 支持template和json使用func（FuncMap）
      * 支持从.so动态注册函数
 
 ###test
