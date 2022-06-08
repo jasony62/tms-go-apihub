@@ -318,7 +318,7 @@ func LoadMainFlow(path string) {
 
 func CheckRight(stack *hub.Stack, user string, name string, callType string) bool {
 	// check是否有权限
-	klog.Infoln("CheckRight user:", user, " callType:", callType)
+	klog.Infoln("CheckRight user:", user, " callType:", callType, " name:", name)
 	//map
 	var rightInfo *hub.RightArray
 	var ok bool
@@ -365,7 +365,6 @@ func userInList(arr *hub.RightArray, user string) bool {
 	if arr.List != nil {
 		for _, u := range *arr.List {
 			if user == u.User {
-				klog.Infoln("userInList find the user:", user)
 				return true
 			}
 		}

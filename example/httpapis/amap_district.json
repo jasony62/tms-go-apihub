@@ -8,6 +8,14 @@
   "args": [
     {
       "in": "query",
+      "name": "user",
+      "value": {
+        "from": "query",
+        "content": "appID"
+      }
+    },
+	{
+      "in": "query",
       "name": "key",
       "value": {
         "from": "private",
