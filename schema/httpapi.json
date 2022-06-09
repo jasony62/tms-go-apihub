@@ -2,11 +2,37 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "required": ["id", "method", "requestContentType"],
+  "anyOf": [
+    {"required": ["url"]},
+    {"required": ["dynamicUrl"]}
+  ],
   "properties": {
     "id": {
       "type": "string"
     },
     "url": {
+      "type": "string"
+    },
+    "dynamicUrl": {
+      "type": "object",
+	  "required": ["from", "content"],
+      "properties": {
+        "from": {
+          "type": "string",
+          "enum": ["origin", "private", "query", "header", "literal", "template", "StepResult", "json", "jsonRaw","env", "func"]
+        },
+        "content": {
+          "type": "string"
+        },
+        "json": {
+          "type": "object"
+        },
+        "args": {
+          "type": "string"
+        }
+      }
+    },
+    "description": {
       "type": "string"
     },
     "private": {
@@ -17,7 +43,8 @@
       "enum": ["POST", "GET"]
     },
     "requestContentType": {
-      "type": "string"
+      "type": "string",
+      "enum": ["json", "form", "orgin", "none"]
     },
     "args": {
       "type": "array",
@@ -26,7 +53,8 @@
         "required": ["in", "name", "value"],
         "properties": {
           "in": {
-            "type": "string"
+            "type": "string",
+            "enum": ["header", "vars", "body", "query"]
           },
           "name": {
             "type": "string"
@@ -36,11 +64,27 @@
             "required": ["from"],
             "properties": {
               "from": {
-                "type": "string"
+                "type": "string",
+                "enum": ["origin", "private", "query", "header", "literal", "template", "StepResult", "json", "jsonRaw","env", "func"]
               },
               "content": {
                 "type": "string"
+              },
+              "json": {
+                "type": "object"
+              },
+              "args": {
+                "type": "string"
               }
+            },
+            "if": {
+              "properties": { "from": { "enum": ["json", "jsonRaw"] } }
+            },
+            "then": {
+              "required": ["json"]
+	        },
+            "else": {
+              "required": ["content"]
             }
           }
         }
@@ -55,9 +99,16 @@
           "required": ["from", "content"],
           "properties": {
             "from": {
-              "type": "string"
+              "type": "string",
+              "enum": ["template", "header"]
             },
             "content": {
+              "type": "string"
+            },
+            "json": {
+              "type": "object"
+            },
+            "args": {
               "type": "string"
             }
           }
