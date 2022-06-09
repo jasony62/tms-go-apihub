@@ -14,23 +14,7 @@
       "type": "string"
     },
     "dynamicUrl": {
-      "type": "object",
-	  "required": ["from", "content"],
-      "properties": {
-        "from": {
-          "type": "string",
-          "enum": ["origin", "private", "query", "header", "literal", "template", "StepResult", "json", "jsonRaw","env", "func"]
-        },
-        "content": {
-          "type": "string"
-        },
-        "json": {
-          "type": "object"
-        },
-        "args": {
-          "type": "string"
-        }
-      }
+      "$ref" : "#/baseValueDef"
     },
     "description": {
       "type": "string"
@@ -60,32 +44,7 @@
             "type": "string"
           },
           "value": {
-            "type": "object",
-            "required": ["from"],
-            "properties": {
-              "from": {
-                "type": "string",
-                "enum": ["origin", "private", "query", "header", "literal", "template", "StepResult", "json", "jsonRaw","env", "func"]
-              },
-              "content": {
-                "type": "string"
-              },
-              "json": {
-                "type": "object"
-              },
-              "args": {
-                "type": "string"
-              }
-            },
-            "if": {
-              "properties": { "from": { "enum": ["json", "jsonRaw"] } }
-            },
-            "then": {
-              "required": ["json"]
-	        },
-            "else": {
-              "required": ["content"]
-            }
+            "$ref" : "#/baseValueDef"
           }
         }
       }
@@ -118,5 +77,34 @@
         }
       }
     }
+  },
+  
+  "baseValueDef": {
+	"type": "object",
+	"required": ["from"],
+	"properties": {
+	  "from": {
+		"type": "string",
+		"enum": ["origin", "private", "query", "header", "literal", "template", "StepResult", "json", "jsonRaw","env", "func"]
+	  },
+	  "content": {
+		"type": "string"
+	  },
+	  "json": {
+		"type": "object"
+	  },
+	  "args": {
+		"type": "string"
+	  }
+	},
+	"if": {
+	  "properties": { "from": { "enum": ["json", "jsonRaw"] } }
+	},
+	"then": {
+	  "required": ["json"]
+	},
+	"else": {
+	  "required": ["content"]
+	}
   }
 }
