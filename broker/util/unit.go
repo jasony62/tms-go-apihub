@@ -38,6 +38,10 @@ func queryFromStepResult(stack *hub.Stack, name string) (string, error) {
 }
 
 func findPrivateValue(private *hub.PrivateArray, name string) string {
+	if private == nil {
+		return ""
+	}
+
 	for _, pair := range *private.Pairs {
 		if pair.Name == name {
 			return pair.Value
@@ -63,8 +67,6 @@ func GetParameterRawValue(stack *hub.Stack, private *hub.PrivateArray, from *hub
 		value = stack.GinContext.GetHeader(from.Content)
 	case "query":
 		value = stack.Query(from.Content)
-	case "header":
-		stack.GinContext.Request.Header.Get(from.Content)
 	case hub.OriginName:
 		value, err = queryFromStepResult(stack, "{{.origin."+from.Content+"}}")
 	case "private":

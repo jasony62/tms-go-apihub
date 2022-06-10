@@ -16,14 +16,7 @@ func checkRight(stack *hub.Stack, params map[string]string) (interface{}, int) {
 
 	user, OK = params["user"]
 	if !OK {
-		str := "缺少user定义"
-		klog.Errorln(str)
-		panic(str)
-	}
-
-	klog.Infoln("checkRight user: ", user)
-	if len(user) == 0 {
-		klog.Errorln("checkRight user is null")
+		klog.Infoln("缺少user定义，不检查权限")
 		return nil, fasthttp.StatusOK
 	}
 
@@ -40,8 +33,6 @@ func checkRight(stack *hub.Stack, params map[string]string) (interface{}, int) {
 		klog.Errorln(str)
 		panic(str)
 	}
-
-	klog.Infoln("checkRight name: ", name, " type: ", apiType)
 
 	//判断执行权限
 	if !util.CheckRight(stack, user, name, apiType) {
