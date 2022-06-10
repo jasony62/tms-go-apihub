@@ -10,15 +10,17 @@ go build
 
 
 ## examples
-## ×¢²á
-curl -X GET -H 'Content-Type: application/json' -d '{"nonce":"abcd","utc":"1234","checksum":"279fc4ff795c5fb5047c27d9f23f2332"}' "http://localhost:6060/register?app=appid1"
-//³É¹¦×¢²áÔò·µ»Ø {token:"xxx"£¬expires:3600}
-## ÏÔÊ¾
-curl -X GET -H "Authorization:tokenstring"'Content-Type: application/json' -d '{"content":"hello world!"}' "http://localhost:6060/echo?app=appid1
-//·µ»Ø: {"content":"hello world!"}
-## Á¬½Ó
-curl -X GET -H "Authorization:tokenstring"'Content-Type: application/json' -d '{"param1":"hello","param2":"world"}' "http://localhost:6060/joint?app=appid1
-//·µ»Ø: {"content":"helloworld"}
-## ¸ù¾İ¿Õ¸ñ·Ö´Ê
-curl -X GET -H "Authorization:tokenstring"'Content-Type: application/json' -d '{"content":"hello world"}' "http://localhost:6060/split?app=appid1
-//·µ»Ø: {"content":"hello,world"}
+### æ³¨å†Œ
+curl -X GET -H "Content-Type: application/json" -d '{"nonce":"abcd","utc":"1234","checksum":"279fc4ff795c5fb5047c27d9f23f2332"}' "http://localhost:6060/register?app=appid1"
+//æˆåŠŸæ³¨å†Œåˆ™è¿”å› {token:"xxx"??expires:3600}
+### æ³¨æ„
+å¦‚ä¸‹ç¤ºä¾‹éƒ½éœ€è¦å…ˆè°ƒç”¨æ³¨å†Œï¼Œå†å°†è¿”å›çš„tokenå†™å…¥Authorization headerï¼Œæ–¹å¯è°ƒç”¨ã€‚
+### æ˜¾ç¤º
+curl -X GET -H "Authorization: xxxxx" "Content-Type: application/json" -d '{"content":"hello world!"}' "http://localhost:6060/echo?app=appid1"
+//è¿”å›: {"content":"hello world!"}
+### è¿æ¥
+curl -X GET -H "Authorization: xxxxx" "Content-Type: application/json" -d '{"param1":"hello","param2":"world"}' "http://localhost:6060/joint?app=appid1"
+//è¿”å›: {"content":"helloworld"}
+### æ ¹æ®ç©ºæ ¼åˆ†è¯
+curl -X GET -H "Authorization: xxxxx" "Content-Type: application/json" -d '{"content":"hello world"}' "http://localhost:6060/split?app=appid1"
+//è¿”å›: {"content":"hello,world"}
