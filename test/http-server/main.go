@@ -3,9 +3,10 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	klog "k8s.io/klog/v2"
 	"strings"
 	"time"
+
+	klog "k8s.io/klog/v2"
 
 	"github.com/fasthttp/router"
 	"github.com/valyala/fasthttp"
@@ -21,6 +22,7 @@ func main() {
 	readConfig(*conf, &userInfo)
 	hRouter := createRouter()
 
+	klog.Infoln("Listen and Serve addr:", *addr)
 	if err := fasthttp.ListenAndServe(*addr, hRouter.Handler); err != nil {
 		klog.Fatal("Error in ListenAndServe: %v", err)
 	}
@@ -28,7 +30,7 @@ func main() {
 
 func createRouter() *router.Router {
 	r := router.New()
-	r.GET("/", Echo)
+	r.GET("/echo", Echo)
 	r.GET("/joint", Joint)
 	r.GET("/split", Split)
 	r.GET("/register", Register)
@@ -104,6 +106,7 @@ func Echo(ctx *fasthttp.RequestCtx) {
 
 	//检查该usr是否已经配置了key,并验证token
 	if !checkAccountAndTokenValid(ctx, userInfo) {
+		ctx.Response.SetStatusCode(fasthttp.StatusUnauthorized)
 		return
 	}
 
@@ -117,6 +120,7 @@ func Joint(ctx *fasthttp.RequestCtx) {
 
 	//检查该usr是否已经配置了key,并验证token
 	if !checkAccountAndTokenValid(ctx, userInfo) {
+		ctx.Response.SetStatusCode(fasthttp.StatusUnauthorized)
 		return
 	}
 	reqBody := &Params{}
@@ -134,6 +138,7 @@ func Split(ctx *fasthttp.RequestCtx) {
 	klog.Infof("DEBUG Request: %s\n", ctx.Request.Body())
 	//检查该usr是否已经配置了key,并验证token
 	if !checkAccountAndTokenValid(ctx, userInfo) {
+		ctx.Response.SetStatusCode(fasthttp.StatusUnauthorized)
 		return
 	}
 	reqBody := &Content{}
