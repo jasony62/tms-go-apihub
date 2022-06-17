@@ -7,7 +7,7 @@ apigateway是当前apihub的主功能，用于执行灵活可编排的API功能�
 curl -H "Content-Type: application/json" -d '{"city": "北京"}' "http://localhost:8080/httpapi/amap_district"
 ```
 
-注意对于这个功能，只支持APPID在query，同时返回的是json格式的回应
+注意对于这个功能，只支持APPID在query，同时返回的是json格式的回应.
 ## 定义和执行 FLOW
 需要在flow中存放`{Id}.json`文件。每个 FLOW 定义对应一个文件，文件名（不含扩展名`.json`）必须和 FLOW 定义的 ID 一致。
 通过路由`/flow/{Id}`调用指定的 FLOW。例如：

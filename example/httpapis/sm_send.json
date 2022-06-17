@@ -20,13 +20,5 @@
         }
       }
     }
-  ],
-  "respStatus": {
-    "value": {
-  		"from": "template",
-  		"content": "{{.result.sms.status}}"
-  	},
-    "format": "string",
-    "expected": "0"
-  }
+  ]
 }
