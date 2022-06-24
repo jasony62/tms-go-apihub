@@ -1,0 +1,10 @@
+{
+  "type": "httpapi",
+  "right": "blacklist",
+
+  "list": [
+    {
+      "user": "003"
+    }
+  ]
+}

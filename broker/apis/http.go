@@ -2,6 +2,7 @@ package apis
 
 import (
 	"encoding/json"
+	"net/http"
 	"net/url"
 	"strconv"
 
@@ -22,46 +23,7 @@ var jsonEx = jsoniter.Config{
 	UseNumber: true,
 }.Froze()
 
-func handleReq(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.PrivateArray) (interface{}, int) {
-	var jsonInRspBody interface{}
-
-	outReq, err := newRequest(stack, HttpApi, privateDef)
-	if err != nil {
-		return nil, fasthttp.StatusInternalServerError
-	}
-	defer fasthttp.ReleaseRequest(outReq)
-	// 发出请求
-	client := &fasthttp.Client{}
-	resp := fasthttp.AcquireResponse()
-	defer fasthttp.ReleaseResponse(resp)
-	err = client.Do(outReq, resp)
-	if err != nil {
-		klog.Errorln("ERR Connection error: ", err)
-		return nil, fasthttp.StatusInternalServerError
-	}
-	returnBody := resp.Body()
-	// 将收到的结果转为JSON对象
-	jsonEx.Unmarshal(returnBody, &jsonInRspBody)
-	stack.StepResult[hub.ResultName] = jsonInRspBody
-
-	klog.Errorln("消息体: ", string(returnBody))
-
-	if HttpApi.Cache != nil {
-		//解析过期时间，如果存在则记录下来
-		expires, ok := handleExpireTime(stack, HttpApi, resp)
-		if !ok {
-			klog.Warningln("没有查询到过期时间")
-		} else {
-			klog.Infof("更新Cache信息，过期时间为: %v", expires)
-			HttpApi.Cache.Expires = expires
-			HttpApi.Cache.Resp = jsonInRspBody
-		}
-	}
-
-	return jsonInRspBody, fasthttp.StatusOK
-}
-
-func newRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.PrivateArray) (*fasthttp.Request, error) {
+func newRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.PrivateArray) (*fasthttp.Request, int) {
 	var outBody string
 	var hasBody bool
 	var err error
@@ -93,11 +55,11 @@ func newRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Priva
 		if HttpApi.DynamicUrl != nil {
 			finalUrl, err = util.GetParameterStringValue(stack, privateDef, HttpApi.DynamicUrl)
 			if err != nil {
-				return nil, err
+				return nil, http.StatusForbidden
 			}
 		} else {
 			klog.Errorln("无有效url")
-			panic("无有效url")
+			return nil, http.StatusForbidden
 		}
 	} else {
 		finalUrl = HttpApi.Url
@@ -118,7 +80,7 @@ func newRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Priva
 				if len(param.Name) > 0 {
 					value, err = util.GetParameterStringValue(stack, privateDef, &param.Value)
 					if err != nil {
-						return nil, err
+						return nil, http.StatusForbidden
 					}
 
 					switch param.In {
@@ -170,7 +132,47 @@ func newRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Priva
 		}
 	}
 
-	return outReq, nil
+	return outReq, http.StatusOK
+}
+
+func handleReq(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.PrivateArray) (interface{}, int) {
+	var jsonInRspBody interface{}
+	var code int
+
+	outReq, code := newRequest(stack, HttpApi, privateDef)
+	if code != fasthttp.StatusOK {
+		return nil, fasthttp.StatusInternalServerError
+	}
+	defer fasthttp.ReleaseRequest(outReq)
+	// 发出请求
+	client := &fasthttp.Client{}
+	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp)
+	err := client.Do(outReq, resp)
+	if err != nil {
+		klog.Errorln("ERR Connection error: ", err)
+		return nil, fasthttp.StatusInternalServerError
+	}
+	returnBody := resp.Body()
+	// 将收到的结果转为JSON对象
+	jsonEx.Unmarshal(returnBody, &jsonInRspBody)
+	stack.StepResult[hub.ResultName] = jsonInRspBody
+
+	klog.Errorln("消息体: ", string(returnBody))
+
+	if HttpApi.Cache != nil {
+		//解析过期时间，如果存在则记录下来
+		expires, ok := handleExpireTime(stack, HttpApi, resp)
+		if !ok {
+			klog.Warningln("没有查询到过期时间")
+		} else {
+			klog.Infof("更新Cache信息，过期时间为: %v", expires)
+			HttpApi.Cache.Expires = expires
+			HttpApi.Cache.Resp = jsonInRspBody
+		}
+	}
+
+	return jsonInRspBody, fasthttp.StatusOK
 }
 
 func handleExpireTime(stack *hub.Stack, HttpApi *hub.HttpApiDef, resp *fasthttp.Response) (time.Time, bool) {
@@ -310,7 +312,7 @@ func run(stack *hub.Stack, name string, private string) (jsonOutRspBody interfac
 
 	if HttpApi == nil {
 		klog.Errorln("获得API定义失败：", err)
-		panic(err)
+		return nil, http.StatusForbidden
 	}
 
 	if len(private) == 0 {
@@ -321,7 +323,7 @@ func run(stack *hub.Stack, name string, private string) (jsonOutRspBody interfac
 		privateDef, err = util.FindPrivateDef(private)
 		if err != nil {
 			klog.Errorln("获得private定义失败：", err)
-			panic(err)
+			return nil, http.StatusForbidden
 		}
 	}
 
@@ -355,7 +357,7 @@ func runHttpApi(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	if !OK {
 		str := "缺少api名称"
 		klog.Errorln(str)
-		panic(str)
+		return nil, http.StatusForbidden
 	}
 
 	/*private may doesn't exist*/
@@ -368,14 +370,14 @@ func httpResponse(stack *hub.Stack, params map[string]string) (interface{}, int)
 	if !OK {
 		str := "缺少api名称"
 		klog.Errorln(str)
-		panic(str)
+		return nil, http.StatusForbidden
 	}
 
 	key, OK := params["key"]
 	if !OK {
 		str := "缺少api名称"
 		klog.Errorln(str)
-		panic(str)
+		return nil, http.StatusForbidden
 	}
 	result := stack.StepResult[key]
 	switch name {

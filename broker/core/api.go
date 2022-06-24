@@ -35,7 +35,7 @@ func ApiRun(stack *hub.Stack, api *hub.ApiDef, private string) (result interface
 	if function == nil {
 		str := "不能执行" + stack.ChildName
 		klog.Errorln(str)
-		panic(str)
+		return nil, http.StatusForbidden
 	}
 
 	var origin map[string]interface{}
@@ -46,7 +46,7 @@ func ApiRun(stack *hub.Stack, api *hub.ApiDef, private string) (result interface
 		privateDef, err = util.FindPrivateDef(api.Private)
 		if err != nil {
 			klog.Errorln("获得private定义失败：", err)
-			panic(err)
+			return nil, http.StatusForbidden
 		}
 	}
 

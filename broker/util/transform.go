@@ -25,18 +25,23 @@ func executeTemplate(source interface{}, rules interface{}) (*bytes.Buffer, erro
 	tmpl, err := template.New("json").Funcs(funcMapForTemplate).Parse(strTempl)
 	if err != nil {
 		klog.Infoln("get template result：", strTempl, byteTempl, " error: ", err)
+		return nil, err
 	}
 	buf := new(bytes.Buffer)
 	err = tmpl.Execute(buf, source)
 	if err != nil {
 		klog.Infoln("get template result：", err)
+		return nil, err
 	}
 	return buf, err
 }
 
 func Json2Json(source interface{}, rules interface{}) (interface{}, error) {
-	buf, err := executeTemplate(source, rules)
 	var target interface{}
+	buf, err := executeTemplate(source, rules)
+	if err != nil {
+		return nil, err
+	}
 	err = json.Unmarshal(buf.Bytes(), &target)
 	return target, err
 }
