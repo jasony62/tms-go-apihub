@@ -278,6 +278,23 @@ func FindResourceDef(id string) (value string, ok bool) {
 	return
 }
 
+func FindRightDef(user string, name string, callType string) *hub.RightArray {
+	// check是否有权限
+	klog.Infoln("CheckRight user:", user, " callType:", callType, " name:", name)
+	//map
+	switch callType {
+	case "httpapi":
+		return defaultConfMap.ApiRightMap[name]
+	case "flow":
+		return defaultConfMap.FlowRightMap[name]
+	case "schedule":
+		return defaultConfMap.ScheduleRightMap[name]
+	default:
+		return defaultConfMap.ApiRightMap[name]
+
+	}
+}
+
 func GetBasePath() string {
 	return defaultConfMap.BasePath
 }
@@ -314,60 +331,4 @@ func LoadMainFlow(path string) {
 	}
 	klog.Infof("Load main flow from %s\n", defaultConfMap.BasePath)
 	loadJsonDefData(JSON_TYPE_FLOW, defaultConfMap.BasePath, "", false)
-}
-
-func CheckRight(stack *hub.Stack, user string, name string, callType string) bool {
-	// check是否有权限
-	klog.Infoln("CheckRight user:", user, " callType:", callType, " name:", name)
-	//map
-	var rightInfo *hub.RightArray
-	var ok bool
-	mapkey := name + "_right"
-	if callType == "httpapi" {
-		rightInfo, ok = defaultConfMap.ApiRightMap[mapkey]
-	} else if callType == "flow" {
-		rightInfo, ok = defaultConfMap.FlowRightMap[mapkey]
-	} else if callType == "schedule" {
-		rightInfo, ok = defaultConfMap.ScheduleRightMap[mapkey]
-	} else {
-		rightInfo, ok = defaultConfMap.ApiRightMap[mapkey]
-	}
-
-	haveRight := false
-	if ok {
-		switch rightInfo.Right {
-		case hub.Right_Pulbic:
-			haveRight = true
-		case hub.Right_Internal:
-			haveRight = false
-		case hub.Right_Whitelist:
-			haveRight = userInList(rightInfo, user)
-		case hub.Right_Blacklist:
-			haveRight = !userInList(rightInfo, user)
-		default:
-			klog.Infoln("CheckRight invalid right: ", rightInfo.Right)
-			haveRight = false
-		}
-	}
-
-	klog.Infoln("CheckRight user:", user, " mapkey:", mapkey, " haveRight:", haveRight)
-	if !haveRight {
-		if rightInfo != nil && rightInfo.Default == hub.Right_Deny {
-			klog.Errorln("Run API default right: ", rightInfo.Default)
-		} else {
-			haveRight = true
-		}
-	}
-	return haveRight
-}
-
-func userInList(arr *hub.RightArray, user string) bool {
-	if arr.List != nil {
-		for _, u := range *arr.List {
-			if user == u.User {
-				return true
-			}
-		}
-	}
-	return false
 }

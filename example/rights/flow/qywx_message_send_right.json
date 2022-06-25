@@ -1,7 +1,7 @@
 {
   "type": "flow",
   "right": "whitelist",
-  "default": "access",
+
   "list": [
     {
       "user": "001"

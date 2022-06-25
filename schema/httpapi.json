@@ -75,7 +75,8 @@
         "format": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties" : false
     }
   },
   
@@ -105,6 +106,8 @@
 	},
 	"else": {
 	  "required": ["content"]
-	}
-  }
+	},
+	"additionalProperties" : false
+  },
+  "additionalProperties" : false
 }

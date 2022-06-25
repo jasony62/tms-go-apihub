@@ -1,13 +1,4 @@
 {
   "type": "flow",
-  "right": "whitelist",
-  "default": "access",
-  "list": [
-    {
-      "user": "001"
-    },
-    {
-      "user": "002"
-    }
-  ]
+  "right": "public"
 }

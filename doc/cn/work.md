@@ -14,18 +14,18 @@
   - required： url or dynamicUrl, 
   - from为json 或者jsonRaw时required json，其他required content
   - requestContentType   可选json，form，orgin，none，或者其他任意值
-
+* 增加plugin框架，并支持Prometheus，
 * postman或者apifox的测试脚本
-* 支持http请求retry，timeout
- - "timeoutPolicy": "TIME_OUT_WF",
- - "retryLogic": "FIXED",
- - "retryDelaySeconds": 600,
- - "responseTimeoutSeconds": 3600
 * 根据http response content type查看是否需要分解json
 * 将http down和解压独立出来作为独立API
 * 考虑如何设置全局default right
 
 ## 中期
+* 支持http请求retry，timeout
+ - "timeoutPolicy": "TIME_OUT_WF",
+ - "retryLogic": "FIXED",
+ - "retryDelaySeconds": 600,
+ - "responseTimeoutSeconds": 3600
 * 支持更好的http error msg返回
 * 支持query数组转json数组
 * http put

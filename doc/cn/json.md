@@ -99,5 +99,4 @@ control结构体定义为
 | ------- | ------------------------------------------------------------ | -------- | ---- |
 | type    | 权限文件对应的执行类型，httpapi，flow，schedule              | string   | 是   |
 | right   | 权限类型：public（所有人都允许调用），internal（只允许内部调用，不允许外部调用），whitelist（只有list中的才允许访问），blacklist（非list中的才允许访问） | string   | 是   |
-| default | 默认权限：access，deny，默认为access                         | string   | 否   |
 | list    | user list数组                                                | object[] | 是   |

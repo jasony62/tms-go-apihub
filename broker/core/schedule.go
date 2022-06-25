@@ -86,7 +86,7 @@ func handleSwitchTask(stack *hub.Stack, task *hub.ScheduleApiDef) (interface{}, 
 	if len(key) == 0 {
 		err := "invalid switch key"
 		klog.Errorln(err)
-		panic(err)
+		return nil, http.StatusInternalServerError
 	}
 
 	for _, item := range *task.Control.Cases {
@@ -159,7 +159,7 @@ func handleLoopTask(stack *hub.Stack, task *hub.ScheduleApiDef) (interface{}, in
 	if len(keyStr) == 0 {
 		err := "invalid loop key"
 		klog.Errorln(err)
-		panic(err)
+		return nil, http.StatusInternalServerError
 	}
 	loopLength, _ := strconv.Atoi(keyStr)
 	loopResult := make([]interface{}, loopLength)
@@ -200,7 +200,7 @@ func handleOneScheduleApi(stack *hub.Stack, task *hub.ScheduleApiDef) (result in
 			} else {
 				err := "No switch cases"
 				klog.Errorln(err)
-				panic(err)
+				return nil, http.StatusInternalServerError
 			}
 		case hub.LoopName:
 			klog.Infoln("运行 loop name", task.Control.Name)
@@ -211,7 +211,7 @@ func handleOneScheduleApi(stack *hub.Stack, task *hub.ScheduleApiDef) (result in
 		default:
 			err := "don't support type " + task.Type
 			klog.Errorln(err)
-			panic(err)
+			return nil, http.StatusInternalServerError
 		}
 	}
 	return result, status
@@ -270,7 +270,7 @@ func handleTasks(stack *hub.Stack, apis *[]hub.ScheduleApiDef, concurrentNum int
 	}
 	if apis == nil {
 		klog.Errorln("apis nil")
-		panic("apis nil")
+		return nil, http.StatusInternalServerError
 	}
 	klog.Infoln("apis lens：", len(*apis))
 	for index := range *apis {
@@ -309,7 +309,7 @@ func runSchedule(stack *hub.Stack, name string, private string) (interface{}, in
 	scheduleDef, err := util.FindScheduleDef(name)
 	if scheduleDef == nil || scheduleDef.Steps == nil {
 		klog.Errorln("获得Schedule定义失败：", err)
-		panic(err)
+		return nil, http.StatusInternalServerError
 	}
 	stack.StepResult[hub.LoopName] = make(map[string]int)
 
@@ -321,7 +321,7 @@ func runScheduleApi(stack *hub.Stack, params map[string]string) (interface{}, in
 	if !OK {
 		str := "缺少flow名称"
 		klog.Errorln(str)
-		panic(str)
+		return nil, http.StatusInternalServerError
 	}
 	private := params["private"]
 

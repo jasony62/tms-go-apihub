@@ -26,7 +26,7 @@ func runFlow(stack *hub.Stack, name string, private string) (result interface{},
 	flowDef, err := util.FindFlowDef(name)
 	if flowDef == nil {
 		klog.Errorln("获得Flow定义失败：", err)
-		panic(err)
+		return nil, http.StatusForbidden
 	}
 
 	for i := range flowDef.Steps {
@@ -56,7 +56,7 @@ func runFlowApi(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	if !OK {
 		str := "缺少flow名称"
 		klog.Errorln(str)
-		panic(str)
+		return nil, http.StatusForbidden
 	}
 	private := params["private"]
 

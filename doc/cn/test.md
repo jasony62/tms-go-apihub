@@ -1,6 +1,6 @@
 # 需要测试完成的工作
 * 第一阶段 使用postman脚本对现有的接口进行测试，并在脚本中检验返回值
-* 第二阶段 根据test server，构建基础httpapi和flow的json
+* 第二阶段 结合mongodbweb-json schema,根据test server，构建基础httpapi和flow的json
 * 第三阶段 构建性能测试
 * 第四阶段 根据特性 构建扩展测试用例
 
@@ -40,7 +40,7 @@
 同上
 
 * curl -i -H "Content-Type: application/json" -d '{"city": "北京"}' "http://localhost:8080/httpapi/amap_district/v1?appID=003"    
-返回HTTP/1.1 500 Internal Server Error
+返回HTTP/1.1 403 Forbidden
 
 * curl -i -H "Content-Type: application/json" -d '{"city": "110100"}' "http://localhost:8080/httpapi/amap_weather"    
 检查JSON除reporttime， humidity，temperature， weather， winddirection， windpower不能为空，其余均为固定值

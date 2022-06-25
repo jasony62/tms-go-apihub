@@ -5,8 +5,7 @@ type RightList struct {
 }
 
 type RightArray struct {
-	Type    string       `json:"type"`
-	Right   string       `json:"right"`
-	Default string       `json:"default"`
-	List    *[]RightList `json:"list"`
+	Type  string       `json:"type"`
+	Right string       `json:"right"`
+	List  *[]RightList `json:"list"`
 }

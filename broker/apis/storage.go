@@ -1,6 +1,8 @@
 package apis
 
 import (
+	"net/http"
+
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/valyala/fasthttp"
 	klog "k8s.io/klog/v2"
@@ -38,7 +40,7 @@ func storageStore(stack *hub.Stack, params map[string]string) (interface{}, int)
 	if !OK {
 		str := "缺少user定义"
 		klog.Errorln(str)
-		panic(str)
+		return nil, http.StatusForbidden
 	}
 
 	klog.Infoln("storageStore user: ", user)
@@ -51,14 +53,14 @@ func storageStore(stack *hub.Stack, params map[string]string) (interface{}, int)
 	if !OK {
 		str := "缺少key索引"
 		klog.Errorln(str)
-		panic(str)
+		return nil, http.StatusForbidden
 	}
 
 	index, OK = params["index"]
 	if !OK {
 		str := "缺少index索引"
 		klog.Errorln(str)
-		panic(str)
+		return nil, http.StatusForbidden
 	}
 
 	source, OK = params["source"]
@@ -70,7 +72,7 @@ func storageStore(stack *hub.Stack, params map[string]string) (interface{}, int)
 	if !OK {
 		str := "缺少存储内容content"
 		klog.Errorln(str)
-		panic(str)
+		return nil, http.StatusForbidden
 	}
 
 	klog.Infoln("storageStore: user:", user, "params:", params)
@@ -90,7 +92,7 @@ func storageLoad(stack *hub.Stack, params map[string]string) (interface{}, int) 
 	if !OK {
 		str := "缺少index索引"
 		klog.Errorln(str)
-		panic(str)
+		return nil, http.StatusForbidden
 	}
 
 	source, OK = params["source"]
@@ -102,7 +104,7 @@ func storageLoad(stack *hub.Stack, params map[string]string) (interface{}, int) 
 	if !OK {
 		str := "缺少存储内容content"
 		klog.Errorln(str)
-		panic(str)
+		return nil, http.StatusForbidden
 	}
 
 	if source == "local" {
