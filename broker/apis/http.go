@@ -253,8 +253,6 @@ func handleBodyExpireTime(stack *hub.Stack, HttpApi *hub.HttpApiDef) (time.Time,
 		return time.Time{}, false
 	}
 
-	klog.Infof("handleBodyExpireTime:", result)
-
 	formatTime, err := parseExpireTime(result, format)
 	if err == nil {
 		return formatTime, true

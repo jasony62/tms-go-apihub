@@ -133,24 +133,13 @@ func bytesToSize(length int) string {
 	return strconv.FormatFloat(r, 'f', 3, 64) + " " + sizes[int(i)]
 }
 
-func downloadConf(confUrl string, confStoreFolder string, confUnzipPwd string) bool {
+func DownloadConf(confUrl string, confStoreFolder string, confUnzipPwd string) bool {
 	//从远端下载conf
-	filename, err := downloadFile(confUrl)
+	_, err := downloadFile(confUrl)
 	if err != nil {
 		klog.Errorln("Download conf file err: ", err)
 		return false
-	} else {
-		//解压缩
-		//filename = os.Getenv("TGAH_REMOTE_CONF_NAME")
-		klog.Infoln("filename: ", filename)
-		klog.Infoln("confStoreFolder: ", confStoreFolder)
-		klog.Infoln("confUnzipPwd: ", confUnzipPwd)
-
-		err = deCompressZip(filename, confStoreFolder, confUnzipPwd, nil, 0)
-		if err != nil {
-			klog.Errorln(err)
-			return false
-		}
 	}
+
 	return true
 }

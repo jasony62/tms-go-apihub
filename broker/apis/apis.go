@@ -3,24 +3,26 @@ package apis
 import (
 	"github.com/jasony62/tms-go-apihub/core"
 	"github.com/jasony62/tms-go-apihub/hub"
-	"github.com/jasony62/tms-go-apihub/util"
 	klog "k8s.io/klog/v2"
 )
 
 func init() {
 	klog.Infof("APIs register apis\n")
-	core.RegisterApis(map[string]hub.ApiHandler{"httpApi": runHttpApi,
-		"httpResponse":          httpResponse,
-		"checkStringsEqual":     checkStringsEqual,
-		"checkStringsNotEqual":  checkStringsNotEqual,
-		"createJson":            createJson,
-		"createHtml":            createHtml,
-		"loadConf":              util.LoadConf,
-		"apiGateway":            apiGateway,
+	core.RegisterApis(map[string]hub.ApiHandler{
+		"httpApi":              runHttpApi,
+		"httpResponse":         httpResponse,
+		"checkStringsEqual":    checkStringsEqual,
+		"checkStringsNotEqual": checkStringsNotEqual,
+		"createJson":           createJson,
+		"createHtml":           createHtml,
+		"loadConf":             loadConf,
+		"apiGateway":           apiGateway,
 		"setDefaultAccessRight": setDefaultAccessRight,
-		"checkRight":            checkRight,
-		"storageStore":          storageStore,
-		"storageLoad":           storageLoad,
-		"confValidator":         confValidator,
+		"checkRight":           checkRight,
+		"storageStore":         storageStore,
+		"storageLoad":          storageLoad,
+		"confValidator":        confValidator,
+		"downloadConf":         downloadConf,
+		"decompressZip":        decompressZip,
 	})
 }
