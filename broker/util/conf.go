@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"plugin"
 	"strings"
 
@@ -299,21 +298,7 @@ func GetBasePath() string {
 	return defaultConfMap.BasePath
 }
 
-func LoadConf(stack *hub.Stack, params map[string]string) (interface{}, int) {
-	basePath := defaultConfMap.BasePath
-	if len(basePath) == 0 {
-		return nil, http.StatusInternalServerError
-	}
-
-	remoteUrl := params["url"]
-
-	if len(remoteUrl) != 0 {
-		password := params["password"]
-		if downloadConf(remoteUrl, basePath, password) {
-			klog.Infoln("Download conf zip package from remote url OK")
-		}
-	}
-
+func LoadConf(basePath string) {
 	loadConfigJsonData([]string{basePath + "privates",
 		basePath + "httpapis", basePath + "flows",
 		basePath + "schedules", basePath + "rights/httpapi",
@@ -321,8 +306,6 @@ func LoadConf(stack *hub.Stack, params map[string]string) (interface{}, int) {
 
 	loadTemplateData(basePath+"templates", "")
 	loadConfigPluginData(basePath + "plugins")
-
-	return nil, 200
 }
 
 func LoadMainFlow(path string) {
