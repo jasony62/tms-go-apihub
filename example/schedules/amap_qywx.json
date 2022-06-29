@@ -152,7 +152,6 @@
         },
         {
             "type": "api",
-            "name": "qywx_message_send",
             "api": {
                 "name": "baidu_image_classify",
                 "command": "flowApi",
