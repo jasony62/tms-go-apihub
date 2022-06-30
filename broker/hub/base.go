@@ -18,7 +18,8 @@ type TemplateHandler func(args ...interface{}) string
 const OriginName = "origin"
 const VarsName = "vars"
 const LoopName = "loop"
-const ResultName = "result"
+const BaseName = "base"
+const RootParamName = "root"
 
 const Right_Access = "access"
 const Right_Deny = "deny"

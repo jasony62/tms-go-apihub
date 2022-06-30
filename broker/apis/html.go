@@ -29,7 +29,7 @@ func createHtml(stack *hub.Stack, params map[string]string) (interface{}, int) {
 		}
 	}
 
-	result, err := util.Json2Html(stack.StepResult, content)
+	result, err := util.Json2Html(stack.Heap, content)
 	if err != nil {
 		return nil, http.StatusInternalServerError
 	}

@@ -15,7 +15,7 @@ func createJson(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	if !OK {
 		return nil, http.StatusInternalServerError
 	}
-	tmp := stack.StepResult[hub.OriginName].(map[string]interface{})
+	tmp := stack.Heap[hub.OriginName].(map[string]interface{})
 	result := tmp[key]
 	delete(tmp, key)
 	return result, http.StatusOK

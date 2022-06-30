@@ -1,0 +1,83 @@
+{
+  "name": "_HTTPOK",
+  "description": "执行httpapi post OK流程",
+  "steps": [
+    {
+      "name": "dump",
+      "command": "dump",
+      "description": "展示结果",
+      "args": [
+        {
+          "name": "root",
+          "value": {
+            "from": "template",
+            "content": "{{.base.root}}"
+          }
+        },
+        {
+          "name": "start",
+          "value": {
+            "from": "template",
+            "content": "{{.base.start}}"
+          }
+        },
+        {
+          "name": "type",
+          "value": {
+            "from": "template",
+            "content": "{{.base.type}}"
+          }
+        },        
+        {
+          "name": "uuid",
+          "value": {
+            "from": "template",
+            "content": "{{.base.uuid}}"
+          }
+        },
+        {
+          "name": "type",
+          "value": {
+            "from": "template",
+            "content": "{{.base.type}}"
+          }
+        },
+        {
+          "name": "name",
+          "value": {
+            "from": "template",
+            "content": "{{.stats.name}}"
+          }
+        },          
+        {
+          "name": "code",
+          "value": {
+            "from": "template",
+            "content": "{{.stats.code}}"
+          }
+        },        
+        {
+          "name": "duration",
+          "value": {
+            "from": "template",
+            "content": "{{.stats.duration}}"
+          }
+        },
+        {
+          "name": "id",
+          "value": {
+            "from": "template",
+            "content": "{{.stats.id}}"
+          }
+        },
+        {
+          "name": "msg",
+          "value": {
+            "from": "template",
+            "content": "{{.stats.msg}}"
+          }
+        }
+      ]
+    }
+  ]
+}

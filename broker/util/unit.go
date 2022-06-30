@@ -22,16 +22,16 @@ const (
 )
 
 // 从执行结果中获取查询参数
-func queryFromStepResult(stack *hub.Stack, name string) (string, error) {
+func queryFromHeap(stack *hub.Stack, name string) (string, error) {
 	tmpl, err := template.New("key").Funcs(funcMapForTemplate).Parse(name)
 	if err != nil {
-		klog.Infoln("queryFromStepResult 创建并解析template失败:", err)
+		klog.Infoln("queryFromHeap 创建并解析template失败:", err)
 		return "", err
 	}
 	buf := new(bytes.Buffer)
-	err = tmpl.Execute(buf, stack.StepResult)
+	err = tmpl.Execute(buf, stack.Heap)
 	if err != nil {
-		klog.Infoln("渲染template失败:", err)
+		klog.Infoln("queryFromHeap失败:", err, " name:", name, "heap:", stack.Heap)
 		return "", err
 	}
 	return buf.String(), err
@@ -66,17 +66,18 @@ func GetParameterRawValue(stack *hub.Stack, private *hub.PrivateArray, from *hub
 	case "header":
 		value = stack.GinContext.GetHeader(from.Content)
 	case "query":
-		value = stack.Query(from.Content)
+		// 从请求参数中获取查询参数
+		value = stack.GinContext.Query(from.Content)
 	case hub.OriginName:
-		value, err = queryFromStepResult(stack, "{{.origin."+from.Content+"}}")
+		value, err = queryFromHeap(stack, "{{.origin."+from.Content+"}}")
 	case "private":
 		value = findPrivateValue(private, from.Content)
 	case "template":
-		value, err = queryFromStepResult(stack, from.Content)
-	case "StepResult":
-		value, err = queryFromStepResult(stack, "{{."+from.Content+"}}")
+		value, err = queryFromHeap(stack, from.Content)
+	case "heap":
+		value, err = queryFromHeap(stack, "{{."+from.Content+"}}")
 	case "json":
-		jsonOutBody, err := Json2Json(stack.StepResult, from.Json)
+		jsonOutBody, err := Json2Json(stack.Heap, from.Json)
 		if err != nil {
 			return "", err
 		}
@@ -86,7 +87,7 @@ func GetParameterRawValue(stack *hub.Stack, private *hub.PrivateArray, from *hub
 		}
 		value = RemoveOutideQuote(byteJson)
 	case "jsonRaw":
-		value, err = Json2Json(stack.StepResult, from.Json)
+		value, err = Json2Json(stack.Heap, from.Json)
 	case "env":
 		value = os.Getenv(from.Content)
 	case "func":
@@ -99,13 +100,11 @@ func GetParameterRawValue(stack *hub.Stack, private *hub.PrivateArray, from *hub
 		var params []string
 		if len(from.Args) > 0 {
 			strs := strings.Fields(from.Args)
-			params = getArgsVal(stack.StepResult, strs)
+			params = getArgsVal(stack.Heap, strs)
 		}
 		value = function(params)
-	case hub.ResultName:
-		value, err = queryFromStepResult(stack, "{{.result."+from.Content+"}}")
 	default:
-		str := "不支持的type" + from.From
+		str := "不支持的type " + from.From
 		klog.Errorln(str)
 		panic(str)
 	}

@@ -12,8 +12,8 @@
 | http相关 |  |  |
 | httpResponse | type（json，html，或者其他） http response名称，key，从哪个result获取，type为json时转换为string，其他则直接按照string发送| 在使用httpapi时，默认发送json格式的HTTP rsponse，flow和schedule没有这个默认逻辑，必须调用这个API发送http response|
 | 辅助类 |  |  |
-| checkStringsEqual | 任意| 检查数组中所有name和value是否都相等，用于解决200 OK+ error 在response json里的问题，参考例子{"name": "0","value": {"from": "StepResult","content": "sendResult.errcode"}} |
-| checkStringsNotEqual | 任意| 检查数组中所有name和value是否都不相等，用于检查http回应内的值是否有效，参考例子        {"name": "","value": {"from": "StepResult","content": "tokenResult.access_token"}} |
+| checkStringsEqual | 任意| 检查数组中所有name和value是否都相等，用于解决200 OK+ error 在response json里的问题，参考例子{"name": "0","value": {"from": "heap","content": "sendResult.errcode"}} |
+| checkStringsNotEqual | 任意| 检查数组中所有name和value是否都不相等，用于检查http回应内的值是否有效，参考例子        {"name": "","value": {"from": "heap","content": "tokenResult.access_token"}} |
 | createJson | key origin入参中的name| 创建一个新的json结构体，并且存放在resultKey |
 | createHtml | type（local则从content中获取，resource则从resource目录获取），content html内容或者resource文件名| 生成html页面，并且存放在resultKey |
 |setDefaultAccessRight| default deny, 没有right配置文件拒绝访问；access， 没有right配置文件允许访问(默认)| 检查是否具有运行权限 |

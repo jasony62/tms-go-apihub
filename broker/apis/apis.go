@@ -17,10 +17,12 @@ func init() {
 		"createHtml":            createHtml,
 		"loadConf":              util.LoadConf,
 		"apiGateway":            apiGateway,
+		"fillBaseInfo":          fillBaseInfo,
 		"setDefaultAccessRight": setDefaultAccessRight,
 		"checkRight":            checkRight,
 		"storageStore":          storageStore,
 		"storageLoad":           storageLoad,
 		"confValidator":         confValidator,
+		"dump":                  dump,
 	})
 }

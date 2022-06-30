@@ -5,11 +5,13 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/jasony62/tms-go-apihub/core"
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/jasony62/tms-go-apihub/util"
+
+	"github.com/gin-gonic/gin"
 	klog "k8s.io/klog/v2"
 )
 
@@ -27,10 +29,9 @@ var defaultApp = app{
 }
 
 // 1次请求的上下文
-func newStack(c *gin.Context) *hub.Stack {
+func newStack(c *gin.Context, level string) *hub.Stack {
 	// 收到的数据
 	var value interface{}
-	var bucket string
 	inReqData := new(interface{})
 	c.ShouldBindJSON(&inReqData)
 
@@ -40,43 +41,37 @@ func newStack(c *gin.Context) *hub.Stack {
 		value = *inReqData
 	}
 
+	base := make(map[string]string)
 	name := c.Param(`Id`)
 	version := c.Param(`version`)
 	if len(version) > 0 {
 		name = name + "_" + version
 	}
-	klog.Infoln("Call name: ", name)
-
 	if defaultApp.BucketEnable {
-		bucket = c.Param(`bucket`)
-		name = bucket + "/" + name
+		name = c.Param(`bucket`) + "/" + name
 	}
+
+	base["root"] = name
+	base["type"] = level
+	base["start"] = strconv.FormatInt(time.Now().Unix(), 10)
 
 	return &hub.Stack{
 		GinContext: c,
-		StepResult: map[string]interface{}{hub.OriginName: value},
-		RootName:   name,
-		ChildName:  name,
+		Heap:       map[string]interface{}{hub.OriginName: value, hub.BaseName: base},
+		Base:       base,
 	}
 }
 
 // 执行1个API调用
 func callHttpApi(c *gin.Context) {
 	// 调用api
-	tmpStack := newStack(c)
+	tmpStack := newStack(c, "httpapi")
 
-	//判断执行权限
-	paramsRight := []hub.BaseParamDef{
-		{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: tmpStack.RootName}},
-		{Name: "type", Value: hub.BaseValueDef{From: "literal", Content: "httpapi"}},
-		{Name: "user", Value: hub.BaseValueDef{From: "query", Content: "appID"}}}
+	params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "_HTTPAPI"}}}
 
-	_, code := core.ApiRun(tmpStack, &hub.ApiDef{Name: "main", Command: "checkRight", Args: &paramsRight, ResultKey: "right"}, "")
-	if code != http.StatusOK {
-		c.IndentedJSON(code, nil)
-	} else {
-		params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: tmpStack.ChildName}}}
-		result, status := core.ApiRun(tmpStack, &hub.ApiDef{Name: "main", Command: "httpApi", Args: &params, ResultKey: "main"}, "")
+	result, status := core.ApiRun(tmpStack, &hub.ApiDef{Name: "main", Command: "flowApi", Args: &params, ResultKey: "main"}, "", false)
+	if status != http.StatusOK {
+		//成功时的回复应该定义在flow的step中
 		c.IndentedJSON(status, result)
 	}
 }
@@ -84,10 +79,10 @@ func callHttpApi(c *gin.Context) {
 // 执行一个调用流程
 func callFlow(c *gin.Context) {
 	// 执行编排
-	tmpStack := newStack(c)
-	params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: tmpStack.ChildName}}}
+	tmpStack := newStack(c, "flow")
+	params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: tmpStack.Base[hub.RootParamName]}}}
 
-	result, status := core.ApiRun(tmpStack, &hub.ApiDef{Name: "main", Command: "flowApi", Args: &params, ResultKey: "main"}, "")
+	result, status := core.ApiRun(tmpStack, &hub.ApiDef{Name: "main", Command: "flowApi", Args: &params, ResultKey: "main"}, "", false)
 	if status != http.StatusOK {
 		//成功时的回复应该定义在flow的step中
 		c.IndentedJSON(status, result)
@@ -97,10 +92,10 @@ func callFlow(c *gin.Context) {
 // 执行一个计划流程
 func callSchedule(c *gin.Context) {
 	// 执行编排
-	tmpStack := newStack(c)
-	params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: tmpStack.ChildName}}}
+	tmpStack := newStack(c, "schedule")
+	params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: tmpStack.Base[hub.RootParamName]}}}
 
-	result, status := core.ApiRun(tmpStack, &hub.ApiDef{Name: "main", Command: "scheduleApi", Args: &params, ResultKey: "main"}, "")
+	result, status := core.ApiRun(tmpStack, &hub.ApiDef{Name: "main", Command: "scheduleApi", Args: &params, ResultKey: "main"}, "", false)
 	if status != http.StatusOK {
 		//成功时的回复应该定义在flow的step中
 		c.IndentedJSON(status, result)

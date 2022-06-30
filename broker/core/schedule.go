@@ -46,33 +46,27 @@ func generateStepResult(stack *hub.Stack, args *[]hub.BaseParamDef) interface{} 
 func copyScheduleStack(src *hub.Stack, task *hub.ScheduleApiDef) *hub.Stack {
 	result := hub.Stack{
 		GinContext: src.GinContext,
-		RootName:   src.RootName,
-		StepResult: make(map[string]interface{}),
+		Heap:       make(map[string]interface{}),
+		Base:       src.Base,
 	}
 
-	if task.Type == "api" {
-		result.ChildName = task.Api.Command
-	} else {
-		result.ChildName = task.Type
-	}
-
-	for k, v := range src.StepResult {
+	for k, v := range src.Heap {
 		switch k {
 		case hub.OriginName:
 			if task.Type == "api" && task.Api.Args != nil {
-				result.StepResult[k] = generateStepResult(src, task.Api.Args)
+				result.Heap[k] = generateStepResult(src, task.Api.Args)
 			} else {
-				result.StepResult[k] = v
+				result.Heap[k] = v
 			}
 		case hub.LoopName:
-			oriLoop := src.StepResult[k].(map[string]int)
+			oriLoop := src.Heap[k].(map[string]int)
 			loop := make(map[string]int, len(oriLoop))
 			for index, element := range oriLoop {
 				loop[index] = element
 			}
-			result.StepResult[k] = loop
+			result.Heap[k] = loop
 		default:
-			result.StepResult[k] = v
+			result.Heap[k] = v
 		}
 
 	}
@@ -164,10 +158,10 @@ func handleLoopTask(stack *hub.Stack, task *hub.ScheduleApiDef) (interface{}, in
 	loopLength, _ := strconv.Atoi(keyStr)
 	loopResult := make([]interface{}, loopLength)
 	if isNormalMode(task) && len(task.Control.ResultKey) > 0 {
-		stack.StepResult[task.Control.ResultKey] = loopResult
+		stack.Heap[task.Control.ResultKey] = loopResult
 	}
 
-	loop := stack.StepResult[hub.LoopName].(map[string]int)
+	loop := stack.Heap[hub.LoopName].(map[string]int)
 	if task.Control.ConcurrentLoopNum > 1 && loopLength > 1 {
 		triggerConcurrentLoop(stack, task, loopLength, loop, loopResult)
 	} else {
@@ -182,10 +176,10 @@ func handleLoopTask(stack *hub.Stack, task *hub.ScheduleApiDef) (interface{}, in
 
 func handleApiTask(stack *hub.Stack, task *hub.ScheduleApiDef) (result interface{}, status int) {
 	// 执行API
-	result, status = ApiRun(stack, task.Api, task.Private)
+	result, status = ApiRun(stack, task.Api, task.Private, false)
 
 	if isNormalMode(task) && len(task.Api.ResultKey) > 0 {
-		stack.StepResult[task.Api.ResultKey] = result
+		stack.Heap[task.Api.ResultKey] = result
 	}
 	return
 }
@@ -247,7 +241,7 @@ func waitConcurrentScheResult(stack *hub.Stack, out chan concurrentScheOut, coun
 	}
 	//防止并发读写crash
 	for k, v := range results {
-		stack.StepResult[k] = v
+		stack.Heap[k] = v
 	}
 
 	//由于并行，最后的结果并不确定，所以并行的返回结果不是固定的，因此当需要返回值时，最后一个应该是非并行的
@@ -311,7 +305,7 @@ func runSchedule(stack *hub.Stack, name string, private string) (interface{}, in
 		klog.Errorln("获得Schedule定义失败：", err)
 		return nil, http.StatusInternalServerError
 	}
-	stack.StepResult[hub.LoopName] = make(map[string]int)
+	stack.Heap[hub.LoopName] = make(map[string]int)
 
 	return handleTasks(stack, scheduleDef.Steps, scheduleDef.ConcurrentNum)
 }

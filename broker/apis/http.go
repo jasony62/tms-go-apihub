@@ -5,12 +5,12 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-
 	"strings"
 	"time"
 
 	klog "k8s.io/klog/v2"
 
+	"github.com/jasony62/tms-go-apihub/core"
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/jasony62/tms-go-apihub/util"
 	"github.com/valyala/fasthttp"
@@ -22,6 +22,44 @@ import (
 var jsonEx = jsoniter.Config{
 	UseNumber: true,
 }.Froze()
+
+func preHttpapis(stack *hub.Stack, name string) {
+	klog.Infoln("!!!!pre HTTPAPI base：", stack.Base, " Name:", name)
+}
+
+func postHttpapis(stack *hub.Stack, name string, result string, code int, duration float64) {
+	if stack == nil {
+		return
+	}
+	base, ok := stack.Heap[hub.BaseName]
+	if !ok {
+		return
+	}
+	ok = (code == http.StatusOK)
+	stats := make(map[string]string)
+	stats["name"] = name
+	stats["duration"] = strconv.FormatFloat(duration, 'f', 5, 64)
+	stats["code"] = strconv.FormatInt(int64(code), 10)
+	if ok {
+		stats["id"] = "0"
+		stats["msg"] = "ok"
+	} else {
+		/*TODO real value*/
+		stats["id"] = strconv.FormatInt(int64(code), 10)
+		stats["msg"] = result
+	}
+	stack.Heap["stats"] = stats
+	defer delete(stack.Heap, "stats")
+	if ok {
+		klog.Infoln("!!!!post HTTPAPI OK:", base, " name：", name, ", result:", result, " code:", code, " duration:", duration)
+		params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "_HTTPOK"}}}
+		core.ApiRun(stack, &hub.ApiDef{Name: "HTTPAPI_POST_OK", Command: "flowApi", Args: &params}, "", true)
+	} else {
+		klog.Errorln("!!!!post HTTPAPI NOK:", base, " name：", name, ", result:", result, " code:", code, " duration:", duration)
+		params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "_HTTPNOK"}}}
+		core.ApiRun(stack, &hub.ApiDef{Name: "HTTPAPI_POST_NOK", Command: "flowApi", Args: &params}, "", true)
+	}
+}
 
 func newRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.PrivateArray) (*fasthttp.Request, int) {
 	var outBody string
@@ -41,7 +79,7 @@ func newRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Priva
 			contentType := stack.GinContext.Request.Header.Get("Content-Type")
 			outReq.Header.Set("Content-Type", contentType)
 			// 收到的请求中的数据
-			inData, _ := json.Marshal(stack.StepResult[hub.OriginName])
+			inData, _ := json.Marshal(stack.Heap[hub.OriginName])
 			outBody = string(inData)
 		default:
 			outReq.Header.Set("Content-Type", HttpApi.RequestContentType)
@@ -73,8 +111,8 @@ func newRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Priva
 			var value string
 			q := outReqURL.Query()
 			vars := make(map[string]string, paramLen)
-			stack.StepResult[hub.VarsName] = vars
-			defer delete(stack.StepResult, hub.VarsName)
+			stack.Heap[hub.VarsName] = vars
+			defer delete(stack.Heap, hub.VarsName)
 
 			for _, param := range *outReqParamRules {
 				if len(param.Name) > 0 {
@@ -113,7 +151,7 @@ func newRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Priva
 						klog.Infoln("Invalid in:", param.In, "名字", param.Name, "值", value)
 					}
 					vars[param.Name] = value
-					klog.Infoln("设置入参，位置", param.In, "名字", param.Name, "值", value)
+					//klog.Infoln("设置入参，位置", param.In, "名字", param.Name, "值", value)
 				}
 			}
 			outReqURL.RawQuery = q.Encode()
@@ -135,7 +173,7 @@ func newRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Priva
 	return outReq, http.StatusOK
 }
 
-func handleReq(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.PrivateArray) (interface{}, int) {
+func handleReq(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.PrivateArray, internal bool) (interface{}, int) {
 	var jsonInRspBody interface{}
 	var code int
 
@@ -148,25 +186,50 @@ func handleReq(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Privat
 	client := &fasthttp.Client{}
 	resp := fasthttp.AcquireResponse()
 	defer fasthttp.ReleaseResponse(resp)
+	var t time.Time
+	if !internal {
+		preHttpapis(stack, HttpApi.Id)
+		t = time.Now()
+	}
 	err := client.Do(outReq, resp)
+	var duration float64
+	if !internal {
+		duration = time.Since(t).Seconds()
+	}
 	if err != nil {
 		klog.Errorln("ERR Connection error: ", err)
+		if !internal {
+			postHttpapis(stack, HttpApi.Id, err.Error(), 500, duration)
+		}
 		return nil, fasthttp.StatusInternalServerError
 	}
+
 	returnBody := resp.Body()
+	code = resp.StatusCode()
+	if code != fasthttp.StatusOK {
+		klog.Errorln("错误JSON: ", string(returnBody))
+		if !internal {
+			postHttpapis(stack, HttpApi.Id, string(returnBody), code, duration)
+		}
+		return nil, code
+	}
+
+	if !internal {
+		postHttpapis(stack, HttpApi.Id, "", code, duration)
+	}
 	// 将收到的结果转为JSON对象
 	jsonEx.Unmarshal(returnBody, &jsonInRspBody)
-	stack.StepResult[hub.ResultName] = jsonInRspBody
-
-	klog.Errorln("消息体: ", string(returnBody))
+	//klog.Infoln("返回结果: ", string(returnBody))
 
 	if HttpApi.Cache != nil {
 		//解析过期时间，如果存在则记录下来
+		stack.Heap["result"] = jsonInRspBody
+		defer delete(stack.Heap, "result")
 		expires, ok := handleExpireTime(stack, HttpApi, resp)
 		if !ok {
 			klog.Warningln("没有查询到过期时间")
 		} else {
-			klog.Infof("更新Cache信息，过期时间为: %v", expires)
+			klog.Infof("更新Cache信息,过期时间为: %v", expires)
 			HttpApi.Cache.Expires = expires
 			HttpApi.Cache.Resp = jsonInRspBody
 		}
@@ -305,7 +368,7 @@ func getCacheContentWithLock(HttpApi *hub.HttpApiDef) interface{} {
 }
 
 // 转发API调用
-func run(stack *hub.Stack, name string, private string) (jsonOutRspBody interface{}, ret int) {
+func run(stack *hub.Stack, name string, private string, internal bool) (jsonOutRspBody interface{}, ret int) {
 	var err error
 	var privateDef *hub.PrivateArray
 	HttpApi, err := util.FindHttpApiDef(name)
@@ -334,7 +397,7 @@ func run(stack *hub.Stack, name string, private string) (jsonOutRspBody interfac
 
 			if jsonOutRspBody = getCacheContent(HttpApi); jsonOutRspBody == nil {
 				klog.Infoln("获取缓存Cache ... ...")
-				jsonOutRspBody, _ = handleReq(stack, HttpApi, privateDef)
+				jsonOutRspBody, _ = handleReq(stack, HttpApi, privateDef, internal)
 			} else {
 				klog.Infoln("Cache缓存有效，直接回应")
 			}
@@ -342,7 +405,7 @@ func run(stack *hub.Stack, name string, private string) (jsonOutRspBody interfac
 			klog.Infoln("Cache缓存有效，直接回应")
 		}
 	} else { //不支持缓存，直接请求
-		jsonOutRspBody, _ = handleReq(stack, HttpApi, privateDef)
+		jsonOutRspBody, _ = handleReq(stack, HttpApi, privateDef, internal)
 	}
 
 	klog.Infoln("处理", HttpApi.Url, ":", fasthttp.StatusOK, "\r\n返回结果：", jsonOutRspBody)
@@ -362,7 +425,8 @@ func runHttpApi(stack *hub.Stack, params map[string]string) (interface{}, int) {
 
 	/*private may doesn't exist*/
 	private := params["private"]
-	return run(stack, name, private)
+	internal := params["internal"]
+	return run(stack, name, private, internal == "true")
 }
 
 func httpResponse(stack *hub.Stack, params map[string]string) (interface{}, int) {
@@ -379,7 +443,7 @@ func httpResponse(stack *hub.Stack, params map[string]string) (interface{}, int)
 		klog.Errorln(str)
 		return nil, http.StatusForbidden
 	}
-	result := stack.StepResult[key]
+	result := stack.Heap[key]
 	switch name {
 	case "html":
 		stack.GinContext.Header("Content-Type", "text/html; charset=utf-8")

@@ -25,7 +25,7 @@
         {
           "name": "",
           "value": {
-            "from": "StepResult",
+            "from": "heap",
             "content": "tokenResult.access_token"
           }
         }
@@ -48,7 +48,7 @@
         {
           "name": "token",
           "value": {
-            "from": "StepResult",
+            "from": "heap",
             "content": "tokenResult.access_token"
           }
         }
@@ -63,7 +63,7 @@
         {
           "name": "0",
           "value": {
-            "from": "StepResult",
+            "from": "heap",
             "content": "sendResult.errcode"
           }
         }

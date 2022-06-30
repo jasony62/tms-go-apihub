@@ -10,7 +10,7 @@ import (
 	"github.com/jasony62/tms-go-apihub/hub"
 )
 
-func utc(params []string) string {
+func utcFunc(params []string) string {
 	return strconv.FormatInt(time.Now().Unix(), 10)
 }
 
@@ -19,7 +19,6 @@ func utcTemplate(args ...interface{}) string {
 }
 
 func md5Template(args ...interface{}) string {
-
 	if len(args) == 0 {
 		return ""
 	}
@@ -31,7 +30,6 @@ func md5Template(args ...interface{}) string {
 }
 
 func md5Func(params []string) string {
-
 	if len(params) == 0 {
 		return ""
 	}
@@ -46,7 +44,7 @@ func md5Func(params []string) string {
 }
 
 var funcMap map[string]hub.FuncHandler = map[string]hub.FuncHandler{
-	"utc": utc,
+	"utc": utcFunc,
 	"md5": md5Func,
 }
 

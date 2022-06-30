@@ -1,0 +1,92 @@
+{
+  "name": "httpapi",
+  "description": "执行httpapi流程",
+  "steps": [
+    {
+      "name": "fillBaseInfo",
+      "command": "fillBaseInfo",
+      "description": "添加基本信息",
+      "args": [
+        {
+          "name": "user",
+          "value": {
+            "from": "query",
+            "content": "appID"
+          }
+        },
+        {
+          "name": "uuid",
+          "value": {
+            "from": "header",
+            "content": "uuid"
+          }
+        }
+      ]
+    },
+    {
+      "name": "check_right",
+      "command": "checkRight",
+      "description": "查询执行权限",
+      "args": [
+        {
+          "name": "user",
+          "value": {
+            "from": "query",
+            "content": "appID"
+          }
+        },
+        {
+          "name": "name",
+          "value": {
+            "from": "template",
+            "content": "{{.base.root}}"
+          }
+        },
+        {
+          "name": "type",
+          "value": {
+            "from": "literal",
+            "content": "httpapi"
+          }
+        }
+      ]
+    },
+    {
+      "name": "httpapi",
+      "command": "httpApi",
+      "description": "执行",
+      "args": [
+        {
+          "name": "name",
+          "value": {
+            "from": "template",
+            "content": "{{.base.root}}"
+          }
+        }
+      ],
+      "resultKey": "httpapi_result"
+    },
+    {
+      "name": "response",
+      "command": "httpResponse",
+      "description": "返回结果",
+      "args": [
+        
+        {
+          "name": "type",
+          "value": {
+            "from": "literal",
+            "content": "json"
+          }
+        },
+        {
+          "name": "key",
+          "value": {
+            "from": "literal",
+            "content": "httpapi_result"
+          }
+        }
+      ]
+    }
+  ]
+}

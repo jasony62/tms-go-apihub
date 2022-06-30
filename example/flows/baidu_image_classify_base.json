@@ -34,7 +34,7 @@
         {
           "name": "token",
           "value": {
-            "from": "StepResult",
+            "from": "heap",
             "content": "tokenResult.access_token"
           }
         }
