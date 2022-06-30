@@ -1,7 +1,6 @@
 {
   "type": "flow",
   "right": "whitelist",
-
   "list": [
     {
       "user": "001"
