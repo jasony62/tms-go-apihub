@@ -1,7 +1,6 @@
 {
   "type": "schedule",
   "right": "whitelist",
-
   "list": [
     {
       "user": "001"
