@@ -17,5 +17,5 @@ func ApiHubStartMainFlow(path string) {
 	util.LoadMainFlow(path)
 
 	ApiRun(nil, &hub.ApiDef{Name: "main", Command: "flowApi",
-		Args: &[]hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "main"}}}}, "")
+		Args: &[]hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "main"}}}}, "", false)
 }

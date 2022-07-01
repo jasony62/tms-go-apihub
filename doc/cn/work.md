@@ -14,6 +14,9 @@
   - required： url or dynamicUrl, 
   - from为json 或者jsonRaw时required json，其他required content
   - requestContentType   可选json，form，orgin，none，或者其他任意值
+* 防止fasthttp出错
+  Use this brilliant tool - race detector - for detecting and eliminating data races in your program. If you detected data race related to fasthttp in your program, then there is high probability you forgot calling TimeoutError before returning from RequestHandler.
+
 * 增加plugin框架，并支持Prometheus，
 * postman或者apifox的测试脚本
 * 根据http response content type查看是否需要分解json
@@ -21,7 +24,7 @@
 * 考虑如何设置全局default right
 
 ## 中期
-* 支持http请求retry，timeout
+* 支持http请求retry，timeout(实现放到httpapi中，配置放到flow，schedule中？)
  - "timeoutPolicy": "TIME_OUT_WF",
  - "retryLogic": "FIXED",
  - "retryDelaySeconds": 600,
@@ -56,6 +59,7 @@ https://goframe.org/pages/viewpage.action?pageId=1114270
 * 参数有效性检查
 * 支持异步，循环加异步
 * 支持基于user的private
+* Go 程序运行时数据统计的可视化工具 Statsviz
 ## 需要考虑
 * Opentracing，Skywalking
 * 多SSL证书

@@ -308,10 +308,11 @@ func LoadConf(basePath string) {
 	loadConfigPluginData(basePath + "plugins")
 }
 
-func LoadMainFlow(path string) {
+func LoadMainFlow(path string) (interface{}, int) {
 	if len(path) > 0 {
 		defaultConfMap.BasePath = path
 	}
 	klog.Infof("Load main flow from %s\n", defaultConfMap.BasePath)
 	loadJsonDefData(JSON_TYPE_FLOW, defaultConfMap.BasePath, "", false)
+	return nil, 200
 }

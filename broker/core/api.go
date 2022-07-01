@@ -3,6 +3,7 @@ package core
 import (
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/jasony62/tms-go-apihub/util"
@@ -27,13 +28,35 @@ func RegisterApis(list map[string]hub.ApiHandler) {
 		}
 	}
 }
+func preApis(stack *hub.Stack, apiDef *hub.ApiDef) {
+	klog.Infoln("=========执行API, command:"+apiDef.Command, "name:"+apiDef.Name)
+}
+
+func postApis(stack *hub.Stack, apiDef *hub.ApiDef, result interface{}, code int, duration float64) {
+	if stack == nil {
+		return
+	}
+	base, ok := stack.Heap[hub.BaseName]
+	if !ok {
+		return
+	}
+	if code == http.StatusOK {
+		klog.Infoln("=========完成API command:"+apiDef.Command, " base:", base, " name："+apiDef.Name, " result:", result, " duration:", duration)
+	} else {
+		klog.Errorln("=========失败API command:"+apiDef.Command, " base:", base, " name："+apiDef.Name, " result:", result, " duration:", duration)
+	}
+}
 
 // task调用
-func ApiRun(stack *hub.Stack, api *hub.ApiDef, private string) (result interface{}, ret int) {
+func ApiRun(stack *hub.Stack, api *hub.ApiDef, private string, internal bool) (result interface{}, ret int) {
+	var t time.Time
+	if !internal {
+		t = time.Now()
+	}
 	function := apiMap[api.Command]
 	var err error
 	if function == nil {
-		str := "不能执行" + stack.ChildName
+		str := "不能执行" + api.Command
 		klog.Errorln(str)
 		return nil, http.StatusForbidden
 	}
@@ -61,7 +84,7 @@ func ApiRun(stack *hub.Stack, api *hub.ApiDef, private string) (result interface
 	}
 
 	if api.OriginParameters != nil {
-		origin = stack.StepResult[hub.OriginName].(map[string]interface{})
+		origin = stack.Heap[hub.OriginName].(map[string]interface{})
 		for index := range *api.OriginParameters {
 			item := (*api.OriginParameters)[index]
 			origin[item.Name], err = util.GetParameterRawValue(stack, privateDef, &item.Value)
@@ -70,7 +93,13 @@ func ApiRun(stack *hub.Stack, api *hub.ApiDef, private string) (result interface
 			}
 		}
 	}
-
-	klog.Infoln("ApiRun ", args)
-	return function(stack, args)
+	if !internal {
+		preApis(stack, api)
+	}
+	result, ret = function(stack, args)
+	if !internal {
+		duration := time.Since(t).Seconds()
+		postApis(stack, api, result, ret, duration)
+	}
+	return
 }

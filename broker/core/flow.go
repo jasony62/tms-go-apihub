@@ -11,12 +11,10 @@ import (
 
 func handleOneApi(stack *hub.Stack, apiDef *hub.ApiDef, private string) (result interface{}, ret int) {
 	if len(apiDef.Command) > 0 {
-		klog.Infoln("=========执行API name："+apiDef.Name+", command:"+apiDef.Command, " args:", apiDef.Args)
-		result, ret = ApiRun(stack, apiDef, private)
+		result, ret = ApiRun(stack, apiDef, private, false)
 	} else {
 		result, ret = nil, http.StatusInternalServerError
 	}
-	klog.Infoln("=========完成API name："+apiDef.Name+", command:"+apiDef.Command, " result:", result)
 	return
 }
 
@@ -39,13 +37,13 @@ func runFlow(stack *hub.Stack, name string, private string) (result interface{},
 		}
 
 		if len(apiDef.ResultKey) > 0 {
-			stack.StepResult[apiDef.ResultKey] = result
+			stack.Heap[apiDef.ResultKey] = result
 			lastResult = apiDef.ResultKey
 		}
 	}
 
 	if len(lastResult) > 0 {
-		return stack.StepResult[lastResult], http.StatusOK
+		return stack.Heap[lastResult], http.StatusOK
 	} else {
 		return nil, http.StatusOK
 	}

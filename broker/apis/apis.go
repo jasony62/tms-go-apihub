@@ -8,21 +8,22 @@ import (
 
 func init() {
 	klog.Infof("APIs register apis\n")
-	core.RegisterApis(map[string]hub.ApiHandler{
-		"httpApi":              runHttpApi,
-		"httpResponse":         httpResponse,
-		"checkStringsEqual":    checkStringsEqual,
-		"checkStringsNotEqual": checkStringsNotEqual,
-		"createJson":           createJson,
-		"createHtml":           createHtml,
-		"loadConf":             loadConf,
-		"apiGateway":           apiGateway,
+	core.RegisterApis(map[string]hub.ApiHandler{"httpApi": runHttpApi,
+		"httpResponse":          httpResponse,
+		"checkStringsEqual":     checkStringsEqual,
+		"checkStringsNotEqual":  checkStringsNotEqual,
+		"createJson":            createJson,
+		"createHtml":            createHtml,
+		"loadConf":              loadConf,
+		"apiGateway":            apiGateway,
+		"fillBaseInfo":          fillBaseInfo,
 		"setDefaultAccessRight": setDefaultAccessRight,
-		"checkRight":           checkRight,
-		"storageStore":         storageStore,
-		"storageLoad":          storageLoad,
-		"confValidator":        confValidator,
-		"downloadConf":         downloadConf,
-		"decompressZip":        decompressZip,
+		"checkRight":            checkRight,
+		"storageStore":          storageStore,
+		"storageLoad":           storageLoad,
+		"confValidator":         confValidator,
+		"downloadConf":          downloadConf,
+		"decompressZip":         decompressZip,
+		"dump":                  dump,
 	})
 }

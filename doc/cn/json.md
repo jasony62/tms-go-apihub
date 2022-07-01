@@ -3,7 +3,7 @@ value和param是两个基础结构，用在多处。
 value定义为
 | 字段           | 用途  | 类型     | 必选 |
 | ------------- | ----- | -------- | ---- |
-| from      | 获取参数值的位置,支持`literal`(直接从content里获取)，`query`(http query),`header`(http header),`private`(从秘钥文件读取),`origin`(原始报文body中的json),"env"(系统env)，StepResult(从原始报文和处理结果获取)，json(根据json生成字符串)，jsonRaw(根据json生成json结构体)，template(从content中生成),`func`(hub.FuncMap内部定义函数的名称)。               |     string     |  是    |
+| from      | 获取参数值的位置,支持`literal`(直接从content里获取)，`query`(http query),`header`(http header),`private`(从秘钥文件读取),`origin`(原始报文body中的json),"env"(系统env)，heap(从原始报文和处理结果获取)，json(根据json生成字符串)，jsonRaw(根据json生成json结构体)，template(从content中生成),`func`(hub.FuncMap内部定义函数的名称)。               |     string     |  是    |
 | content      | 参数名称，或者函数名称，或者template的内容。                 |     string     | 否     |
 | args      | from为func时，func的输入参数，多个参数时需要以空格分割，如："args": "apikey X-CurTime X-Param"                 | string         |   否   |
 | json  | json的输入值,支持.origin.访问输入json，.vars.访问在parameters定义的值，支持采用template的FuncMap的方式直接调用hub.FuncMapForTemplate内部定义的函数(例如"template": "{{md5 .vars.apikey .vars.XCurTime .vars.XParam}}")。如果入参名字含有字符-，则需要定义一个新的vars，去掉原名字中的-|    object      |  否    |
