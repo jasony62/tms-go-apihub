@@ -116,6 +116,9 @@ func promHttpCounterInc(stack *hub.Stack, params map[string]string) (interface{}
 		httpOutDurationPromHistogram.With(promLabels).Observe(duration)
 		promLabels["duration"] = params["duration"]
 		httpOutPromCounter.With(promLabels).Inc()
+	} else {
+		klog.Errorln("httpInOut参数配置错误！")
+		return nil, 400
 	}
 	return nil, 200
 }

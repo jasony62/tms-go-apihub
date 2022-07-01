@@ -22,4 +22,6 @@
 | checkRight | userKey 查询参数中的用户id关键字； name httpapi名字；type 是httpapi，flow，schedule | 检查是否具有运行权限 |
 | storageStore | user 查询用户appID，可以配置在query中，也可以在header中；key origin入参中的name；index 需要存储的索引关键字； source 存储方式 “local”-本地结构存储；content 存储的内容， 如果是“json”，则需要存储origin中的数据，如果为其他，则直接存储 | 多租户支持，存储某用户的数据，后面用来获取 |
 | storageLoad | index 需要读取的索引关键字； source 存储方式 “local”-本地结构存储；content 读取的内容， 如果是“json”，则需要将读取到内容解析为json，如果为其他，则直接返回 | 多租户支持，读取某用户之前存储的数据，用来回复相关用户 |
+| promStart | host（可选，默认0.0.0.0）监听地址，port（可选，默认8000），监听端口| 启动prometheus服务并注册counter和histogram |
+| promHttpCounterInc | httpInOut（填"httpIn"或者"httpOut"）设置httpin或者httpout类型的统计，其他参数均是供prometheus统计的label | 增加prometheus counter和histogram的统计 |
 
