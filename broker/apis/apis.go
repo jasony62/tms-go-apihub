@@ -25,5 +25,7 @@ func init() {
 		"downloadConf":          downloadConf,
 		"decompressZip":         decompressZip,
 		"dump":                  dump,
+		"promStart":             promStart,
+		"promHttpCounterInc":    promHttpCounterInc,
 	})
 }
