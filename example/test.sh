@@ -51,7 +51,7 @@ curl -i -X POST -H "Content-Type: application/json" -d '{"text": "hello!", "seqi
 
 echo "\r\nSCHEDULE:\r\n"
 echo "\r\n并行查询天气和天气并发送企业微信"
-curl -i -H "Content-Type: application/json" -d '{"cities":["sh", "bj", "sh", "sh"], "image":"https://img.zcool.cn/community/01ff2059770a25a8012193a37c7695.jpg"}' "http://localhost:8080/schedule/amap_qywx"
+curl -i -H "Content-Type: application/json" -d '{"cities":["sh", "bj", "ls", "sz"], "image":"https://img.zcool.cn/community/01ff2059770a25a8012193a37c7695.jpg"}' "http://localhost:8080/schedule/amap_qywx"
 
 
 echo "\r\n地图服务查询"

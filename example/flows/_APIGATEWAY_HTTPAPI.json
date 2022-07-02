@@ -1,27 +1,28 @@
 {
-  "name": "amap_city_weather",
-  "description": "高德地图查询城市的天气",
+  "name": "httpapi",
+  "description": "执行httpapi流程",
   "steps": [
     {
-      "name": "city_adcode",
-      "command": "flowApi",
-      "description": "查询城市天气",
+      "name": "httpapi",
+      "command": "httpApi",
+      "description": "执行",
       "args": [
         {
           "name": "name",
           "value": {
-            "from": "literal",
-            "content": "amap_city_weather_base"
+            "from": "template",
+            "content": "{{.base.root}}"
           }
         }
       ],
-      "resultKey": "weatherResult"
+      "resultKey": "httpapi_result"
     },
     {
       "name": "response",
       "command": "httpResponse",
-      "description": "返回结果",    
+      "description": "返回结果",
       "args": [
+        
         {
           "name": "type",
           "value": {
@@ -33,9 +34,9 @@
           "name": "key",
           "value": {
             "from": "literal",
-            "content": "weatherResult"
+            "content": "httpapi_result"
           }
-        }        
+        }
       ]
     }
   ]

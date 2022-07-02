@@ -17,19 +17,48 @@ import (
 
 // 应用的基本信息
 type app struct {
-	Host         string
-	Port         int
-	BucketEnable bool
+	bucketEnable bool
+	pre          string
+	httpApi      string
+	postOK       string
+	postNOK      string
 }
 
 var defaultApp = app{
-	Host:         "0.0.0.0",
-	Port:         8080,
-	BucketEnable: false,
+	bucketEnable: false,
+	pre:          "_APIGATEWAY_PRE",
+	httpApi:      "_APIGATEWAY_HTTPAPI",
+	postOK:       "_APIGATEWAY_POST_OK",
+	postNOK:      "_APIGATEWAY_POST_NOK",
+}
+
+func fillStats(stack *hub.Stack, result interface{}, code int) {
+	stats := make(map[string]string)
+	stack.Heap["stats"] = stats
+
+	stats["name"] = stack.Base["root"]
+	stats["duration"] = strconv.FormatFloat(time.Since(stack.Now).Seconds(), 'f', 5, 64)
+	stats["code"] = strconv.FormatInt(int64(code), 10)
+
+	if code == http.StatusOK {
+		stats["id"] = "0"
+		stats["msg"] = "ok"
+		klog.Infoln("!!!!post apigateway OK:", stack.Base, "result:", result, " code:", code, " stats:", stats)
+		params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "_HTTPOK"}}}
+		core.ApiRun(stack, &hub.ApiDef{Name: "HTTPAPI_POST_OK", Command: "flowApi", Args: &params}, "", true)
+	} else {
+		/*TODO real value*/
+		stats["id"] = strconv.FormatInt(int64(code), 10)
+		stats["msg"] = "err"
+		klog.Errorln("!!!!post apigateway NOK:", stack.Base, ", result:", result, " code:", code, " stats:", stats)
+		params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "_HTTPNOK"}}}
+		core.ApiRun(stack, &hub.ApiDef{Name: "HTTPAPI_POST_NOK", Command: "flowApi", Args: &params}, "", true)
+	}
 }
 
 // 1次请求的上下文
 func newStack(c *gin.Context, level string) *hub.Stack {
+	now := time.Now()
 	// 收到的数据
 	var value interface{}
 	inReqData := new(interface{})
@@ -47,80 +76,147 @@ func newStack(c *gin.Context, level string) *hub.Stack {
 	if len(version) > 0 {
 		name = name + "_" + version
 	}
-	if defaultApp.BucketEnable {
+	if defaultApp.bucketEnable {
 		name = c.Param(`bucket`) + "/" + name
 	}
 
 	base["root"] = name
 	base["type"] = level
-	base["start"] = strconv.FormatInt(time.Now().Unix(), 10)
+	base["start"] = strconv.FormatInt(now.Unix(), 10)
 
 	return &hub.Stack{
 		GinContext: c,
 		Heap:       map[string]interface{}{hub.OriginName: value, hub.BaseName: base},
 		Base:       base,
+		Now:        now,
+	}
+}
+
+func callCommon(stack *hub.Stack, command string, content string) {
+	params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: ""}}}
+	var result interface{}
+	var status int
+	if len(defaultApp.pre) != 0 {
+		// 调用api
+		params[0].Value.Content = defaultApp.pre
+		result, status = core.ApiRun(stack, &hub.ApiDef{Name: "main_pre", Command: "flowApi", Args: &params}, "", false)
+		if status != http.StatusOK {
+			//成功时的回复应该定义在flow的step中
+			stack.GinContext.IndentedJSON(status, result)
+			klog.Errorln("PRE status:", status, " result:", result)
+
+			if len(defaultApp.postNOK) != 0 {
+				fillStats(stack, result, status)
+				params[0].Value.Content = defaultApp.postNOK
+				result, status = core.ApiRun(stack, &hub.ApiDef{Name: "main_pre_post_nok", Command: "flowApi", Args: &params}, "", true)
+				if status != http.StatusOK {
+					klog.Errorln("PRE - post NOK status:", status, " result:", result)
+				}
+			}
+			return
+		}
+	}
+	// 调用api
+	params[0].Value.Content = content
+	result, status = core.ApiRun(stack, &hub.ApiDef{Name: "main", Command: command, Args: &params}, "", false)
+	fillStats(stack, result, status)
+	if status != http.StatusOK {
+		//成功时的回复应该定义在flow的step中
+		stack.GinContext.IndentedJSON(status, result)
+		klog.Errorln("common status:", status, " result:", result)
+
+		if len(defaultApp.postNOK) != 0 {
+			params[0].Value.Content = defaultApp.postNOK
+			result, status = core.ApiRun(stack, &hub.ApiDef{Name: "main_post_nok", Command: "flowApi", Args: &params}, "", true)
+			if status != http.StatusOK {
+				klog.Errorln("common - post NOK - NOK status:", status, " result:", result)
+			}
+		}
+	} else if len(defaultApp.postOK) != 0 {
+		params[0].Value.Content = defaultApp.postOK
+		result, status = core.ApiRun(stack, &hub.ApiDef{Name: "main_post_ok", Command: "flowApi", Args: &params}, "", true)
+		if status != http.StatusOK {
+			klog.Errorln("common - post OKstatus:", status, " result:", result)
+		}
 	}
 }
 
 // 执行1个API调用
 func callHttpApi(c *gin.Context) {
-	// 调用api
-	tmpStack := newStack(c, "httpapi")
-
-	params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "_HTTPAPI"}}}
-
-	result, status := core.ApiRun(tmpStack, &hub.ApiDef{Name: "main", Command: "flowApi", Args: &params, ResultKey: "main"}, "", false)
-	if status != http.StatusOK {
-		//成功时的回复应该定义在flow的step中
-		c.IndentedJSON(status, result)
-	}
+	stack := newStack(c, "httpapi")
+	callCommon(stack, "flowApi", defaultApp.httpApi)
 }
 
 // 执行一个调用流程
 func callFlow(c *gin.Context) {
+	stack := newStack(c, "flow")
 	// 执行编排
-	tmpStack := newStack(c, "flow")
-	params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: tmpStack.Base[hub.RootParamName]}}}
-
-	result, status := core.ApiRun(tmpStack, &hub.ApiDef{Name: "main", Command: "flowApi", Args: &params, ResultKey: "main"}, "", false)
-	if status != http.StatusOK {
-		//成功时的回复应该定义在flow的step中
-		c.IndentedJSON(status, result)
-	}
+	callCommon(stack, "flowApi", stack.Base[hub.RootParamName])
 }
 
 // 执行一个计划流程
 func callSchedule(c *gin.Context) {
+	stack := newStack(c, "schedule")
 	// 执行编排
-	tmpStack := newStack(c, "schedule")
-	params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: tmpStack.Base[hub.RootParamName]}}}
-
-	result, status := core.ApiRun(tmpStack, &hub.ApiDef{Name: "main", Command: "scheduleApi", Args: &params, ResultKey: "main"}, "", false)
-	if status != http.StatusOK {
-		//成功时的回复应该定义在flow的step中
-		c.IndentedJSON(status, result)
-	}
+	callCommon(stack, "scheduleApi", stack.Base[hub.RootParamName])
 }
 
-func apiGatewayRun(host string, port string, BucketEnable string) {
-	if len(host) > 0 {
-		defaultApp.Host = host
+func apiGatewayRun(host string, portString string, bucketEnable string,
+	pre string, postOK string, postNOK string, httpApi string) {
+	var port int
+	if len(host) == 0 {
+		host = "0.0.0.0"
 	}
-	klog.Infoln("host: ", defaultApp.Host)
 
-	if len(port) > 0 {
-		defaultApp.Port, _ = strconv.Atoi(port)
+	klog.Infoln("host: ", host)
+
+	if len(portString) > 0 {
+		port, _ = strconv.Atoi(portString)
 	}
-	klog.Infoln("port ", defaultApp.Port)
+	klog.Infoln("port ", port)
 
-	if len(BucketEnable) > 0 {
+	if len(bucketEnable) > 0 {
 		re := regexp.MustCompile(`(?i)yes|true`)
-		defaultApp.BucketEnable = re.MatchString(BucketEnable)
+		defaultApp.bucketEnable = re.MatchString(bucketEnable)
 	}
-	klog.Infoln("bucket enable ", defaultApp.BucketEnable)
+	klog.Infoln("bucket enable ", defaultApp.bucketEnable)
+
+	if len(pre) != 0 {
+		if pre == "none" {
+			defaultApp.pre = ""
+		} else {
+			defaultApp.pre = pre
+		}
+	}
+
+	if len(postOK) != 0 {
+		if pre == "none" {
+			defaultApp.postOK = ""
+		} else {
+			defaultApp.postOK = postOK
+		}
+	}
+
+	if len(postNOK) != 0 {
+		if postNOK == "none" {
+			defaultApp.postNOK = ""
+		} else {
+			defaultApp.postNOK = postOK
+		}
+	}
+
+	if len(httpApi) != 0 {
+		if postNOK == "none" {
+			errStr := "无效httpapi脚本名称"
+			klog.Errorln(errStr)
+			panic(errStr)
+		} else {
+			defaultApp.httpApi = httpApi
+		}
+	}
 
 	router := gin.Default()
-	if defaultApp.BucketEnable {
+	if defaultApp.bucketEnable {
 		router.Any("/httpapi/:bucket/:Id", callHttpApi)
 		router.Any("/httpapi/:bucket/:Id/:version", callHttpApi)
 		router.Any("/flow:bucket/:Id", callFlow)
@@ -140,18 +236,15 @@ func apiGatewayRun(host string, port string, BucketEnable string) {
 		router.LoadHTMLGlob(basePath + "/*.tmpl")
 	}
 
-	if defaultApp.Port > 0 {
-		router.Run(fmt.Sprintf("%s:%d", defaultApp.Host, defaultApp.Port))
+	if port > 0 {
+		router.Run(fmt.Sprintf("%s:%d", host, port))
 	} else {
-		router.Run(defaultApp.Host)
+		router.Run(host)
 	}
 }
 
 func apiGateway(stack *hub.Stack, params map[string]string) (interface{}, int) {
-	host := params["host"]
-	port := params["port"]
-	bucket := params["bucket"]
-
-	apiGatewayRun(host, port, bucket)
+	apiGatewayRun(params["host"], params["port"], params["bucket"],
+		params["pre"], params["postOK"], params["postNOK"], params["httpApi"])
 	return nil, 200
 }

@@ -133,6 +133,7 @@ func triggerConcurrentLoop(stack *hub.Stack, task *hub.ScheduleApiDef, loopLengt
 	for result := range out {
 		loopResult[result.index] = result.result
 		counter--
+		klog.Infoln("loop并行处理结束：", counter, " result:", result)
 		if i < loopLength {
 			loop[task.Control.ResultKey] = i
 			tmpStack := copyScheduleStack(stack, task)
@@ -232,7 +233,7 @@ func waitConcurrentScheResult(stack *hub.Stack, out chan concurrentScheOut, coun
 		default:
 			key = result.task.Control.ResultKey
 		}
-
+		klog.Infoln("并行处理结束：", counter, " result:", result)
 		if len(key) > 0 {
 			results[key] = result.result
 			lastKey = key

@@ -25,13 +25,13 @@ const (
 func queryFromHeap(stack *hub.Stack, name string) (string, error) {
 	tmpl, err := template.New("key").Funcs(funcMapForTemplate).Parse(name)
 	if err != nil {
-		klog.Infoln("queryFromHeap 创建并解析template失败:", err)
+		klog.Errorln("NOK 创建并解析template失败:", err)
 		return "", err
 	}
 	buf := new(bytes.Buffer)
 	err = tmpl.Execute(buf, stack.Heap)
 	if err != nil {
-		klog.Infoln("queryFromHeap失败:", err, " name:", name, "heap:", stack.Heap)
+		klog.Errorln("NOK execute template:", err, " name:", name, "heap:", stack.Heap)
 		return "", err
 	}
 	return buf.String(), err

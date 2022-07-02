@@ -4,37 +4,6 @@
     "ConcurrentNum": 2,
     "steps": [
         {
-            "type": "api",
-            "api": {
-                "name": "amap_city_weather_base",
-                "command": "checkRight",
-                "description": "查询执行权限",
-                "args": [
-                    {
-                        "name": "user",
-                        "value": {
-                            "from": "query",
-                            "content": "appID"
-                        }
-                    },
-                    {
-                        "name": "name",
-                        "value": {
-                            "from": "literal",
-                            "content": "amap_qywx"
-                        }
-                    },
-                    {
-                        "name": "type",
-                        "value": {
-                            "from": "literal",
-                            "content": "schedule"
-                        }
-                    }
-                ]
-            }
-        },
-        {
             "type": "loop",
             "mode": "concurrent",
             "control": {
@@ -116,7 +85,69 @@
                                             }
                                         }
                                     ]
-                                }
+                                },
+                                {
+                                    "value": "ls",
+                                    "steps": [
+                                        {
+                                            "type": "api",
+                                            "api": {
+                                                "name": "lasa weather",
+                                                "command": "flowApi",
+                                                "resultKey": "weather",
+                                                "args": [
+                                                    {
+                                                        "name": "name",
+                                                        "value": {
+                                                            "from": "literal",
+                                                            "content": "amap_city_weather_base"
+                                                        }
+                                                    }
+                                                ],
+                                                "origin": [
+                                                    {
+                                                        "name": "city",
+                                                        "value": {
+                                                            "from": "literal",
+                                                            "content": "拉萨"
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    "value": "sz",
+                                    "steps": [
+                                        {
+                                            "type": "api",
+                                            "api": {
+                                                "name": "shenzhen weather",
+                                                "command": "flowApi",
+                                                "resultKey": "weather",
+                                                "args": [
+                                                    {
+                                                        "name": "name",
+                                                        "value": {
+                                                            "from": "literal",
+                                                            "content": "amap_city_weather_base"
+                                                        }
+                                                    }
+                                                ],
+                                                "origin": [
+                                                    {
+                                                        "name": "city",
+                                                        "value": {
+                                                            "from": "literal",
+                                                            "content": "深圳"
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }                                  
                             ]
                         }
                     }

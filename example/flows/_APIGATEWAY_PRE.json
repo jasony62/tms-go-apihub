@@ -1,6 +1,6 @@
 {
-  "name": "httpapi",
-  "description": "执行httpapi流程",
+  "name": "_APIGATEWAY_PRE",
+  "description": "执行api gateway pre流程",
   "steps": [
     {
       "name": "fillBaseInfo",
@@ -46,44 +46,7 @@
           "name": "type",
           "value": {
             "from": "literal",
-            "content": "httpapi"
-          }
-        }
-      ]
-    },
-    {
-      "name": "httpapi",
-      "command": "httpApi",
-      "description": "执行",
-      "args": [
-        {
-          "name": "name",
-          "value": {
-            "from": "template",
-            "content": "{{.base.root}}"
-          }
-        }
-      ],
-      "resultKey": "httpapi_result"
-    },
-    {
-      "name": "response",
-      "command": "httpResponse",
-      "description": "返回结果",
-      "args": [
-        
-        {
-          "name": "type",
-          "value": {
-            "from": "literal",
-            "content": "json"
-          }
-        },
-        {
-          "name": "key",
-          "value": {
-            "from": "literal",
-            "content": "httpapi_result"
+            "content": "{{.base.type}}"
           }
         }
       ]

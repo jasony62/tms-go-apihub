@@ -31,31 +31,29 @@ func postHttpapis(stack *hub.Stack, name string, result string, code int, durati
 	if stack == nil {
 		return
 	}
-	base, ok := stack.Heap[hub.BaseName]
+	_, ok := stack.Heap[hub.BaseName]
 	if !ok {
 		return
 	}
-	ok = (code == http.StatusOK)
+
 	stats := make(map[string]string)
+	stack.Heap["stats"] = stats
+	defer delete(stack.Heap, "stats")
+
 	stats["name"] = name
 	stats["duration"] = strconv.FormatFloat(duration, 'f', 5, 64)
 	stats["code"] = strconv.FormatInt(int64(code), 10)
-	if ok {
+	if code == http.StatusOK {
 		stats["id"] = "0"
 		stats["msg"] = "ok"
+		klog.Infoln("!!!!post HTTPAPI OK:", stack.Base, " name：", name, ", result:", result, " code:", code, " stats:", stats)
+		params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "_HTTPOK"}}}
+		core.ApiRun(stack, &hub.ApiDef{Name: "HTTPAPI_POST_OK", Command: "flowApi", Args: &params}, "", true)
 	} else {
 		/*TODO real value*/
 		stats["id"] = strconv.FormatInt(int64(code), 10)
 		stats["msg"] = result
-	}
-	stack.Heap["stats"] = stats
-	defer delete(stack.Heap, "stats")
-	if ok {
-		klog.Infoln("!!!!post HTTPAPI OK:", base, " name：", name, ", result:", result, " code:", code, " duration:", duration)
-		params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "_HTTPOK"}}}
-		core.ApiRun(stack, &hub.ApiDef{Name: "HTTPAPI_POST_OK", Command: "flowApi", Args: &params}, "", true)
-	} else {
-		klog.Errorln("!!!!post HTTPAPI NOK:", base, " name：", name, ", result:", result, " code:", code, " duration:", duration)
+		klog.Errorln("!!!!post HTTPAPI NOK:", stack.Base, " name：", name, ", result:", result, " code:", code, " stats:", stats)
 		params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "_HTTPNOK"}}}
 		core.ApiRun(stack, &hub.ApiDef{Name: "HTTPAPI_POST_NOK", Command: "flowApi", Args: &params}, "", true)
 	}
