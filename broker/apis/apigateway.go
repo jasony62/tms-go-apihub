@@ -32,6 +32,30 @@ var defaultApp = app{
 	postNOK:      "_APIGATEWAY_POST_NOK",
 }
 
+func fillStats(stack *hub.Stack, result interface{}, code int) {
+	stats := make(map[string]string)
+	stack.Heap["stats"] = stats
+
+	stats["name"] = stack.Base["root"]
+	stats["duration"] = strconv.FormatFloat(time.Since(stack.Now).Seconds(), 'f', 5, 64)
+	stats["code"] = strconv.FormatInt(int64(code), 10)
+
+	if code == http.StatusOK {
+		stats["id"] = "0"
+		stats["msg"] = "ok"
+		klog.Infoln("!!!!post apigateway OK:", stack.Base, "result:", result, " code:", code, " stats:", stats)
+		params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "_HTTPOK"}}}
+		core.ApiRun(stack, &hub.ApiDef{Name: "HTTPAPI_POST_OK", Command: "flowApi", Args: &params}, "", true)
+	} else {
+		/*TODO real value*/
+		stats["id"] = strconv.FormatInt(int64(code), 10)
+		stats["msg"] = "err"
+		klog.Errorln("!!!!post apigateway NOK:", stack.Base, ", result:", result, " code:", code, " stats:", stats)
+		params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "_HTTPNOK"}}}
+		core.ApiRun(stack, &hub.ApiDef{Name: "HTTPAPI_POST_NOK", Command: "flowApi", Args: &params}, "", true)
+	}
+}
+
 // 1次请求的上下文
 func newStack(c *gin.Context, level string) *hub.Stack {
 	now := time.Now()
@@ -82,6 +106,7 @@ func callCommon(stack *hub.Stack, command string, content string) {
 			klog.Errorln("PRE status:", status, " result:", result)
 
 			if len(defaultApp.postNOK) != 0 {
+				fillStats(stack, result, status)
 				params[0].Value.Content = defaultApp.postNOK
 				result, status = core.ApiRun(stack, &hub.ApiDef{Name: "main_pre_post_nok", Command: "flowApi", Args: &params}, "", true)
 				if status != http.StatusOK {
@@ -94,6 +119,7 @@ func callCommon(stack *hub.Stack, command string, content string) {
 	// 调用api
 	params[0].Value.Content = content
 	result, status = core.ApiRun(stack, &hub.ApiDef{Name: "main", Command: command, Args: &params}, "", false)
+	fillStats(stack, result, status)
 	if status != http.StatusOK {
 		//成功时的回复应该定义在flow的step中
 		stack.GinContext.IndentedJSON(status, result)
