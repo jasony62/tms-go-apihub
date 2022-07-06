@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/jasony62/tms-go-apihub/util"
@@ -23,8 +24,10 @@ func schemaChecker(path string, schema *gojsonschema.Schema) int {
 		fileName := fmt.Sprintf("%s/%s", path, fileInfoList[i].Name())
 
 		if fileInfoList[i].IsDir() {
-			klog.Infoln("Plugin子目录: ", fileName)
-			schemaChecker(path+"/"+fileName, schema)
+			klog.Infoln("Schema检查Json子目录: ", fileName)
+			if schemaChecker(fileName, schema) != 200 {
+				return 500
+			}
 		} else {
 			jsonContent, err := ioutil.ReadFile(fileName)
 			if err != nil {
@@ -47,9 +50,9 @@ func schemaChecker(path string, schema *gojsonschema.Schema) int {
 			if !result.Valid() {
 				fmt.Printf("%s is not valid. see errors :		\r\n", fileName)
 				for _, desc := range result.Errors() {
-					fmt.Printf("- %s		\r\n", desc)
+					klog.Errorln("- %s		", desc)
 				}
-				fmt.Printf("\r\n")
+				klog.Errorln("")
 				return 500
 			}
 
@@ -67,22 +70,57 @@ func confValidator(stack *hub.Stack, params map[string]string) (interface{}, int
 	if !OK {
 		return nil, http.StatusInternalServerError
 	}
-	fileName := path + "/httpapi.json"
-	schemaContent, err := ioutil.ReadFile(fileName)
+
+	return loadSchemaDefData(path)
+}
+
+func loadSchemaDefData(path string) (interface{}, int) {
+	fileInfoList, err := ioutil.ReadDir(path)
 	if err != nil {
-		panic(err.Error())
-	}
-	if !json.Valid(schemaContent) {
-		str := "Schema文件无效：" + fileName
-		klog.Errorln(str)
-		panic(str)
+		klog.Errorln(err)
+		return nil, http.StatusInternalServerError
 	}
 
-	loader1 := gojsonschema.NewStringLoader(string(schemaContent))
-	schema, err := gojsonschema.NewSchema(loader1)
-	if err != nil {
-		panic(err.Error())
-	}
+	for i := range fileInfoList {
+		fileName := fmt.Sprintf("%s/%s", path, fileInfoList[i].Name())
 
-	return nil, schemaChecker(util.GetBasePath()+"/httpapis/", schema)
+		klog.Infoln("Schema校验文件: ", fileName)
+		if fileInfoList[i].IsDir() {
+			loadSchemaDefData(fileName)
+		} else {
+			var apipath string
+			if strings.Contains(fileInfoList[i].Name(), "httpapi") {
+				apipath = "httpapis"
+			} else if strings.Contains(fileInfoList[i].Name(), "flow") {
+				apipath = "flows"
+			} else if strings.Contains(fileInfoList[i].Name(), "right") {
+				apipath = "rights"
+			} else if strings.Contains(fileInfoList[i].Name(), "schedule") {
+				apipath = "schedules"
+			}
+
+			schemaContent, err := ioutil.ReadFile(fileName)
+			if err != nil {
+				panic(err.Error())
+			}
+			if !json.Valid(schemaContent) {
+				str := "Schema文件无效：" + fileName
+				klog.Errorln(str)
+				panic(str)
+			}
+
+			loader := gojsonschema.NewStringLoader(string(schemaContent))
+			schema, err := gojsonschema.NewSchema(loader)
+			if err != nil {
+				panic(err.Error())
+			}
+
+			if schemaChecker(util.GetBasePath()+apipath, schema) != 200 {
+				klog.Errorln("Schema检查json文件不合法，目录: ", util.GetBasePath()+apipath)
+				return nil, http.StatusInternalServerError
+			}
+			klog.Infoln("Schema检查json文件合法，目录: ", util.GetBasePath()+apipath)
+		}
+	}
+	return nil, 200
 }
