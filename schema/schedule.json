@@ -17,7 +17,7 @@
       "items": {
         "$ref" : "#/scheduleApiDef"
       }
-    },
+    }
   },
   
 	"apiDef": {
