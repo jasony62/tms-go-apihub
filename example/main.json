@@ -36,6 +36,27 @@
       "description": "loadConf"
     },
     {
+      "name": "promStart",
+      "command": "promStart",
+      "description": "promStart",
+      "args": [
+        {
+          "name": "promHost",
+          "value": {
+            "from": "literal",
+            "content": "0.0.0.0"
+          }
+        },
+        {
+          "name": "promPort",
+          "value": {
+            "from": "literal",
+            "content": "8000"
+          }
+        }
+      ]
+    },
+    {
       "name": "apiGateway",
       "command": "apiGateway",
       "description": "apiGateway",
