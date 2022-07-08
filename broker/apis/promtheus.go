@@ -39,14 +39,14 @@ func promStartRun(address string) {
 			Name: "apihub_http_in",
 			Help: "api hub http in counters",
 		},
-		[]string{"code", "duration", "id", "msg", "name", "root", "start", "type", "uuid"},
+		[]string{"code", "id", "msg", "name", "root", "type"},
 	)
 	httpOutPromCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "apihub_http_out",
 			Help: "api hub http out counters",
 		},
-		[]string{"code", "duration", "id", "msg", "name", "root", "start", "type", "uuid"},
+		[]string{"code", "id", "msg", "name", "root", "type"},
 	)
 	httpInDurationPromHistogram = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
@@ -54,7 +54,7 @@ func promStartRun(address string) {
 			Help:    "apihub http in latency distributions.",
 			Buckets: prometheus.LinearBuckets(0, 1, 11), // bucket从0开始,间隔是1,一共11个
 		},
-		[]string{"code", "id", "msg", "name", "root", "start", "type", "uuid"},
+		[]string{"code", "id", "msg", "name", "root", "type"},
 	)
 	klog.Infoln("111!")
 	httpOutDurationPromHistogram = prometheus.NewHistogramVec(
@@ -63,7 +63,7 @@ func promStartRun(address string) {
 			Help:    "apihub http out latency distributions.",
 			Buckets: prometheus.LinearBuckets(0, 1, 11),
 		},
-		[]string{"code", "id", "msg", "name", "root", "start", "type", "uuid"},
+		[]string{"code", "id", "msg", "name", "root", "type"},
 	)
 	prometheus.MustRegister(httpInPromCounter)
 	prometheus.MustRegister(httpOutPromCounter)
@@ -88,14 +88,12 @@ func promStartRun(address string) {
 
 func getPromLabels(params map[string]string) map[string]string {
 	return prometheus.Labels{
-		"code":  params["code"],
-		"id":    params["id"],
-		"msg":   params["msg"],
-		"name":  params["name"],
-		"root":  params["root"],
-		"start": params["start"],
-		"type":  params["type"],
-		"uuid":  params["uuid"]}
+		"code": params["code"],
+		"id":   params["id"],
+		"msg":  params["msg"],
+		"name": params["name"],
+		"root": params["root"],
+		"type": params["type"]}
 }
 
 func promHttpCounterInc(stack *hub.Stack, params map[string]string) (interface{}, int) {
@@ -110,11 +108,9 @@ func promHttpCounterInc(stack *hub.Stack, params map[string]string) (interface{}
 	}
 	if params["httpInOut"] == "httpIn" {
 		httpInDurationPromHistogram.With(promLabels).Observe(duration)
-		promLabels["duration"] = params["duration"]
 		httpInPromCounter.With(promLabels).Inc()
 	} else if params["httpInOut"] == "httpOut" {
 		httpOutDurationPromHistogram.With(promLabels).Observe(duration)
-		promLabels["duration"] = params["duration"]
 		httpOutPromCounter.With(promLabels).Inc()
 	} else {
 		klog.Errorln("httpInOut参数配置错误！")
