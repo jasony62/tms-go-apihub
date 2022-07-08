@@ -3,9 +3,9 @@
   "description": "执行httpapi post NOK流程",
   "steps": [
     {
-      "name": "promHttpCounterInc",
+      "name": "promHttp_OUT_NOK_CounterInc",
       "command": "promHttpCounterInc",
-      "description": "promHttpCounterInc",
+      "description": "promHttp_OUT_NOK_CounterInc",
       "args": [
         {
           "name": "httpInOut",

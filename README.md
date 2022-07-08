@@ -10,6 +10,7 @@ APIHUB是一款基于 Golang 开发的API调度平台，能够实现基于JSON�
 # [流程说明](https://github.com/jasony62/tms-go-apihub/blob/main/doc/cn/flow.md)
 # [测试](https://github.com/jasony62/tms-go-apihub/blob/main/doc/cn/test.md)
 # [开发计划](https://github.com/jasony62/tms-go-apihub/blob/main/doc/cn/work.md)
+# [promtheus](https://github.com/jasony62/tms-go-apihub/blob/main/doc/cn/promtheus.md)
 # 隔离
 使用`bucket`进行数据隔离。
 
