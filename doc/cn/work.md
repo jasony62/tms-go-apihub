@@ -4,26 +4,18 @@
   - 【apis.md】应该提供一下示例。api的描述应该更规范些，参照一下互联网上开放api的描述。
   - 关于内容模版应该有个说明，说明一些模板的基本逻辑
 
-* json schema
-  - 根据 json 生成 schema — https://tooltt.com/json2schema/
-  - 校验 jsonschema 是否合法 — https://www.jsonschemavalidator.net/
-  -  校验某个 json 是否符合指定的 json schema 定义 — https://www.jsonschemavalidator.net/
-  解决：
-  - 部分字段没有
-  - 部分字段需要设置enum
-  - required： url or dynamicUrl, 
-  - from为json 或者jsonRaw时required json，其他required content
-  - requestContentType   可选json，form，orgin，none，或者其他任意值
 * 防止fasthttp出错
   Use this brilliant tool - race detector - for detecting and eliminating data races in your program. If you detected data race related to fasthttp in your program, then there is high probability you forgot calling TimeoutError before returning from RequestHandler.
 
-* 增加plugin框架，并支持Prometheus，
 * postman或者apifox的测试脚本
 * 根据http response content type查看是否需要分解json
-* 将http down和解压独立出来作为独立API
-* 考虑如何设置全局default right
+* error code转错误码+错误信息
+
 
 ## 中期
+*根据openapi定义，支持更多认证方式
+Defines a security scheme that can be used by the operations. Supported schemes are HTTP authentication, an API key (either as a header, a cookie parameter or as a query parameter), OAuth2's common flows (implicit, password, client credentials and authorization code) as defined in RFC6749, and OpenID Connect Discovery.
+
 * 支持http请求retry，timeout(实现放到httpapi中，配置放到flow，schedule中？)
  - "timeoutPolicy": "TIME_OUT_WF",
  - "retryLogic": "FIXED",
@@ -80,6 +72,8 @@ https://goframe.org/pages/viewpage.action?pageId=1114270
 * json文件合法性检查
 * 支持flow覆盖api中的private
 * 多租户异步回调：本地kv存储
+* 增加plugin框架，并支持Prometheus
+* json schema
 
 ###schedule
 * schedule支持SWITCH/loop循环命令
@@ -89,7 +83,7 @@ https://goframe.org/pages/viewpage.action?pageId=1114270
 ###httpapi
 * httpapi支持token缓存
 * httpapi支持动态url
-* httpapi支持200OK + error code转错误码
+* httpapi支持200OK
 * httpapi支持返回非json格式的http response
 * httpapi支持api version
 * httpapi性能提升，南向使用fasthttp

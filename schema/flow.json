@@ -74,7 +74,7 @@
 	"properties": {
 	  "from": {
 		"type": "string",
-		"enum": ["origin", "private", "query", "header", "literal", "template", "StepResult", "json", "jsonRaw","env", "func"]
+		"enum": ["origin", "private", "query", "header", "literal", "template", "heap", "json", "jsonRaw","env", "func"]
 	  },
 	  "content": {
 		"type": "string"
