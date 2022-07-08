@@ -36,34 +36,33 @@ func promStart(stack *hub.Stack, params map[string]string) (interface{}, int) {
 func promStartRun(address string) {
 	httpInPromCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "apihub_http_in",
+			Name: "http_in",
 			Help: "api hub http in counters",
 		},
-		[]string{"code", "id", "msg", "name", "root", "type"},
+		[]string{"code", "child", "root", "type"},
 	)
 	httpOutPromCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "apihub_http_out",
+			Name: "http_out",
 			Help: "api hub http out counters",
 		},
-		[]string{"code", "id", "msg", "name", "root", "type"},
+		[]string{"code", "child", "root", "type"},
 	)
 	httpInDurationPromHistogram = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name:    "apihub_http_in_duration_sec",
+			Name:    "http_in_duration_sec",
 			Help:    "apihub http in latency distributions.",
 			Buckets: prometheus.LinearBuckets(0, 1, 11), // bucket从0开始,间隔是1,一共11个
 		},
-		[]string{"code", "id", "msg", "name", "root", "type"},
+		[]string{"code", "child", "root", "type"},
 	)
-	klog.Infoln("111!")
 	httpOutDurationPromHistogram = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name:    "apihub_http_out_duration_sec",
+			Name:    "http_out_duration_sec",
 			Help:    "apihub http out latency distributions.",
 			Buckets: prometheus.LinearBuckets(0, 1, 11),
 		},
-		[]string{"code", "id", "msg", "name", "root", "type"},
+		[]string{"code", "child", "root", "type"},
 	)
 	prometheus.MustRegister(httpInPromCounter)
 	prometheus.MustRegister(httpOutPromCounter)

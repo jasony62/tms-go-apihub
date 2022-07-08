@@ -3,10 +3,17 @@
   "description": "执行 api gateway post OK流程",
   "steps": [
     {
-      "name": "dump",
-      "command": "dump",
-      "description": "展示结果",
+      "name": "promHttp_In_CounterInc",
+      "command": "promHttpCounterInc",
+      "description": "promHttp_In_CounterInc",
       "args": [
+        {
+          "name": "httpInOut",
+          "value": {
+            "from": "literal",
+            "content": "httpIn"
+          }
+        },
         {
           "name": "root",
           "value": {
@@ -27,7 +34,7 @@
             "from": "template",
             "content": "{{.base.type}}"
           }
-        },        
+        },
         {
           "name": "uuid",
           "value": {
@@ -43,19 +50,19 @@
           }
         },
         {
-          "name": "name",
+          "name": "child",
           "value": {
             "from": "template",
             "content": "{{.stats.name}}"
           }
-        },          
+        },
         {
           "name": "code",
           "value": {
             "from": "template",
             "content": "{{.stats.code}}"
           }
-        },        
+        },
         {
           "name": "duration",
           "value": {
