@@ -1,0 +1,375 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"type": "object",
+	"title": "执行Schedule schema文件",
+	"required": ["name", "steps"],
+	"properties": {
+		"name": {
+			"type": "string",
+			"title": "Schedule名称"
+		},
+		"description": {
+			"type": "string",
+			"title": "Schedule描述"
+		},
+		"ConcurrentNum": {
+			"type": "number",
+			"title": "最大允许的并行执行的数量"
+		},
+
+		"steps": {
+			"type": "array",
+			"title": "执行步骤",
+			"items": {
+				"type": "object",
+				"required": ["type"],
+				"properties": {
+					"type": {
+						"type": "string",
+						"title": "执行类型",
+						"enum": ["api", "loop", "switch"]
+					},
+					"mode": {
+						"type": "string",
+						"title": "执行模式",
+						"description": "执行模式，normal，concurrent，background三种",
+						"enum": ["normal", "concurrent", "background"]
+					},
+					"private": {
+						"type": "string",
+						"title": "私钥信息",
+                        "description": "可以用于计算value和覆盖api内部的private。"
+					},
+
+					"control": {
+						"type": "object",
+						"title": "control结构体",
+						"description": "type为loop和switch时执行",
+						"required": ["name"],
+						"properties": {
+							"name": {
+								"type": "string",
+								"title": "control名称"
+							},
+							"description": {
+								"type": "string",
+								"title": "control描述信息"
+							},
+							"private": {
+								"type": "string",
+								"title": "秘钥文件名"
+							},
+							"resultKey": {
+								"type": "string",
+								"title": "执行结果保存时的索引名称",
+								"description": "执行结果保存时的索引名称，origin,vars,result,loop为保留值不可使用"
+							},
+							"concurrentNum": {
+								"type": "number",
+								"title": "最大允许的并行执行的数量"
+							},
+							"concurrentLoopNum": {
+								"type": "number",
+								"title": "最大允许的loop内并行执行的数量"
+							},
+							"key": {
+								"type": "object",
+								"title": "检查值或循环次数",
+								"description": "switch时为要检查的值，loop时为循环的次数，标准from结构",
+								"required": ["from"],
+								"properties": {
+									"from": {
+										"type": "string",
+										"title": "参数来源",
+										"description": "支持`literal`(直接从content里获取)，`query`(http query),`header`(http header),`private`(从秘钥文件读取),`origin`(原始报文body中的json),`env`(系统env)，heap(从原始报文和处理结果获取)，json(根据json生成字符串)，jsonRaw(根据json生成json结构体)，template(从content中生成),`func`(hub.FuncMap内部定义函数的名称)",
+										"enum": ["origin", "private", "query", "header", "literal", "template", "heap", "json", "jsonRaw", "env", "func"]
+									},
+									"content": {
+										"type": "string",
+										"title": "参数名称或函数名称或template的内容"
+									},
+									"json": {
+										"type": "object",
+										"title": "json的输入值"
+									},
+									"args": {
+										"type": "string",
+										"title": "func的输入参数"
+									}
+								}
+							},
+							"steps": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"title": "执行步骤"
+								}
+							},
+							"cases": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"title": "switch时检查的case",
+									"required": ["value"],
+									"properties": {
+										"value": {
+											"type": "string",
+											"title": "对应Key值",
+											"description": "上层的key等于本字段则执行tasks"
+										},
+										"concurrentNum": {
+											"type": "number",
+											"title": "最大允许的并行执行的数量"
+										},
+										"steps": {
+											"type": "array",
+											"title": "嵌套步骤",
+											"description": "结构同上层的tasks，为tasks的自身嵌套",
+											"items": {
+												"type": "array",
+												"title": "执行步骤",
+												"items": {
+													"type": "object",
+													"required": ["type"],
+													"properties": {
+														"type": {
+															"type": "string",
+															"title": "执行类型",
+															"enum": ["api", "loop", "switch"]
+														},
+														"mode": {
+															"type": "string",
+															"title": "执行模式",
+															"enum": ["normal", "concurrent", "background"]
+														},
+														"private": {
+															"type": "string",
+															"title": "秘钥文件名"
+														},
+														"control": {
+															"type": "object",
+															"title": "嵌套control结构体"
+														},
+														"api": {
+															"type": "object",
+															"required": ["name", "command"],
+															"properties": {
+																"name": {
+																	"type": "string",
+																	"title": "步骤名称"
+																},
+																"command": {
+																	"type": "string",
+																	"title": "步骤api指令名称"
+																},
+																"description": {
+																	"type": "string",
+																	"title": "描述信息"
+																},
+																"private": {
+																	"type": "string",
+																	"title": "私钥信息"
+																},
+																"resultKey": {
+																	"type": "string",
+																	"title": "返回值存储关键字"
+																},
+																"args": {
+																	"type": "array",
+																	"title": "请求参数",
+																	"items": {
+																		"type": "object",
+																		"required": ["name", "value"],
+																		"properties": {
+																			"name": {
+																				"type": "string",
+																				"title": "请求参数名称"
+																			},
+																			"value": {
+																				"type": "object",
+																				"title": "请求参数值",
+																				"required": ["from"],
+																				"properties": {
+																					"from": {
+																						"type": "string",
+																						"title": "参数来源",
+																						"description": "支持`literal`(直接从content里获取)，`query`(http query),`header`(http header),`private`(从秘钥文件读取),`origin`(原始报文body中的json),`env`(系统env)，heap(从原始报文和处理结果获取)，json(根据json生成字符串)，jsonRaw(根据json生成json结构体)，template(从content中生成),`func`(hub.FuncMap内部定义函数的名称)",
+																						"enum": ["origin", "private", "query", "header", "literal", "template", "heap", "json", "jsonRaw", "env", "func"]
+																					},
+																					"content": {
+																						"type": "string",
+																						"title": "参数名称或函数名称或template的内容"
+																					},
+																					"json": {
+																						"type": "object",
+																						"title": "json的输入值"
+																					},
+																					"args": {
+																						"type": "string",
+																						"title": "func的输入参数"
+																					}
+																				}
+																			}
+																		}
+																	}
+																},
+																"origin": {
+																	"type": "array",
+																	"title": "进行tempalte替换时，origin数据",
+																	"items": {
+																		"type": "object",
+																		"required": ["name", "value"],
+																		"properties": {
+																			"name": {
+																				"type": "string",
+																				"title": "origin数据名称"
+																			},
+																			"value": {
+																				"type": "object",
+																				"title": "Origin参数值",
+																				"required": ["from"],
+																				"properties": {
+																					"from": {
+																						"type": "string",
+																						"title": "参数来源",
+																						"description": "支持`literal`(直接从content里获取)，`query`(http query),`header`(http header),`private`(从秘钥文件读取),`origin`(原始报文body中的json),`env`(系统env)，heap(从原始报文和处理结果获取)，json(根据json生成字符串)，jsonRaw(根据json生成json结构体)，template(从content中生成),`func`(hub.FuncMap内部定义函数的名称)",
+																						"enum": ["origin", "private", "query", "header", "literal", "template", "heap", "json", "jsonRaw", "env", "func"]
+																					},
+																					"content": {
+																						"type": "string",
+																						"title": "参数名称或函数名称或template的内容"
+																					},
+																					"json": {
+																						"type": "object",
+																						"title": "json的输入值"
+																					},
+																					"args": {
+																						"type": "string",
+																						"title": "func的输入参数"
+																					}
+																				}
+																			}
+																		}
+																	}
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								},
+
+								"api": {
+									"type": "object",
+									"required": ["name", "command"],
+									"properties": {
+										"name": {
+											"type": "string",
+											"title": "步骤名称"
+										},
+										"command": {
+											"type": "string",
+											"title": "步骤api指令名称"
+										},
+										"description": {
+											"type": "string",
+											"title": "描述信息"
+										},
+										"private": {
+											"type": "string",
+											"title": "私钥信息"
+										},
+										"resultKey": {
+											"type": "string",
+											"title": "返回值存储关键字"
+										},
+										"args": {
+											"type": "array",
+											"title": "请求参数",
+											"items": {
+												"type": "object",
+												"required": ["name", "value"],
+												"properties": {
+													"name": {
+														"type": "string",
+														"title": "请求参数名称"
+													},
+													"value": {
+														"type": "object",
+														"title": "请求参数值",
+														"required": ["from"],
+														"properties": {
+															"from": {
+																"type": "string",
+																"title": "参数来源",
+																"description": "支持`literal`(直接从content里获取)，`query`(http query),`header`(http header),`private`(从秘钥文件读取),`origin`(原始报文body中的json),`env`(系统env)，heap(从原始报文和处理结果获取)，json(根据json生成字符串)，jsonRaw(根据json生成json结构体)，template(从content中生成),`func`(hub.FuncMap内部定义函数的名称)",
+																"enum": ["origin", "private", "query", "header", "literal", "template", "heap", "json", "jsonRaw", "env", "func"]
+															},
+															"content": {
+																"type": "string",
+																"title": "参数名称或函数名称或template的内容"
+															},
+															"json": {
+																"type": "object",
+																"title": "json的输入值"
+															},
+															"args": {
+																"type": "string",
+																"title": "func的输入参数"
+															}
+														}
+													}
+												}
+											}
+										},
+										"origin": {
+											"type": "array",
+											"title": "进行tempalte替换时，origin数据",
+											"items": {
+												"type": "object",
+												"required": ["name", "value"],
+												"properties": {
+													"name": {
+														"type": "string",
+														"title": "origin数据名称"
+													},
+													"value": {
+														"type": "object",
+														"title": "Origin参数值",
+														"required": ["from"],
+														"properties": {
+															"from": {
+																"type": "string",
+																"title": "参数来源",
+																"description": "支持`literal`(直接从content里获取)，`query`(http query),`header`(http header),`private`(从秘钥文件读取),`origin`(原始报文body中的json),`env`(系统env)，heap(从原始报文和处理结果获取)，json(根据json生成字符串)，jsonRaw(根据json生成json结构体)，template(从content中生成),`func`(hub.FuncMap内部定义函数的名称)",
+																"enum": ["origin", "private", "query", "header", "literal", "template", "heap", "json", "jsonRaw", "env", "func"]
+															},
+															"content": {
+																"type": "string",
+																"title": "参数名称或函数名称或template的内容"
+															},
+															"json": {
+																"type": "object",
+																"title": "json的输入值"
+															},
+															"args": {
+																"type": "string",
+																"title": "func的输入参数"
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
