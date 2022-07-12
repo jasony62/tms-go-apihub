@@ -10,6 +10,7 @@
 * postman或者apifox的测试脚本
 * 根据http response content type查看是否需要分解json
 * error code转错误码+错误信息
+* prom alert研究
 
 
 ## 中期
