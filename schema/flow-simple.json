@@ -1,0 +1,133 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "title": "执行Flow schema文件",
+    "required": ["name", "steps"],
+    "properties": {
+        "name": {
+            "type": "string",
+            "title": "FLOW的名称"
+        },
+        "description": {
+            "type": "string",
+            "title": "FLOW的描述"
+        },
+        "private": {
+            "type": "string",
+            "title": "API 秘钥文件名"
+        },
+        "steps": {
+            "type": "array",
+            "title": "FLOW的执行步骤",
+			"description": "串行调用API的步骤，为API结构体",
+            "items": {
+                "type": "object",
+                "required": ["name","command"],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "title": "步骤名称"
+                    },
+                    "command": {
+                        "type": "string",
+                        "title": "步骤api指令名称"
+                    },
+                    "description": {
+                        "type": "string",
+                        "title": "描述信息"
+                    },
+                    "private": {
+                        "type": "string",
+                        "title": "私钥信息",
+						"description": "可以用于计算value和覆盖api内部的private。"
+                    },
+                    "resultKey": {
+                        "type": "string",
+                        "title": "执行结果保存时的索引名称",
+						"description": "执行结果保存时的索引名称，origin,vars,result,loop为保留值不可使用"
+                    },
+                    "args": {
+                        "type": "array",
+                        "title": "请求参数",
+						"description": "api的输入参数,为param结构体",
+                        "items": {
+                            "type": "object",
+                            "required": ["name","value"],
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "title": "请求参数名称"
+                                },
+                                "value": {
+                                    "type": "object",
+                                    "title": "请求参数值",
+                                    "required": ["from"],
+                                    "properties": {
+                                        "from": {
+                                            "type": "string",
+                                            "title": "参数来源",
+											"description": "支持`literal`(直接从content里获取)，`query`(http query),`header`(http header),`private`(从秘钥文件读取),`origin`(原始报文body中的json),`env`(系统env)，heap(从原始报文和处理结果获取)，json(根据json生成字符串)，jsonRaw(根据json生成json结构体)，template(从content中生成),`func`(hub.FuncMap内部定义函数的名称)",
+                                            "enum": ["origin","private","query","header","literal","template","heap","json","jsonRaw","env","func"]
+                                        },
+                                        "content": {
+                                            "type": "string",
+                                            "title": "参数名称或函数名称或template的内容"
+                                        },
+                                        "json": {
+                                            "type": "object",
+                                            "title": "json的输入值"
+                                        },
+                                        "args": {
+                                            "type": "string",
+                                            "title": "func的输入参数"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "origin": {
+                        "type": "array",
+                        "title": "origin数据",
+						"description": "进行tempalte替换时，origin数据，为param结构体",
+                        "items": {
+                            "type": "object",
+                            "required": ["name","value"],
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "title": "origin数据名称"
+                                },
+                                "value": {
+                                    "type": "object",
+                                    "title": "Origin参数值",
+                                    "required": ["from"],
+                                    "properties": {
+                                        "from": {
+                                            "type": "string",
+                                            "title": "参数来源",
+											"description": "支持`literal`(直接从content里获取)，`query`(http query),`header`(http header),`private`(从秘钥文件读取),`origin`(原始报文body中的json),`env`(系统env)，heap(从原始报文和处理结果获取)，json(根据json生成字符串)，jsonRaw(根据json生成json结构体)，template(从content中生成),`func`(hub.FuncMap内部定义函数的名称)",
+                                            "enum": ["origin","private","query","header","literal","template","heap","json","jsonRaw","env","func"]
+                                        },
+                                        "content": {
+                                            "type": "string",
+                                            "title": "参数名称或函数名称或template的内容"
+                                        },
+                                        "json": {
+                                            "type": "object",
+                                            "title": "json的输入值"
+                                        },
+                                        "args": {
+                                            "type": "string",
+                                            "title": "func的输入参数"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

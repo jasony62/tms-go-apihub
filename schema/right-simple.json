@@ -1,0 +1,33 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "title": "执行权限schema文件",
+    "required": ["type","right"],
+    "properties": {
+        "type": {
+            "type": "string",
+            "title": "权限文件对应的执行类型",
+            "enum": ["httpapi","flow","schedule"]
+        },
+        "right": {
+            "type": "string",
+            "title": "权限类型",
+			"description": "public（所有人都允许调用），internal（只允许内部调用，不允许外部调用），whitelist（只有list中的才允许访问），blacklist（非list中的才允许访问）",
+            "enum": ["public","internal","whitelist","blacklist"]
+        },
+        "list": {
+            "type": "array",
+            "title": "黑白名单用户列表",
+            "items": {
+                "type": "object",
+                "required": ["user"],
+                "properties": {
+                    "user": {
+                        "type": "string",
+                        "title": "用户编号"
+                    }
+                }
+            }
+        }
+    }
+}
