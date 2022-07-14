@@ -50,10 +50,10 @@
           }
         },
         {
-          "name": "name",
+          "name": "child",
           "value": {
             "from": "template",
-            "content": "{{.stats.name}}"
+            "content": "{{.stats.child}}"
           }
         },          
         {
