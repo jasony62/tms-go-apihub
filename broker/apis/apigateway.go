@@ -36,7 +36,7 @@ func fillStats(stack *hub.Stack, result interface{}, code int) {
 	stats := make(map[string]string)
 	stack.Heap["stats"] = stats
 
-	stats["name"] = stack.Base["root"]
+	stats["child"] = stack.Base["root"]
 	stats["duration"] = strconv.FormatFloat(time.Since(stack.Now).Seconds(), 'f', 5, 64)
 	stats["code"] = strconv.FormatInt(int64(code), 10)
 

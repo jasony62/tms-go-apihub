@@ -40,7 +40,7 @@ func postHttpapis(stack *hub.Stack, name string, result string, code int, durati
 	stack.Heap["stats"] = stats
 	defer delete(stack.Heap, "stats")
 
-	stats["name"] = name
+	stats["child"] = name
 	stats["duration"] = strconv.FormatFloat(duration, 'f', 5, 64)
 	stats["code"] = strconv.FormatInt(int64(code), 10)
 	if code == http.StatusOK {
