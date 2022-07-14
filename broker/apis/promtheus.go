@@ -88,7 +88,7 @@ func promStartRun(address string) {
 func getPromLabels(params map[string]string) map[string]string {
 	return prometheus.Labels{
 		"code": params["code"],
-		"child": params["name"],
+		"child": params["child"],
 		"root": params["root"],
 		"type": params["type"]}
 }
