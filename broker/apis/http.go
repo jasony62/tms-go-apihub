@@ -450,16 +450,16 @@ func httpResponse(stack *hub.Stack, params map[string]string) (interface{}, int)
 	if result == nil {
 		klog.Infoln("获取result失败")
 	} else {
-	switch name {
-	case "html":
-		stack.GinContext.Header("Content-Type", "text/html; charset=utf-8")
-		stack.GinContext.String(code, "%s", result)
-	case "json":
-		stack.GinContext.IndentedJSON(code, result)
-	default:
-		stack.GinContext.Header("Content-Type", name)
-		stack.GinContext.String(code, "%s", result)
-	}
-}
+			switch name {
+			case "html":
+				stack.GinContext.Header("Content-Type", "text/html; charset=utf-8")
+				stack.GinContext.String(code, "%s", result)
+			case "json":
+				stack.GinContext.IndentedJSON(code, result)
+			default:
+				stack.GinContext.Header("Content-Type", name)
+				stack.GinContext.String(code, "%s", result)
+			}
+		}
 	return nil, fasthttp.StatusOK
 }

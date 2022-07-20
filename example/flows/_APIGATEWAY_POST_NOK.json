@@ -182,7 +182,7 @@
           "name": "code",
           "value": {
             "from": "template",
-            "content": "{{.stats.code}}"
+            "content": "{{.NOK_result.code}}"
           }
         }
       ]
