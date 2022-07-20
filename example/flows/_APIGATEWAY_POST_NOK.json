@@ -117,49 +117,6 @@
       ]
     },
     {
-      "name": "qyxw_send_result",
-      "command": "flowApi",
-      "args": [
-        {
-          "name": "name",
-          "value": {
-            "from": "literal",
-            "content": "_QYWX_NOTIFY"
-          }
-        }
-      ],
-      "origin": [
-        {
-          "name": "content",
-          "value": {
-            "from": "template",
-            "content": "！！！失败：任务({{.base.root}})，类型({{.base.type}})，索引({{.base.uuid}}),错误号({{.stats.id}}),错误原因({{.stats.msg}})"
-          }
-        },
-        {
-          "name": "touser",
-          "value": {
-            "from": "literal",
-            "content": "YangYue"
-          }
-        },
-        {
-          "name": "msgtype",
-          "value": {
-            "from": "literal",
-            "content": "text"
-          }
-        },
-        {
-          "name": "agentid",
-          "value": {
-            "from": "literal",
-            "content": "1000002"
-          }
-        }
-      ]
-    },
-    {
       "name": "response",
       "command": "httpResponse",
       "description": "返回结果",
@@ -183,6 +140,49 @@
           "value": {
             "from": "template",
             "content": "{{.NOK_result.code}}"
+          }
+        }
+      ]
+    },    
+    {
+      "name": "qyxw_send_result",
+      "command": "flowApi",
+      "args": [
+        {
+          "name": "name",
+          "value": {
+            "from": "literal",
+            "content": "_QYWX_NOTIFY"
+          }
+        }
+      ],
+      "origin": [
+        {
+          "name": "content",
+          "value": {
+            "from": "template",
+            "content": "！！！失败：任务({{.base.root}})，类型({{.base.type}})，索引({{.base.uuid}}),错误号({{.NOK_result.id}}),错误原因({{.NOK_result.msg}})"
+          }
+        },
+        {
+          "name": "touser",
+          "value": {
+            "from": "literal",
+            "content": "YangYue"
+          }
+        },
+        {
+          "name": "msgtype",
+          "value": {
+            "from": "literal",
+            "content": "text"
+          }
+        },
+        {
+          "name": "agentid",
+          "value": {
+            "from": "literal",
+            "content": "1000002"
           }
         }
       ]
