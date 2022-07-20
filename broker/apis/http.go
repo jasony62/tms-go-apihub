@@ -24,7 +24,7 @@ var jsonEx = jsoniter.Config{
 }.Froze()
 
 func preHttpapis(stack *hub.Stack, name string) {
-	klog.Infoln("!!!!pre HTTPAPI base：", stack.Base, " Name:", name)
+	klog.Infoln("___pre HTTPAPI base：", stack.Base, " Name:", name)
 }
 
 func postHttpapis(stack *hub.Stack, name string, result string, code int, duration float64) {
@@ -46,7 +46,7 @@ func postHttpapis(stack *hub.Stack, name string, result string, code int, durati
 	if code == http.StatusOK {
 		stats["id"] = "0"
 		stats["msg"] = "ok"
-		klog.Infoln("!!!!post HTTPAPI OK:", stack.Base, " name：", name, ", result:", result, " code:", code, " stats:", stats)
+		klog.Infoln("___post HTTPAPI OK:", stack.Base, " name：", name, ", result:", result, " code:", code, " stats:", stats)
 		params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "_HTTPOK"}}}
 		core.ApiRun(stack, &hub.ApiDef{Name: "HTTPAPI_POST_OK", Command: "flowApi", Args: &params}, "", true)
 	} else {
@@ -426,6 +426,7 @@ func runHttpApi(stack *hub.Stack, params map[string]string) (interface{}, int) {
 }
 
 func httpResponse(stack *hub.Stack, params map[string]string) (interface{}, int) {
+	code := fasthttp.StatusOK
 	name, OK := params["type"]
 	if !OK {
 		str := "缺少api名称"
@@ -439,16 +440,26 @@ func httpResponse(stack *hub.Stack, params map[string]string) (interface{}, int)
 		klog.Errorln(str)
 		return nil, http.StatusForbidden
 	}
-	result := stack.Heap[key]
-	switch name {
-	case "html":
-		stack.GinContext.Header("Content-Type", "text/html; charset=utf-8")
-		stack.GinContext.String(fasthttp.StatusOK, "%s", result)
-	case "json":
-		stack.GinContext.IndentedJSON(fasthttp.StatusOK, result)
-	default:
-		stack.GinContext.Header("Content-Type", name)
-		stack.GinContext.String(fasthttp.StatusOK, "%s", result)
+
+	codeStr, OK := params["code"]
+	if OK {
+		code, _ = strconv.Atoi(codeStr)
 	}
+
+	result := stack.Heap[key]
+	if result == nil {
+		klog.Infoln("获取result失败")
+	} else {
+			switch name {
+			case "html":
+				stack.GinContext.Header("Content-Type", "text/html; charset=utf-8")
+				stack.GinContext.String(code, "%s", result)
+			case "json":
+				stack.GinContext.IndentedJSON(code, result)
+			default:
+				stack.GinContext.Header("Content-Type", name)
+				stack.GinContext.String(code, "%s", result)
+			}
+		}
 	return nil, fasthttp.StatusOK
 }

@@ -3,6 +3,36 @@
   "description": "执行 apigateway post NOK流程",
   "steps": [
     {
+      "name": "createJson",
+      "command": "createJson",
+      "description": "生成错误JSON",
+      "args": [
+        {
+          "name": "key",
+          "value": {
+            "from": "literal",
+            "content": "NOK_result"
+          }
+        }
+      ],
+      "resultKey": "NOK_result",
+      "origin": [
+        {
+          "name": "NOK_result",
+          "value": {
+            "from": "jsonRaw",
+            "json": {
+              "uuid": "{{.base.uuid}}",
+              "root": "{{.base.root}}",
+              "type": "{{.base.type}}",
+              "code": "{{.stats.code}}",
+              "msg": "{{.stats.msg}}"
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "promHttp_In_CounterInc",
       "command": "promHttpCounterInc",
       "description": "promHttp_In_CounterInc",
@@ -82,6 +112,77 @@
           "value": {
             "from": "template",
             "content": "{{.stats.msg}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "response",
+      "command": "httpResponse",
+      "description": "返回结果",
+      "args": [
+        {
+          "name": "type",
+          "value": {
+            "from": "literal",
+            "content": "json"
+          }
+        },
+        {
+          "name": "key",
+          "value": {
+            "from": "literal",
+            "content": "NOK_result"
+          }
+        },
+        {
+          "name": "code",
+          "value": {
+            "from": "template",
+            "content": "{{.NOK_result.code}}"
+          }
+        }
+      ]
+    },    
+    {
+      "name": "qyxw_send_result",
+      "command": "flowApi",
+      "args": [
+        {
+          "name": "name",
+          "value": {
+            "from": "literal",
+            "content": "_QYWX_NOTIFY"
+          }
+        }
+      ],
+      "origin": [
+        {
+          "name": "content",
+          "value": {
+            "from": "template",
+            "content": "！！！失败：任务({{.base.root}})，类型({{.base.type}})，索引({{.base.uuid}}),错误号({{.NOK_result.id}}),错误原因({{.NOK_result.msg}})"
+          }
+        },
+        {
+          "name": "touser",
+          "value": {
+            "from": "literal",
+            "content": "YangYue"
+          }
+        },
+        {
+          "name": "msgtype",
+          "value": {
+            "from": "literal",
+            "content": "text"
+          }
+        },
+        {
+          "name": "agentid",
+          "value": {
+            "from": "literal",
+            "content": "1000002"
           }
         }
       ]

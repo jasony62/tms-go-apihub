@@ -61,15 +61,16 @@ curl -i -H "Content-Type: application/json" "http://localhost:8080/flow/gis_base
 echo "\r\nquery带用户appID的地区查询"   
 curl -i -H "Content-Type: application/json" -d '{"city": "北京"}' "http://localhost:8080/httpapi/amap_district?appID=001"
 
-#不支持
+#默认用户放在query
 #echo "\r\nheader带用户appID的地区查询"   
 #curl -i -H "Content-Type: application/json" -H "appID: 001" -d '{"city": "北京"}' "http://localhost:8080/httpapi/amap_district"
 
 echo "\r\nquery带用户appID的城市天气查询"   
 curl -i -H "Content-Type: application/json" -d '{"city": "北京"}' "http://localhost:8080/flow/amap_city_weather?appID=001"
 
-echo "\r\nheader带用户appID的城市天气查询"   
-curl -i -H "Content-Type: application/json" -H "appID: 001" -d '{"city": "北京"}' "http://localhost:8080/flow/amap_city_weather"
+#默认用户放在query
+#echo "\r\nheader带用户appID的城市天气查询"   
+#curl -i -H "Content-Type: application/json" -H "appID: 001" -d '{"city": "北京"}' "http://localhost:8080/flow/amap_city_weather"
 
 echo "\r\nquery带用户appID的企业微信schedule查询"  
 curl -i -H "Content-Type: application/json" -d '{"cities":["sh", "bj", "sh", "sh"], "image":"https://img.zcool.cn/community/01ff2059770a25a8012193a37c7695.jpg"}' "http://localhost:8080/schedule/amap_qywx?appID=001"

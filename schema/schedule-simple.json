@@ -12,7 +12,7 @@
 			"type": "string",
 			"title": "Schedule描述"
 		},
-		"ConcurrentNum": {
+		"concurrentNum": {
 			"type": "number",
 			"title": "最大允许的并行执行的数量"
 		},

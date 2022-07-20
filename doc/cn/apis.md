@@ -12,7 +12,7 @@
 | flowApi | name flow名字，private（可选）秘钥文件名称| 执行flow |
 | scheduleApi | name schedule名字，private（可选）秘钥文件名称| 执行schedule |
 | http相关 |  |  |
-| httpResponse | type（json，html，或者其他） http response名称，key，从哪个result获取，type为json时转换为string，其他则直接按照string发送| 在使用httpapi时，默认发送json格式的HTTP rsponse，flow和schedule没有这个默认逻辑，必须调用这个API发送http response|
+| httpResponse | type（json，html，或者其他） http response名称，key，从哪个result获取，type为json时转换为string，其他则直接按照string发送 code, 发送的HTTP code，不输入则为200| 在使用httpapi时，默认发送json格式的HTTP rsponse，flow和schedule没有这个默认逻辑，必须调用这个API发送http response|
 | 辅助类 |  |  |
 | checkStringsEqual | 任意| 检查数组中所有name和value是否都相等，用于解决200 OK+ error 在response json里的问题，参考例子{"name": "0","value": {"from": "heap","content": "sendResult.errcode"}} |
 | checkStringsNotEqual | 任意| 检查数组中所有name和value是否都不相等，用于检查http回应内的值是否有效，参考例子        {"name": "","value": {"from": "heap","content": "tokenResult.access_token"}} |

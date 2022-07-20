@@ -9,7 +9,7 @@
     "description": {
       "type": "string"
     },
-    "ConcurrentNum": {
+    "concurrentNum": {
       "type": "number"
     },
     "steps": {

@@ -29,7 +29,7 @@ func RegisterApis(list map[string]hub.ApiHandler) {
 	}
 }
 func preApis(stack *hub.Stack, apiDef *hub.ApiDef) {
-	klog.Infoln("=========执行API, command:"+apiDef.Command, "name:"+apiDef.Name)
+	klog.Infoln("___pre API, command:"+apiDef.Command, "name:"+apiDef.Name)
 }
 
 func postApis(stack *hub.Stack, apiDef *hub.ApiDef, result interface{}, code int, duration float64) {
@@ -41,9 +41,9 @@ func postApis(stack *hub.Stack, apiDef *hub.ApiDef, result interface{}, code int
 		return
 	}
 	if code == http.StatusOK {
-		klog.Infoln("=========OK API command:"+apiDef.Command, " base:", base, " name："+apiDef.Name, " result:", result, " duration:", duration)
+		klog.Infoln("___post API OK command:"+apiDef.Command, " base:", base, " name："+apiDef.Name, " result:", result, " duration:", duration)
 	} else {
-		klog.Errorln("=========NOK API command:"+apiDef.Command, " base:", base, " name："+apiDef.Name, " result:", result, " duration:", duration)
+		klog.Errorln("!!!post API NOK command :"+apiDef.Command, " base:", base, " name："+apiDef.Name, " result:", result, " duration:", duration)
 	}
 }
 
