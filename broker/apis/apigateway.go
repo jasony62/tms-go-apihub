@@ -43,12 +43,12 @@ func fillStats(stack *hub.Stack, result interface{}, code int) {
 	if code == http.StatusOK {
 		stats["id"] = "0"
 		stats["msg"] = "ok"
-		klog.Infoln("!!!!post apigateway OK:", stack.Base, "result:", result, " code:", code, " stats:", stats)
+		klog.Infoln("___post apigateway OK:", stack.Base, "result:", result, " code:", code, " stats:", stats)
 		params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "_HTTPOK"}}}
 		core.ApiRun(stack, &hub.ApiDef{Name: "HTTPAPI_POST_OK", Command: "flowApi", Args: &params}, "", true)
 	} else {
-		/*TODO real value*/
 		stats["id"] = strconv.FormatInt(int64(code), 10)
+		/*TODO real value*/
 		stats["msg"] = "err"
 		klog.Errorln("!!!!post apigateway NOK:", stack.Base, ", result:", result, " code:", code, " stats:", stats)
 		params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "_HTTPNOK"}}}
@@ -116,6 +116,7 @@ func callCommon(stack *hub.Stack, command string, content string) {
 			return
 		}
 	}
+
 	// 调用api
 	params[0].Value.Content = content
 	result, status = core.ApiRun(stack, &hub.ApiDef{Name: "main", Command: command, Args: &params}, "", false)

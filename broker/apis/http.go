@@ -24,7 +24,7 @@ var jsonEx = jsoniter.Config{
 }.Froze()
 
 func preHttpapis(stack *hub.Stack, name string) {
-	klog.Infoln("!!!!pre HTTPAPI base：", stack.Base, " Name:", name)
+	klog.Infoln("___pre HTTPAPI base：", stack.Base, " Name:", name)
 }
 
 func postHttpapis(stack *hub.Stack, name string, result string, code int, duration float64) {
@@ -46,7 +46,7 @@ func postHttpapis(stack *hub.Stack, name string, result string, code int, durati
 	if code == http.StatusOK {
 		stats["id"] = "0"
 		stats["msg"] = "ok"
-		klog.Infoln("!!!!post HTTPAPI OK:", stack.Base, " name：", name, ", result:", result, " code:", code, " stats:", stats)
+		klog.Infoln("___post HTTPAPI OK:", stack.Base, " name：", name, ", result:", result, " code:", code, " stats:", stats)
 		params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "_HTTPOK"}}}
 		core.ApiRun(stack, &hub.ApiDef{Name: "HTTPAPI_POST_OK", Command: "flowApi", Args: &params}, "", true)
 	} else {

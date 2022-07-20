@@ -4,13 +4,15 @@ API的主要功能是根据输入数据，进行逻辑处理，然后输出数�
 各个概念之间的包含关系如下
 ```mermaid
 graph TB
-    subgraph API
+    subgraph APIHUB
         subgraph SCHEDULE
         subgraph FLOW
             subgraph 原子API
                 subgraph HTTPAPI
                 end      
-                subgraph 其他API
+                subgraph 其他功能性API
+                end          
+                subgraph 辅助类API
                 end                                   
             end          
         end                

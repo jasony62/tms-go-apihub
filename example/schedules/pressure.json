@@ -1,0 +1,46 @@
+{
+    "name": "pressure",
+    "description": "处理输入并发送微信",
+    "steps": [
+        {
+            "type": "loop",
+            "mode": "concurrent",
+            "control": {
+                "name": "city_loop",
+                "concurrentLoopNum": 5,
+                "key": {
+                    "from": "literal",
+                    "content": "25"
+                },
+                "steps": [
+                    {
+                        "type": "api",
+                        "api": {
+                            "name": "shanghai weather",
+                            "command": "flowApi",
+                            "resultKey": "weather",
+                            "args": [
+                                {
+                                    "name": "name",
+                                    "value": {
+                                        "from": "literal",
+                                        "content": "amap_city_weather_base"
+                                    }
+                                }
+                            ],
+                            "origin": [
+                                {
+                                    "name": "city",
+                                    "value": {
+                                        "from": "literal",
+                                        "content": "上海"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}

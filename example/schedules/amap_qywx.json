@@ -1,7 +1,7 @@
 {
     "name": "handle_send",
     "description": "处理输入并发送微信",
-    "ConcurrentNum": 2,
+    "concurrentNum": 2,
     "steps": [
         {
             "type": "loop",
@@ -147,7 +147,7 @@
                                             }
                                         }
                                     ]
-                                }                                  
+                                }
                             ]
                         }
                     }
@@ -184,7 +184,7 @@
         {
             "type": "api",
             "api": {
-                "name": "baidu_image_classify",
+                "name": "qyxw_send_result",
                 "command": "flowApi",
                 "args": [
                     {
