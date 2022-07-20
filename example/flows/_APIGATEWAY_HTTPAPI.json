@@ -22,7 +22,6 @@
       "command": "httpResponse",
       "description": "返回结果",
       "args": [
-        
         {
           "name": "type",
           "value": {

@@ -3,6 +3,36 @@
   "description": "执行 apigateway post NOK流程",
   "steps": [
     {
+      "name": "createJson",
+      "command": "createJson",
+      "description": "生成错误JSON",
+      "args": [
+        {
+          "name": "key",
+          "value": {
+            "from": "literal",
+            "content": "NOK_result"
+          }
+        }
+      ],
+      "resultKey": "NOK_result",
+      "origin": [
+        {
+          "name": "NOK_result",
+          "value": {
+            "from": "jsonRaw",
+            "json": {
+              "uuid": "{{.base.uuid}}",
+              "root": "{{.base.root}}",
+              "type": "{{.base.type}}",
+              "code": "{{.stats.code}}",
+              "msg": "{{.stats.msg}}"
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "promHttp_In_CounterInc",
       "command": "promHttpCounterInc",
       "description": "promHttp_In_CounterInc",
@@ -94,7 +124,7 @@
           "name": "name",
           "value": {
             "from": "literal",
-            "content": "qywx_message_send"
+            "content": "_QYWX_NOTIFY"
           }
         }
       ],
@@ -125,6 +155,34 @@
           "value": {
             "from": "literal",
             "content": "1000002"
+          }
+        }
+      ]
+    },
+    {
+      "name": "response",
+      "command": "httpResponse",
+      "description": "返回结果",
+      "args": [
+        {
+          "name": "type",
+          "value": {
+            "from": "literal",
+            "content": "json"
+          }
+        },
+        {
+          "name": "key",
+          "value": {
+            "from": "literal",
+            "content": "NOK_result"
+          }
+        },
+        {
+          "name": "code",
+          "value": {
+            "from": "template",
+            "content": "{{.stats.code}}"
           }
         }
       ]

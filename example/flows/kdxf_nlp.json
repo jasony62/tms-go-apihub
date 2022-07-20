@@ -36,6 +36,7 @@
       "name": "merge_result",
       "command": "createJson",
       "description": "合并收到的结果",
+      "resultKey": "merge_result",
       "args": [
         {
           "name": "key",
@@ -63,8 +64,7 @@
             }
           }
         }
-      ],      
-      "resultKey": "merge_result"
+      ]
     },
     {
       "name": "response",

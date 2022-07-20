@@ -426,6 +426,7 @@ func runHttpApi(stack *hub.Stack, params map[string]string) (interface{}, int) {
 }
 
 func httpResponse(stack *hub.Stack, params map[string]string) (interface{}, int) {
+	code := fasthttp.StatusOK
 	name, OK := params["type"]
 	if !OK {
 		str := "缺少api名称"
@@ -439,16 +440,26 @@ func httpResponse(stack *hub.Stack, params map[string]string) (interface{}, int)
 		klog.Errorln(str)
 		return nil, http.StatusForbidden
 	}
+
+	codeStr, OK := params["code"]
+	if OK {
+		code, _ = strconv.Atoi(codeStr)
+	}
+
 	result := stack.Heap[key]
+	if result == nil {
+		klog.Infoln("获取result失败")
+	} else {
 	switch name {
 	case "html":
 		stack.GinContext.Header("Content-Type", "text/html; charset=utf-8")
-		stack.GinContext.String(fasthttp.StatusOK, "%s", result)
+		stack.GinContext.String(code, "%s", result)
 	case "json":
-		stack.GinContext.IndentedJSON(fasthttp.StatusOK, result)
+		stack.GinContext.IndentedJSON(code, result)
 	default:
 		stack.GinContext.Header("Content-Type", name)
-		stack.GinContext.String(fasthttp.StatusOK, "%s", result)
+		stack.GinContext.String(code, "%s", result)
 	}
+}
 	return nil, fasthttp.StatusOK
 }
