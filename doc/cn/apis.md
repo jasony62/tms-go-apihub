@@ -1,9 +1,20 @@
+[toc]
+
+# 功能介绍
+
+# 接收约束
+
+# json schema校验
+| 参 数 | 是否必选 | 参数类型 | 描 述 |
+| -- | -- | -- | -- |
+| confValidator| 必选 | string | json schema文件夹路径，对所有json文件进行json和json schema检查（完善中） |
+
+
 支持api列表
-| 名称           | 入参  | 用途     |
-| ------------- | ----- | -------- |
+| 名称| 入参  | 用途|
+| -- | -- | -- |
 | 启动相关（用于main.json） |  |  |
 | loadConf | 无 | 从base目录读取conf文件 |
-| confValidator（完善中） | schema（必选） json schema路径 | 对所有json文件进行json和json schema检查 |
 | apiGateway | host（可选，默认0.0.0.0）监听地址；port（可选，默认8080），监听端口；bucket（可选，默认false），是否使用bucket功能；pre（可选，默认_APIGATEWAY_PRE），pre flow json名字，none代表不执行；httpApi（可选，默认_APIGATEWAY_HTTPAPI），执行httpapi的flow json名字；postOK（可选，默认_APIGATEWAY_POST_OK），POST OK的flow json名字，none代表不执行；postNOK（可选，默认_APIGATEWAY_POST_NOK），POST NOK的flow json名字，none代表不执行| 启动apigateway，注意这个api不会返回 |
 | downloadConf | url（必选）  远端文件地址 | 从远端服务器下载conf文件 |
 | decompressZip | file（必选） 需要解压的文件名称，通常与downloadConf这个中url中的文件名一致，均为.zip格式；<br />password（可选） 解压密码<br />path（可选） 解压之后的存储目录，不配则使用base目录 | 解压远端下载后的zip压缩包 |
