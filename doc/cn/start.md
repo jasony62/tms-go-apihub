@@ -16,7 +16,7 @@
 # 2 章节涉及目录介绍
 ## 2.1 broker文件目录介绍
 
-apihub源码均在broker目录下，即针对源码的`build`编译在broker目录下运行。
+apihub源码均在`broker`目录下，即针对源码的`build`编译在broker目录下运行。
 
 
 |名称|用途|
@@ -28,9 +28,9 @@ apihub源码均在broker目录下，即针对源码的`build`编译在broker目�
 |go.mod|相关Go包的集合，替换旧的基于`GOPATH`的方法，来指定使用哪些源文件，执行`build`时自动下载相关依赖包到本地指定位置|
 
 ## 2.2 schema文件目录介绍
-`schema`目录中存放schema校验文件，schema检查example文件中json文件是否合法，即是否符合API网关格式规范。
+`schema`目录中存放`json schema`校验文件，`schema`检查`example`文件夹中json文件是否合法，即是否符合API网关格式规范。
 
-schema目录下
+schema目录下:
 
 | 名称| 用途|
 | -- | -- |
@@ -41,13 +41,13 @@ schema目录下
 
 ## 2.3 example文件目录介绍
 
-`example`目录中存放了规范后的API接口信息，以及API编排后的flow，均为json格式。
+`example`目录中存放了规范后的API接口信息，以及API编排后的`flow`，均为`json`格式。
 
     注：本文中低代码指的是，用户通过配置json文件，编写一个服务的flow，即可低成本，低代码的方式实现API编排功能，而无需理解API网关程序具体工作流程。
 
 API网关与API服务配置文件相互分离。一方面，增加了程序部署的灵活，用户仅需要使用方按照规范提供API接口信息的`json`文件（后续通过mongoDB Web可视化生成和添加API接口信息的json文件），即可针对需求通过低代码的方式设计flow，实现低代码的API编排和调用；另一方面，apihub程序由开发人员维护升级，用户无需关心，降低了用户学习成本。
 
-example目录说明：
+`example`目录说明：
 |名称| 用途|
 | -- | -- |
 | main.json | 启动文件 |
@@ -96,7 +96,7 @@ go build -o tms-go-apihub
 
 默认`tms-go-apihub`程序需要调用`example`下的API信息，因此需要将`example`文件夹软链接或者拷贝到`broker/conf`目录下(前文中方法二便是通过`--base`命令直接指定文件夹路径，避免了软连接或者拷贝的操作，如果不能理解，直接按照后续命令执行亦可)
 
-在`broker`文件下，具体执行命令如下：
+在`broker`文件下，具体执行命令如下,通过`--base`命令指定`tms-go-apihub`程序读取的`example`文件夹的路径：
 
 ```
 ./tms-go-apihub --base ../example/
