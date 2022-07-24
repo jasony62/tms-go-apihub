@@ -36,8 +36,8 @@
         }
       ]
     },
-    ...
-    ...
+    ... ...
+    ... ...
 }
 ```
 * `"name": "welcome"`，表示当前对象名称；
@@ -47,14 +47,14 @@
 * `"args": [{"name": "content","value": {"from": "literal","content": "welcome to use apihub"}}`，表示将`args`关键字的`json`数组内容并发的输入到内部的`welcome API`接口。
 
 ## 1. welcome API
-### 1.1 功能介绍
-apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输出welcome to use apihub字符串，用于提示用户程序开始读取conf文件夹API配置信息。
-### 1.2 位置
+### 1.1. 功能介绍
+apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出welcome to use apihub`字符串，用于提示用户程序开始读取conf文件夹API配置信息。
+### 1.2. 位置
 ```
 ./broker/main.go
 ```
-### 1.3 API输入介绍
-`welcome API`输入内容`args`介绍：
+### 1.3. API输入介绍
+`welcome API` 输入数组`args`参数介绍：
 | 参数名称 | 是否必选 | 数据类型 | 内容描述 |
 | -- | -- | -- | -- |
 | name | 必选 | String | 输入名称`"content"` |
@@ -77,17 +77,23 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输出w
     ]
 }
 ```
-### 1.4 状态码
+### 1.4. 状态码
 | 状态码 | 描述 |
 | -- | -- |
 | 200 | 获取信息成功。 |
 ## 2. confValidator API（完善中）
+### 2.1 功能介绍
 对所有需要导入的json文件进行json和json schema检查
-
-`confValidator` API输入参数介绍：
+### 2.2. 位置
+```
+./broker/apis/schema.go
+```
+### 2.3. API输入介绍
+`confValidator API` 输入数组`args`参数介绍：
 | 参数名称 | 是否必选 | 数据类型 | 内容描述 |
 | -- | -- | -- | -- |
-| schema | 必选 | String | json schema文件夹路径|
+| name | 必选 | String | 输入名称`"schema"` |
+| content | 必选 | String | json schema文件夹路径|
 
 示例：
 ```
@@ -106,13 +112,23 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输出w
     ]
 }
 ```
-## 本地配置加载（loadConf）
-
-loadConf输入参数介绍：
+### 1.4. 状态码
+| 状态码 | 描述 |
+| -- | -- |
+| 200 | 获取信息成功。 |
+## 3. loadConf API
+### 1. 功能介绍
+从`--base`指定目录读取conf文件
+### 2. 位置
+```
+./broker/apis/util.go
+```
+### 3. API输入介绍
+`loadConf API`输入数组`args`参数介绍：
 | 参数名称 | 是否必选 | 数据类型 | 描述 |
 | -- | -- | -- | -- |
-| loadConf | 必选 | 无 | 从base目录读取conf文件 |
-
+| 无 | 必选 | 无 | 无 |
+示例：
 ```
 {
   "name": "loadConf",
@@ -120,15 +136,61 @@ loadConf输入参数介绍：
   "description": "loadConf"
 }
 ```
-## 普罗米修斯加载（promStart）
+### 4. 状态码
+| 状态码 | 描述 |
+| -- | -- |
+| 200 | 获取信息成功。 |
 
-启动prometheus服务并注册counter和histogram
+## 4. promStart API
+### 1. 功能介绍
+启动prometheus（普罗米修斯）服务并注册`counter`和`histogram`。
+### 2. 位置
+```
+./broker/apis/prometheus.go
+```
+### 3. API输入介绍
+`promStart API`输入数组`args`参数介绍：
 
-promStart输入参数介绍：
-| 参数名称 | 是否必选 | 数据类型 | 描述 |
-| -- | -- | -- | -- |
-| promHost | 可选 | String | 监听地址默认0.0.0.0 |
-| promPort | 可选 | String | 监听端口默认8000 |
+<table>
+   <tr>
+      <th>参数名称</th>
+      <th>是否必选</th>
+      <th>数据类型</th>
+      <th>变量</th>
+      <th>描述</th>
+   </tr>
+   <tr>
+      <td rowspan="2">name</td>
+      <td rowspan="2">可选</td>
+      <td rowspan="2">String</td>
+      <td>promHost</td>
+      <td>监听地址名称</td>
+   </tr>
+   <tr>
+      <td>promPort</td>
+      <td>监听端口名称</td>
+   </tr>
+   <tr>
+      <td rowspan="2">content</td>
+      <td rowspan="2">可选</td>
+      <td rowspan="2">String</td>
+      <td>XXX.XXX.XXX.XXX</td>
+      <td>prometheus默认监听地址0.0.0.0</td>
+   </tr>
+   <tr>
+      <td>XXXX</td>
+      <td>prometheus默认监听端口8000</td>
+   </tr>
+   <tr>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+   </tr>
+</table>
+
+
 
 示例：
 ```
@@ -154,20 +216,28 @@ promStart输入参数介绍：
   ]
 }
 ```
-## APIG加载（apiGateway）（完善中）
-
-启动apigateway，注意这个api不会返回
-
-apiGateway输入参数介绍：
-| 参数名称 | 是否必选 | 数据类型 | 描述 |
+### 4. 状态码
+| 状态码 | 描述 |
+| -- | -- |
+| 200 | 获取信息成功。 |
+## apiGateway API（完善中）
+### 1. 功能介绍
+启动`apigateway API`，注意这个api不会返回
+### 2. 位置
+```
+./broker/apis/apigateway.go
+```
+### 3. API输入介绍
+`apiGateway API`输入数组`args`参数介绍：
+| 参数名称 | 是否必选 | 数据类型 | 变量 | 描述 |
 | -- | -- | -- | -- |
 | host | 可选 | String | 监听地址默认0.0.0.0 |
-| port | 可选 | String | 监听端口默认8080 |
-| bucket | 可选 | Bool | 默认false，是否使用bucket功能 |
-| pre | 可选 |  String | 默认_APIGATEWAY_PRE，pre flow json名字，none代表不执行 |
+| port | 可选 | String | 监听端口默认8080 || pre | 可选 |  String | 默认_APIGATEWAY_PRE，pre flow json名字，none代表不执行 |
 | httpApi | 可选 | String | 默认_APIGATEWAY_HTTPAPI，执行httpapi的flow json名字 |
 | postOK | 可选 | String | 默认_APIGATEWAY_POST_OK，POST OK的flow json名字，none代表不执行 |
 | postNOK | 可选 |String  | 默认_APIGATEWAY_POST_NOK，POST NOK的flow json名字，none代表不执行 |
+| bucket | 可选 | Bool | 默认false，是否使用bucket功能 |
+
 示例：
 ```
 {
@@ -192,6 +262,13 @@ apiGateway输入参数介绍：
   ]
 }
 ```
+### 4. 状态码
+| 状态码 | 描述 |
+| -- | -- |
+| 200 | 获取信息成功。 |
+
+
+
 ## 远端Conf下载（downloadConf）（未上线）
 
 若本地无响应conf文件，可通过配置从远端服务器下载conf文件
