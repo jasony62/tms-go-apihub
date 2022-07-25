@@ -3,18 +3,7 @@
 
 程序调用`API`既有外部`API`也有内部`API`，但无所谓内外，对于`command`名称调用的API都是指向的一个`API`，仅仅是地址不同。
 
-首先对json文件中名称进行介绍，如表所示。
-
-| JSON名称  | 数据类型 | 描述 |
-| -- | -- | -- |
-| name |  String | 对象名称 |
-| command |  String | 当前对象调用API名称 |
-| description | String | 当前对象描述信息 |
-| steps |  String | 多个对象顺序执行 |
-| args |  Array | 多个并列对象 |
-| value |  String | 当前对象输入value值 |
-| from |  String | 当前对象默认literal |
-| content |  String | 当前对象输入内容 |
+首先对json文件中名称进行介绍，如json.md所示。
 
 `main.json`中各启动对象均已API形式进行调用，例如：
 ```
@@ -46,7 +35,7 @@
 
 * `"args": [{"name": "content","value": {"from": "literal","content": "welcome to use apihub"}}`，表示将`args`关键字的`json`数组内容并发的输入到内部的`welcome API`接口。
 
-## 1. welcome API
+## 1. 启动界面（welcome API）
 ### 1.1. 功能介绍
 apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出welcome to use apihub`字符串，用于提示用户程序开始读取conf文件夹API配置信息。
 ### 1.2. 位置
@@ -55,10 +44,10 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 ```
 ### 1.3. API输入介绍
 `welcome API` 输入数组`args`参数介绍：
-| 参数名称 | 是否必选 | 数据类型 | 内容描述 |
-| -- | -- | -- | -- |
-| name | 必选 | String | 输入名称`"content"` |
-| content | 可选 | String | 输入打印字符串`"welcome to use apihub"` |
+| 输入name | 是否必选 | 数据类型 | content内容 | 描述 |
+| -- | -- | -- | -- | -- |
+| content | 可选 | String | 输出字符串 | 输出打印字符串`"welcome to use apihub"` ` |
+
 
 示例：
 ```
@@ -81,7 +70,7 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 | 状态码 | 描述 |
 | -- | -- |
 | 200 | 获取信息成功。 |
-## 2. confValidator API（完善中）
+## 2. schema检查（confValidator API）（完善中）
 ### 2.1 功能介绍
 对所有需要导入的json文件进行json和json schema检查
 ### 2.2. 位置
@@ -90,10 +79,10 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 ```
 ### 2.3. API输入介绍
 `confValidator API` 输入数组`args`参数介绍：
-| 参数名称 | 是否必选 | 数据类型 | 内容描述 |
-| -- | -- | -- | -- |
-| name | 必选 | String | 输入名称`"schema"` |
-| content | 必选 | String | json schema文件夹路径|
+| 输入name | 是否必选 | 数据类型 | content内容 | 描述 |
+| -- | -- | -- | -- | -- |
+| schem | 必选 | String  | Path | json schema文件夹路径，默认代码库主目录位置。即"../schema" |
+
 
 示例：
 ```
@@ -112,22 +101,23 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
     ]
 }
 ```
-### 1.4. 状态码
+### 2.4. 状态码
 | 状态码 | 描述 |
 | -- | -- |
 | 200 | 获取信息成功。 |
-## 3. loadConf API
-### 1. 功能介绍
+## 3. 加载Conf文件（loadConf API）
+### 3.1. 功能介绍
 从`--base`指定目录读取conf文件
-### 2. 位置
+### 3.2. 位置
 ```
 ./broker/apis/util.go
 ```
-### 3. API输入介绍
+### 3.3. API输入介绍
 `loadConf API`输入数组`args`参数介绍：
-| 参数名称 | 是否必选 | 数据类型 | 描述 |
-| -- | -- | -- | -- |
-| 无 | 必选 | 无 | 无 |
+| 输入name | 是否必选 | 数据类型 | content内容 | 描述 |
+| -- | -- | -- | -- | -- |
+| 无 | 必选 | 无 | 无 | 无 |
+
 示例：
 ```
 {
@@ -136,60 +126,24 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
   "description": "loadConf"
 }
 ```
-### 4. 状态码
+### 3.4. 状态码
 | 状态码 | 描述 |
 | -- | -- |
 | 200 | 获取信息成功。 |
 
-## 4. promStart API
-### 1. 功能介绍
+## 4. 普罗米修细启动（promStart API）
+### 4.1. 功能介绍
 启动prometheus（普罗米修斯）服务并注册`counter`和`histogram`。
-### 2. 位置
+### 4.2. 位置
 ```
 ./broker/apis/prometheus.go
 ```
-### 3. API输入介绍
+### 4.3. API输入介绍
 `promStart API`输入数组`args`参数介绍：
-
-<table>
-   <tr>
-      <th>参数名称</th>
-      <th>是否必选</th>
-      <th>数据类型</th>
-      <th>变量</th>
-      <th>描述</th>
-   </tr>
-   <tr>
-      <td rowspan="2">name</td>
-      <td rowspan="2">可选</td>
-      <td rowspan="2">String</td>
-      <td>promHost</td>
-      <td>监听地址名称</td>
-   </tr>
-   <tr>
-      <td>promPort</td>
-      <td>监听端口名称</td>
-   </tr>
-   <tr>
-      <td rowspan="2">content</td>
-      <td rowspan="2">可选</td>
-      <td rowspan="2">String</td>
-      <td>XXX.XXX.XXX.XXX</td>
-      <td>prometheus默认监听地址0.0.0.0</td>
-   </tr>
-   <tr>
-      <td>XXXX</td>
-      <td>prometheus默认监听端口8000</td>
-   </tr>
-   <tr>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-   </tr>
-</table>
-
+| 输入name | 是否必选 | 数据类型 | content内容 | 描述 |
+| -- | -- | -- | -- | -- | 
+| promHost | 可选 | String | 0.0.0.0 ~ 255.255.255.255 | prometheus默认监听地址0.0.0.0 |
+| promPort | 可选 | String | 1024 ~ 65535 | prometheus默认监听端口8000 |
 
 
 示例：
@@ -216,27 +170,30 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
   ]
 }
 ```
-### 4. 状态码
+### 4.4. 状态码
 | 状态码 | 描述 |
 | -- | -- |
 | 200 | 获取信息成功。 |
-## apiGateway API（完善中）
-### 1. 功能介绍
+
+## 5. API网关启动（apiGateway API）（完善中）
+### 5.1. 功能介绍
 启动`apigateway API`，注意这个api不会返回
-### 2. 位置
+### 5.2. 位置
 ```
 ./broker/apis/apigateway.go
 ```
-### 3. API输入介绍
+### 5.3. API输入介绍
 `apiGateway API`输入数组`args`参数介绍：
-| 参数名称 | 是否必选 | 数据类型 | 变量 | 描述 |
-| -- | -- | -- | -- |
-| host | 可选 | String | 监听地址默认0.0.0.0 |
-| port | 可选 | String | 监听端口默认8080 || pre | 可选 |  String | 默认_APIGATEWAY_PRE，pre flow json名字，none代表不执行 |
-| httpApi | 可选 | String | 默认_APIGATEWAY_HTTPAPI，执行httpapi的flow json名字 |
-| postOK | 可选 | String | 默认_APIGATEWAY_POST_OK，POST OK的flow json名字，none代表不执行 |
-| postNOK | 可选 |String  | 默认_APIGATEWAY_POST_NOK，POST NOK的flow json名字，none代表不执行 |
-| bucket | 可选 | Bool | 默认false，是否使用bucket功能 |
+| 输入name | 是否必选 | 数据类型 | content内容 | 描述 |
+| -- | -- | -- | -- | -- |
+| host | 可选 | String | 0.0.0.0 ~ 255.255.255.255 | 监听地址默认0.0.0.0 |
+| port | 可选 | String | 1024 ~ 65535 | 监听端口默认8080 |
+| bucket | 可选 | Bool | "ture";</br>"false" | 默认false，是否使用bucket功能 |
+| pre | 可选 |  String | "APIGATEWAY_PRE";</br>"none";</br>JSON名称 | 默认_APIGATEWAY_PRE，pre flow json名字，none代表不执行 |
+| httpApi | 可选 | String |" _APIGATEWAY_HTTPAPI";</br>"none";</br>JSON名称 | 默认_APIGATEWAY_HTTPAPI，执行httpapi的flow json脚本的名字 |
+| postOK | 可选 | String | "_APIGATEWAY_POST_OK";</br>"none";</br>JSON名称 | 默认_APIGATEWAY_POST_OK，POST OK的flow json名字，none代表不执行 |
+| postNOK | 可选 |String | "_APIGATEWAY_POST_NOK";</br>"none";</br>JSON名称 | 默认_APIGATEWAY_POST_NOK，POST NOK的flow json名字，none代表不执行 |
+
 
 示例：
 ```
@@ -262,70 +219,116 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
   ]
 }
 ```
-### 4. 状态码
+### 5.4. 状态码
 | 状态码 | 描述 |
 | -- | -- |
 | 200 | 获取信息成功。 |
 
-
-
-## 远端Conf下载（downloadConf）（未上线）
-
+## 6. 远端Conf下载（downloadConf API）（未上线）
+### 6.1. 功能介绍
 若本地无响应conf文件，可通过配置从远端服务器下载conf文件
+### 6.2. 位置
+无
+### 6.3. API输入介绍
+`downloadConf API`输入数组`args`参数介绍：
+| 输入name | 是否必选 | 数据类型 | content内容 | 描述 |
+| -- | -- | -- | -- | -- |
+| url | 必选 | String | Addr | 远端Conf文件地址 | 
+### 6.4. 状态码
+| 状态码 | 描述 |
+| -- | -- |
+| 200 | 获取信息成功。 |
 
-downloadConf输入参数介绍：
-| 参数名称 | 是否必选 | 数据类型 | 描述 |
-| -- | -- | -- | -- |
-| url | 必选 | String | 远端文件地址 | 
-
-
-## 解压远端压缩包（decompressZip）（未上线）
-
+## 7. 解压远端压缩包（decompressZip）（未上线）
+### 7.1. 功能介绍
 若下载远端文件为压缩包，解压远端下载后的zip压缩包。
+### 7.2. 位置
+无
+### 7.3. API输入介绍
 
-decompressZip输入参数介绍：
+`decompressZip API`输入数组`args`参数介绍：
+| 输入name | 是否必选 | 数据类型 | content内容 | 描述 |
+| -- | -- | -- | -- | -- |
+| file | 必选 | String | 解压文件名 | 需要解压的文件名称，通常与downloadConf这个中url中的文件名一致，均为.zip格式 | 
+| password | 可选 | String | 密码字符串 | 解压密码 | 
+| path | 可选 | String | Path | 默认使用`--base`目录，解压之后的存储目录 |
+### 7.4. 状态码
+| 状态码 | 描述 |
+| -- | -- |
+| 200 | 获取信息成功。 |
 
-| 参数名称 | 是否必选 | 数据类型 | 描述 |
-| -- | -- | -- | -- |
-| file | 必选 | String | 需要解压的文件名称，通常与downloadConf这个中url中的文件名一致，均为.zip格式 | 
-| password | 可选 | String | 解压密码 | 
-| path | 可选 | String | 默认使用`--base`目录，解压之后的存储目录 |
+# 执行json文件(conf文件)
+## 1. HTTP请求（httpApi API）
+### 1.1. 功能介绍
+执行httpApi，发送http请求，执行一个API调用。
+### 1.2. 位置
+```
+./broker/apis/httpapi.go
+```
+### 1.3. API输入介绍
+`httpApi API`输入数组`args`参数介绍：
+| 输入name | 是否必选 | 数据类型 | content内容 | 描述 |
+| -- | -- | -- | -- | -- |
+| name | 必选 | String | JSON文件名 | httpapi名称，详见./example/http/apis/*.json，例如"amap_district"，指向amap_district.json文件 |
+| internal | 可选 | Bool | "ture";</br>"false" | 判断是否为内部API |
+| private | 可选 | String | 密码字符串 | httpapi密钥文件名称 |
 
-
-
-# 执行json文件
-
-## httpApi
-执行httpapi，发送http请求。
-
-httpApi具体
-
-httpApi参数：
-| 参数名称 | 是否必选 | 数据类型 | 描述 |
-| -- | -- | -- | -- |
-| name | 必选 | String | httpapi名称 |
-| private | 可选 | String | httpapi密钥文件名称 |
+示例：
+```
+{
+   "name": "city_adcode",
+   "command": "httpApi",
+   "description": "查询城市的区域码",
+   "args": [
+     {
+       "name": "name",
+       "value": {
+         "from": "literal",
+         "content": "amap_district"
+       }
+     }
+   ],
+   "resultKey": "adcodeResult"
+},
+```
+### 1.4. 状态码
+| 状态码 | 描述 |
+| -- | -- |
+| 200 | 获取信息成功。|
+## 2. FLOW（flowApi API）
+### 2.1. 功能介绍
+执行flowApi，发送flow请求，执行一个调用流程，即编排流程。
+### 2.2 位置
+### 2.3. API输入介绍
+`flowApi API`输入数组`args`参数介绍：
+| 输入name | 是否必选 | 数据类型 | content内容 | 描述 |
+| -- | -- | -- | -- | -- |
+| name | 必选 | String | JSON文件名 | httpapi名称，详见./example/http/apis/*.json，例如"amap_district"，指向amap_district.json文件 |
+| internal | 可选 | Bool | "ture";</br>"false" | 判断是否为内部API |
+| private | 可选 | String | 密码字符串 | httpapi密钥文件名称 |
 
 示例：
 ```
 {
   "name": "city_adcode",
-  "command": "httpApi",
-  "description": "查询城市的区域码",
+  "command": "flowApi",
+  "description": "查询城市天气",
   "args": [
     {
       "name": "name",
       "value": {
         "from": "literal",
-        "content": "amap_district"
+        "content": "amap_city_weather_base"
       }
     }
   ],
-  "resultKey": "adcodeResult"
+  "resultKey": "weatherResult"
 }
 ```
-## flowApi
-
+### 2.4. 状态码
+| 状态码 | 描述 |
+| -- | -- |
+| 200 | 获取信息成功。|
 
 | 名称| 入参  | 用途|
 | -- | -- | -- |
