@@ -131,7 +131,7 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 | -- | -- |
 | 200 | 获取信息成功。 |
 
-## 4. 普罗米修细启动（promStart API）
+## 4. 普罗米修斯启动（promStart API）
 ### 4.1. 功能介绍
 启动prometheus（普罗米修斯）服务并注册`counter`和`histogram`。
 ### 4.2. 位置
@@ -188,11 +188,11 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 | -- | -- | -- | -- | -- |
 | host | 可选 | String | 0.0.0.0 ~ 255.255.255.255 | 监听地址默认0.0.0.0 |
 | port | 可选 | String | 1024 ~ 65535 | 监听端口默认8080 |
-| bucket | 可选 | Bool | "ture";</br>"false" | 默认false，是否使用bucket功能 |
-| pre | 可选 |  String | "APIGATEWAY_PRE";</br>"none";</br>JSON名称 | 默认_APIGATEWAY_PRE，pre flow json名字，none代表不执行 |
-| httpApi | 可选 | String |" _APIGATEWAY_HTTPAPI";</br>"none";</br>JSON名称 | 默认_APIGATEWAY_HTTPAPI，执行httpapi的flow json脚本的名字 |
-| postOK | 可选 | String | "_APIGATEWAY_POST_OK";</br>"none";</br>JSON名称 | 默认_APIGATEWAY_POST_OK，POST OK的flow json名字，none代表不执行 |
-| postNOK | 可选 |String | "_APIGATEWAY_POST_NOK";</br>"none";</br>JSON名称 | 默认_APIGATEWAY_POST_NOK，POST NOK的flow json名字，none代表不执行 |
+| bucket | 可选 | Bool | "ture";</br>"false"; | 默认false，是否使用bucket功能 |
+| pre | 可选 |  String | "APIGATEWAY_PRE";</br>"none";</br>"JSON名称"; | 默认_APIGATEWAY_PRE，pre flow json名字，none代表不执行 |
+| httpApi | 可选 | String |" _APIGATEWAY_HTTPAPI";</br>"none";</br>"JSON名称"; | 默认_APIGATEWAY_HTTPAPI，执行httpapi的flow json脚本的名字 |
+| postOK | 可选 | String | "_APIGATEWAY_POST_OK";</br>"none";</br>J"JSON名称"; | 默认_APIGATEWAY_POST_OK，POST OK的flow json名字，none代表不执行 |
+| postNOK | 可选 |String | "_APIGATEWAY_POST_NOK";</br>"none";</br>"JSON名称"; | 默认_APIGATEWAY_POST_NOK，POST NOK的flow json名字，none代表不执行 |
 
 
 示例：
@@ -251,7 +251,7 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 | -- | -- | -- | -- | -- |
 | file | 必选 | String | 解压文件名 | 需要解压的文件名称，通常与downloadConf这个中url中的文件名一致，均为.zip格式 | 
 | password | 可选 | String | 密码字符串 | 解压密码 | 
-| path | 可选 | String | Path | 默认使用`--base`目录，解压之后的存储目录 |
+| path | 可选 | String | "Path" | 默认使用`--base`目录，解压之后的存储目录 |
 ### 7.4. 状态码
 | 状态码 | 描述 |
 | -- | -- |
@@ -269,9 +269,9 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 `httpApi API`输入数组`args`参数介绍：
 | 输入name | 是否必选 | 数据类型 | content内容 | 描述 |
 | -- | -- | -- | -- | -- |
-| name | 必选 | String | JSON文件名 | httpapi名称，详见./example/http/apis/*.json，例如"amap_district"，指向amap_district.json文件 |
-| internal | 可选 | Bool | "ture";</br>"false" | 判断是否为内部API |
-| private | 可选 | String | 密码字符串 | httpapi密钥文件名称 |
+| name | 必选 | String | "httpapi文件名" | httpapi名称，详见./example/http/apis/*.json，例如"amap_district"，指向amap_district.json文件 |
+| internal | 可选 | Bool | "ture";</br>"false"; | 判断是否为内部API |
+| private | 可选 | String | "密钥文件名" | httpapi密钥文件名称 |
 
 示例：
 ```
@@ -294,7 +294,7 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 ### 1.4. 状态码
 | 状态码 | 描述 |
 | -- | -- |
-| 200 | 获取信息成功。|
+| 200 | 获取信息成功 |
 ## 2. FLOW（flowApi API）
 ### 2.1. 功能介绍
 执行flowApi，发送flow请求，执行一个调用流程，即编排流程。
@@ -303,9 +303,9 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 `flowApi API`输入数组`args`参数介绍：
 | 输入name | 是否必选 | 数据类型 | content内容 | 描述 |
 | -- | -- | -- | -- | -- |
-| name | 必选 | String | JSON文件名 | httpapi名称，详见./example/http/apis/*.json，例如"amap_district"，指向amap_district.json文件 |
-| internal | 可选 | Bool | "ture";</br>"false" | 判断是否为内部API |
-| private | 可选 | String | 密码字符串 | httpapi密钥文件名称 |
+| name | 必选 | String | "flow文件名" | httpapi名称，详见./example/http/apis/*.json，例如"amap_district"，指向amap_district.json文件 |
+| internal | 可选 | Bool | "ture";</br>"false"; | 判断是否为内部API |
+| private | 可选 | String | "密钥文件名" | httpapi密钥文件名称 |
 
 示例：
 ```
@@ -328,16 +328,42 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 ### 2.4. 状态码
 | 状态码 | 描述 |
 | -- | -- |
-| 200 | 获取信息成功。|
+| 200 | 获取信息成功 |
+## 3. SCHEDULE（scheduleApi API）
+### 3.1. 功能介绍
+执行schedule，
+### 3.2. 位置
+### 3.3. API输入介绍
+`scheduleApi API`输入数组`args`参数介绍：
+| 输入name | 是否必选 | 数据类型 | content内容 | 描述 |
+| -- | -- | -- | -- | -- |
+| name | 必选 | String | "schedule文件名" | |
+| private | 可选  | String | "密钥文件名" ||
+### 3.4. 状态码 
+| 状态码 | 描述 |
+| -- | -- |
+| 200 | 获取信息成功 |
+
+# http相关
+## 1. （httpResponse API）
+### 1.1. 功能介绍
+### 1.2. 位置
+### 1.3. API输入介绍
+`httpResponse API`输入数组`args`参数介绍：
+| 输入name | 是否必选 | 数据类型 | content内容 | 描述 |
+| -- | -- | -- | -- | -- |
+| type | 可选 | String | "json";</br>"html";</br>"其他"; | httpResponse类型 |
+| key | 可选 | String |
+| code | 可选 | String |
+
+### 1.4. 状态码
+
+| httpResponse | type（json，html，或者其他） http response名称，key，从哪个result获取，type为json时转换为string，其他则直接按照string发送 code, 发送的HTTP code，不输入则为200| 在使用httpapi时，默认发送json格式的HTTP rsponse，flow和schedule没有这个默认逻辑，必须调用这个API发送http response|
+
+
 
 | 名称| 入参  | 用途|
 | -- | -- | -- |
-| 启动相关（用于main.json） |  |  |
-| decompressZip | file（必选） 需要解压的文件名称，通常与downloadConf这个中url中的文件名一致，均为.zip格式；<br />password（可选） 解压密码<br />path（可选） 解压之后的存储目录，不配则使用base目录 | 解压远端下载后的zip压缩包 |
-| 执行json文件 |  |  |
-| httpApi | name httpapi名字，private（可选）秘钥文件名称| 执行httpapi，发送http请求 |
-| flowApi | name flow名字，private（可选）秘钥文件名称| 执行flow |
-| scheduleApi | name schedule名字，private（可选）秘钥文件名称| 执行schedule |
 | http相关 |  |  |
 | httpResponse | type（json，html，或者其他） http response名称，key，从哪个result获取，type为json时转换为string，其他则直接按照string发送 code, 发送的HTTP code，不输入则为200| 在使用httpapi时，默认发送json格式的HTTP rsponse，flow和schedule没有这个默认逻辑，必须调用这个API发送http response|
 | 辅助类 |  |  |
