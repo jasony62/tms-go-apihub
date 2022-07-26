@@ -1,0 +1,25 @@
+{
+  "id": "baidu_nlp_lexer",
+  "url": "https://aip.baidubce.com/rpc/2.0/nlp/v1/lexer",
+  "private": "baidu_nlp_key",
+  "method": "POST",
+  "requestContentType": "json",
+  "args": [
+    {
+      "in": "query",
+      "name": "access_token",
+      "value": {
+        "from": "origin",
+        "content": "token"
+      }
+    },
+    {
+      "in": "query",
+      "name": "text",
+      "value": {
+        "from": "origin",
+        "content": "text"
+      }
+    }
+  ]
+}
