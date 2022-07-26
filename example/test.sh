@@ -75,4 +75,9 @@ curl -i -H "Content-Type: application/json" -d '{"city": "北京"}' "http://loca
 echo "\r\nquery带用户appID的企业微信schedule查询"  
 curl -i -H "Content-Type: application/json" -d '{"cities":["sh", "bj", "sh", "sh"], "image":"https://img.zcool.cn/community/01ff2059770a25a8012193a37c7695.jpg"}' "http://localhost:8080/schedule/amap_qywx?appID=001"
 
+echo "\r\n百度 NLP:"
+echo "\r\n对输入内容进行词法分析分词:\r\n"
+curl -i -X POST -d '{"text":"中国中央电视台是国家电视台"}'  "http://localhost:8080/flow/baidu_nlp_lexer"
 
+echo "\r\n对输入内容进行句法分析:\r\n"
+curl -i -X POST -d '{"text":"中国中央电视台是国家电视台"}'  "http://localhost:8080/flow/baidu_nlp_parser"
