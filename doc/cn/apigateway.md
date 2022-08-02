@@ -23,3 +23,12 @@ curl -H "Content-Type: application/json" -d '{"city": "北京"}' "http://localho
 ```
 curl  -H "Content-Type: application/json" -d '{"cities":["sh", "bj", "sh", "sh"], "image":"https://img.zcool.cn/community/01ff2059770a25a8012193a37c7695.jpg"}' "http://localhost:8080/schedule/amap_qywx"
 ```
+
+## 值得参考的商业/开源方案
+！[](https://github.com/wangbinbupt/tms-go-apihub/blob/main/main/doc/cn/apigateway1.jpg)
+！[](https://github.com/wangbinbupt/tms-go-apihub/blob/main/main/doc/cn/apigateway4.png)
+  
+https://www.restcloud.cn/restcloud/mycms/product-gateway.html
+！[](https://github.com/wangbinbupt/tms-go-apihub/blob/main/main/doc/cn/apigateway2.jpg)
+！[](https://github.com/wangbinbupt/tms-go-apihub/blob/main/main/doc/cn/apigateway3.jpg)
+
