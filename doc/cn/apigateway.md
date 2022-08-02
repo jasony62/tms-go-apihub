@@ -25,10 +25,9 @@ curl  -H "Content-Type: application/json" -d '{"cities":["sh", "bj", "sh", "sh"]
 ```
 
 ## 值得参考的商业/开源方案
-！[](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/cn/apigateway1.jpg)
-！[](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/cn/apigateway4.png)
-  
-https://www.restcloud.cn/restcloud/mycms/product-gateway.html
-！[](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/cn/apigateway2.jpg)
-！[](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/cn/apigateway3.jpg)
+!(https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/cn/apigateway1.jpg)
+![2](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/cn/apigateway4.png)
+  https://www.restcloud.cn/restcloud/mycms/product-gateway.html
+![3](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/cn/apigateway2.jpg)
+![4](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/cn/apigateway3.jpg)
 
