@@ -4,7 +4,7 @@
 * _HTTPOK.json
 * _HTTPNOK.json
 
-# 参数
+# 统计参数
 | 字段           | 类型|解释  |
 | ------------- | -----|----- |
 |http_in|counter|apigateway进入的请求数目|
@@ -14,7 +14,7 @@
 # label
 | 名称           | 解释  |
 | ------------- | ----- |
-|type|apigateway请求的类型，可以为httpapi，flow，schedule|
-|root|apigateway请求的名称|
-|child|当前执行的名称|
+|type|apigateway入请求的类型，可以为httpapi，flow，schedule|
+|root|apigateway入请求的名称|
+|child|对外调用的httpapi的名称|
 |code|返回的HTTP回应code|
