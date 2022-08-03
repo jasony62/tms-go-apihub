@@ -3,6 +3,8 @@
   - 【readme.md】中应该站在用户的角度解释一下，每个文件有什么用，是解决什么问题的
   - 【apis.md】应该提供一下示例。api的描述应该更规范些，参照一下互联网上开放api的描述。
   - 关于内容模版应该有个说明，说明一些模板的基本逻辑
+* 支持导入openapi 3.0（swagger 2.0不需要）
+* 增加对NLP的更多厂商支持
 
 * 防止fasthttp出错
   Use this brilliant tool - race detector - for detecting and eliminating data races in your program. If you detected data race related to fasthttp in your program, then there is high probability you forgot calling TimeoutError before returning from RequestHandler.
