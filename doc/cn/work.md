@@ -6,7 +6,10 @@
 * 支持导入openapi 3.0（swagger 2.0不需要）
 * 增加对NLP的更多厂商支持
 
+* 在base中记录访问源IP
 * hystrix-go旨在让 Go 程序员轻松构建具有与基于 Java 的 Hystrix 库类似的执行语义的应用程序。  
+
+*如何在回应json里面增加UUID，修改createJson？
 
 * postman或者apifox的测试脚本
 * 根据http response content type查看是否需要分解json

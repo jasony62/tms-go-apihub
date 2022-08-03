@@ -52,13 +52,13 @@ func copyScheduleStack(src *hub.Stack, task *hub.ScheduleApiDef) *hub.Stack {
 
 	for k, v := range src.Heap {
 		switch k {
-		case hub.OriginName:
+		case hub.HeapOriginName:
 			if task.Type == "api" && task.Api.Args != nil {
 				result.Heap[k] = generateStepResult(src, task.Api.Args)
 			} else {
 				result.Heap[k] = v
 			}
-		case hub.LoopName:
+		case hub.HeapLoopName:
 			oriLoop := src.Heap[k].(map[string]int)
 			loop := make(map[string]int, len(oriLoop))
 			for index, element := range oriLoop {
@@ -162,7 +162,7 @@ func handleLoopTask(stack *hub.Stack, task *hub.ScheduleApiDef) (interface{}, in
 		stack.Heap[task.Control.ResultKey] = loopResult
 	}
 
-	loop := stack.Heap[hub.LoopName].(map[string]int)
+	loop := stack.Heap[hub.HeapLoopName].(map[string]int)
 	if task.Control.ConcurrentLoopNum > 1 && loopLength > 1 {
 		triggerConcurrentLoop(stack, task, loopLength, loop, loopResult)
 	} else {
@@ -197,7 +197,7 @@ func handleOneScheduleApi(stack *hub.Stack, task *hub.ScheduleApiDef) (result in
 				klog.Errorln(err)
 				return nil, http.StatusInternalServerError
 			}
-		case hub.LoopName:
+		case hub.HeapLoopName:
 			klog.Infoln("运行 loop name", task.Control.Name)
 			return handleLoopTask(stack, task)
 		case "api":
@@ -306,7 +306,7 @@ func runSchedule(stack *hub.Stack, name string, private string) (interface{}, in
 		klog.Errorln("获得Schedule定义失败：", err)
 		return nil, http.StatusInternalServerError
 	}
-	stack.Heap[hub.LoopName] = make(map[string]int)
+	stack.Heap[hub.HeapLoopName] = make(map[string]int)
 
 	return handleTasks(stack, scheduleDef.Steps, scheduleDef.ConcurrentNum)
 }

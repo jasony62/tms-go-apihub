@@ -31,14 +31,14 @@ func postHttpapis(stack *hub.Stack, name string, result string, code int, durati
 	if stack == nil {
 		return
 	}
-	_, ok := stack.Heap[hub.BaseName]
+	_, ok := stack.Heap[hub.HeapBaseName]
 	if !ok {
 		return
 	}
 
 	stats := make(map[string]string)
-	stack.Heap["stats"] = stats
-	defer delete(stack.Heap, "stats")
+	stack.Heap[hub.HeapStatsName] = stats
+	defer delete(stack.Heap, hub.HeapStatsName)
 
 	stats["child"] = name
 	stats["duration"] = strconv.FormatFloat(duration, 'f', 5, 64)
@@ -73,11 +73,11 @@ func newRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Priva
 			outReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		case "json":
 			outReq.Header.Set("Content-Type", "application/json")
-		case hub.OriginName:
+		case hub.HeapOriginName:
 			contentType := stack.GinContext.Request.Header.Get("Content-Type")
 			outReq.Header.Set("Content-Type", contentType)
 			// 收到的请求中的数据
-			inData, _ := json.Marshal(stack.Heap[hub.OriginName])
+			inData, _ := json.Marshal(stack.Heap[hub.HeapOriginName])
 			outBody = string(inData)
 		default:
 			outReq.Header.Set("Content-Type", HttpApi.RequestContentType)
@@ -109,8 +109,8 @@ func newRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Priva
 			var value string
 			q := outReqURL.Query()
 			vars := make(map[string]string, paramLen)
-			stack.Heap[hub.VarsName] = vars
-			defer delete(stack.Heap, hub.VarsName)
+			stack.Heap[hub.HeapVarsName] = vars
+			defer delete(stack.Heap, hub.HeapVarsName)
 
 			for _, param := range *outReqParamRules {
 				if len(param.Name) > 0 {
@@ -125,7 +125,7 @@ func newRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Priva
 					case "header":
 						outReq.Header.Set(param.Name, value)
 					case "body":
-						if hasBody && HttpApi.RequestContentType != hub.OriginName {
+						if hasBody && HttpApi.RequestContentType != hub.HeapOriginName {
 							if HttpApi.RequestContentType == "form" {
 								args.Set(param.Name, value)
 							} else {
@@ -144,7 +144,7 @@ func newRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Priva
 						} else {
 							klog.Infoln("Refuse to set body :", HttpApi.RequestContentType, "VS\r\n", value)
 						}
-					case hub.VarsName:
+					case hub.HeapVarsName:
 					default:
 						klog.Infoln("Invalid in:", param.In, "名字", param.Name, "值", value)
 					}
@@ -221,8 +221,8 @@ func handleReq(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Privat
 
 	if HttpApi.Cache != nil {
 		//解析过期时间，如果存在则记录下来
-		stack.Heap["result"] = jsonInRspBody
-		defer delete(stack.Heap, "result")
+		stack.Heap[hub.HeapResultName] = jsonInRspBody
+		defer delete(stack.Heap, hub.HeapResultName)
 		expires, ok := handleExpireTime(stack, HttpApi, resp)
 		if !ok {
 			klog.Warningln("没有查询到过期时间")

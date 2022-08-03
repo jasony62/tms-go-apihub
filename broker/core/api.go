@@ -36,7 +36,7 @@ func postApis(stack *hub.Stack, apiDef *hub.ApiDef, result interface{}, code int
 	if stack == nil {
 		return
 	}
-	base, ok := stack.Heap[hub.BaseName]
+	base, ok := stack.Heap[hub.HeapBaseName]
 	if !ok {
 		return
 	}
@@ -84,7 +84,7 @@ func ApiRun(stack *hub.Stack, api *hub.ApiDef, private string, internal bool) (r
 	}
 
 	if api.OriginParameters != nil {
-		origin = stack.Heap[hub.OriginName].(map[string]interface{})
+		origin = stack.Heap[hub.HeapOriginName].(map[string]interface{})
 		for index := range *api.OriginParameters {
 			item := (*api.OriginParameters)[index]
 			origin[item.Name], err = util.GetParameterRawValue(stack, privateDef, &item.Value)

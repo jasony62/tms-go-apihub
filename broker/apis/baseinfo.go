@@ -7,7 +7,7 @@ import (
 )
 
 func fillBaseInfo(stack *hub.Stack, params map[string]string) (interface{}, int) {
-	base := stack.Heap[hub.BaseName].(map[string]interface{})
+	base := stack.Heap[hub.HeapBaseName].(map[string]interface{})
 
 	if base == nil {
 		return nil, 500

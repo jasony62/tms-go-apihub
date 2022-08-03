@@ -10,5 +10,5 @@ type Stack struct {
 	GinContext *gin.Context
 	Heap       map[string]interface{}
 	BaseString string
-	Now        time.Time
+	StartTime  time.Time
 }

@@ -34,10 +34,10 @@ var defaultApp = app{
 
 func fillStats(stack *hub.Stack, result interface{}, code int) {
 	stats := make(map[string]string)
-	stack.Heap["stats"] = stats
+	stack.Heap[hub.HeapStatsName] = stats
 
 	stats["child"] = ""
-	stats["duration"] = strconv.FormatFloat(time.Since(stack.Now).Seconds(), 'f', 5, 64)
+	stats["duration"] = strconv.FormatFloat(time.Since(stack.StartTime).Seconds(), 'f', 5, 64)
 	stats["code"] = strconv.FormatInt(int64(code), 10)
 
 	if code == http.StatusOK {
@@ -70,7 +70,6 @@ func newStack(c *gin.Context, level string) (*hub.Stack, string) {
 		value = *inReqData
 	}
 
-	base := make(map[string]interface{})
 	name := c.Param(`Id`)
 	version := c.Param(`version`)
 	if len(version) > 0 {
@@ -80,15 +79,13 @@ func newStack(c *gin.Context, level string) (*hub.Stack, string) {
 		name = c.Param(`bucket`) + "/" + name
 	}
 
-	base["root"] = name
-	base["type"] = level
-	base["start"] = strconv.FormatInt(now.Unix(), 10)
+	base := map[string]interface{}{"root": name, "type": level, "start": strconv.FormatInt(now.Unix(), 10)}
 
 	return &hub.Stack{
 		GinContext: c,
-		Heap:       map[string]interface{}{hub.OriginName: value, hub.BaseName: base},
+		Heap:       map[string]interface{}{hub.HeapOriginName: value, hub.HeapBaseName: base},
 		BaseString: util.MapToString(base),
-		Now:        now,
+		StartTime:  now,
 	}, name
 }
 

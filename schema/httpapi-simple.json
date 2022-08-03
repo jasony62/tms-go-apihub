@@ -2,7 +2,11 @@
 	"$schema": "http://json-schema.org/draft-07/schema#",
 	"type": "object",
 	"title": "HTTPAPI schema文件",
-	"required": ["id","method","requestContentType"],
+	"required": [
+		"id",
+		"method",
+		"requestContentType"
+	],
 	"properties": {
 		"id": {
 			"type": "string",
@@ -17,18 +21,31 @@
 			"type": "object",
 			"title": "动态生成的url地址",
 			"description": "当url为空时，必须提供这个结构，用来动态生成URL（比如路径中含有appId），结构为标准的value结构",
-			"required": ["from"],
+			"required": [
+				"from"
+			],
 			"properties": {
 				"from": {
 					"type": "string",
 					"title": "参数来源",
 					"description": "支持`literal`(直接从content里获取)，`query`(http query),`header`(http header),`private`(从秘钥文件读取),`origin`(原始报文body中的json),`env`(系统env)，heap(从原始报文和处理结果获取)，json(根据json生成字符串)，jsonRaw(根据json生成json结构体)，template(从content中生成),`func`(hub.FuncMap内部定义函数的名称)",
-					"enum": ["origin", "private", "query", "header", "literal", "template", "heap", "json", "jsonRaw", "env", "func"]
+					"enum": [
+						"origin",
+						"private",
+						"query",
+						"header",
+						"literal",
+						"template",
+						"heap",
+						"json",
+						"jsonRaw",
+						"env",
+						"func"
+					]
 				},
 				"content": {
 					"type": "string",
 					"title": "参数名称或函数名称或template的内容"
-
 				},
 				"json": {
 					"type": "object",
@@ -52,18 +69,30 @@
 			"type": "string",
 			"title": "url请求方法",
 			"description": "HTTP 请求方法，支持POST和GET",
-			"enum": ["POST","GET"]
+			"enum": [
+				"POST",
+				"GET"
+			]
 		},
 		"requestContentType": {
 			"type": "string",
 			"title": "请求内容类型",
 			"description": "json映射为`application/json`，form映射为`application/x-www-form-urlencoded`，origin为取输入报文的ContentType，并直接转发输入报文的http body，none表示没有body,其他值则直接写入ContentType",
-			"enum": ["json","form","orgin","none"]
+			"enum": [
+				"json",
+				"form",
+				"orgin",
+				"none"
+			]
 		},
 		"args": {
 			"type": "array",
 			"title": "请求参数",
-			"required": ["in","name","value"],
+			"required": [
+				"in",
+				"name",
+				"value"
+			],
 			"items": {
 				"type": "object",
 				"properties": {
@@ -71,7 +100,12 @@
 						"type": "string",
 						"title": "请求参数位置",
 						"description": "参数位置。支持`query`，`header`,`body`, `vars`。前三者的值除了会放到发送报文里，还可以在模板通过.vars.访问，vars表示只进入.vars",
-						"enum": ["header","vars","body","query"]
+						"enum": [
+							"header",
+							"vars",
+							"body",
+							"query"
+						]
 					},
 					"name": {
 						"type": "string",
@@ -81,13 +115,27 @@
 						"type": "object",
 						"title": "参数值",
 						"description": "标准value结构",
-						"required": ["from"],
+						"required": [
+							"from"
+						],
 						"properties": {
 							"from": {
 								"type": "string",
 								"title": "参数来源",
 								"description": "支持`literal`(直接从content里获取)，`query`(http query),`header`(http header),`private`(从秘钥文件读取),`origin`(原始报文body中的json),`env`(系统env)，heap(从原始报文和处理结果获取)，json(根据json生成字符串)，jsonRaw(根据json生成json结构体)，template(从content中生成),`func`(hub.FuncMap内部定义函数的名称)",
-								"enum": ["origin", "private", "query", "header", "literal", "template", "heap", "json", "jsonRaw", "env", "func"]
+								"enum": [
+									"origin",
+									"private",
+									"query",
+									"header",
+									"literal",
+									"template",
+									"heap",
+									"json",
+									"jsonRaw",
+									"env",
+									"func"
+								]
 							},
 							"content": {
 								"type": "string",
@@ -110,8 +158,13 @@
 			"type": "object",
 			"title": "是否支持缓存模式",
 			"description": "HTTP请求是否支持缓存模式，如果支持，在过期时间内，将不会再向服务器请求，而是直接返回缓存内容",
-			"required": ["from"],
-			"required": ["expire","format"],
+			"required": [
+				"from"
+			],
+			"required": [
+				"expire",
+				"format"
+			],
 			"properties": {
 				"expire": {
 					"type": "object",
@@ -122,7 +175,10 @@
 							"type": "string",
 							"title": "过期时间获取位置",
 							"description": "获取过期时间的位置，是从header域中获取的话，则设置为header，如果从body中获取，则设置为template",
-							"enum": ["template","header"]
+							"enum": [
+								"template",
+								"header"
+							]
 						},
 						"content": {
 							"type": "string",

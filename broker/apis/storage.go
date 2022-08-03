@@ -120,7 +120,7 @@ func storeLocal(stack *hub.Stack, user string, key string, index string, content
 	}
 
 	klog.Infoln("storeLocal: index:", index, " user:", user, " content:", content)
-	tmp := stack.Heap[hub.OriginName].(map[string]interface{})
+	tmp := stack.Heap[hub.HeapOriginName].(map[string]interface{})
 	result := tmp[key]
 	klog.Infoln("storeLocal: result:", result)
 	byteJson, err := jsonEx.Marshal(result)
