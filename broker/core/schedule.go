@@ -47,7 +47,7 @@ func copyScheduleStack(src *hub.Stack, task *hub.ScheduleApiDef) *hub.Stack {
 	result := hub.Stack{
 		GinContext: src.GinContext,
 		Heap:       make(map[string]interface{}),
-		Base:       src.Base,
+		BaseString: src.BaseString,
 	}
 
 	for k, v := range src.Heap {

@@ -36,28 +36,28 @@ func fillStats(stack *hub.Stack, result interface{}, code int) {
 	stats := make(map[string]string)
 	stack.Heap["stats"] = stats
 
-	stats["child"] = stack.Base["root"]
+	stats["child"] = ""
 	stats["duration"] = strconv.FormatFloat(time.Since(stack.Now).Seconds(), 'f', 5, 64)
 	stats["code"] = strconv.FormatInt(int64(code), 10)
 
 	if code == http.StatusOK {
 		stats["id"] = "0"
 		stats["msg"] = "ok"
-		klog.Infoln("___post apigateway OK:", stack.Base, "result:", result, " code:", code, " stats:", stats)
+		klog.Infoln("___post apigateway OK:", stack.BaseString, "result:", result, " code:", code, " stats:", stats)
 		params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "_HTTPOK"}}}
 		core.ApiRun(stack, &hub.ApiDef{Name: "HTTPAPI_POST_OK", Command: "flowApi", Args: &params}, "", true)
 	} else {
 		stats["id"] = strconv.FormatInt(int64(code), 10)
 		/*TODO real value*/
 		stats["msg"] = "err"
-		klog.Errorln("!!!!post apigateway NOK:", stack.Base, ", result:", result, " code:", code, " stats:", stats)
+		klog.Errorln("!!!!post apigateway NOK:", stack.BaseString, ", result:", result, " code:", code, " stats:", stats)
 		params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "_HTTPNOK"}}}
 		core.ApiRun(stack, &hub.ApiDef{Name: "HTTPAPI_POST_NOK", Command: "flowApi", Args: &params}, "", true)
 	}
 }
 
 // 1次请求的上下文
-func newStack(c *gin.Context, level string) *hub.Stack {
+func newStack(c *gin.Context, level string) (*hub.Stack, string) {
 	now := time.Now()
 	// 收到的数据
 	var value interface{}
@@ -70,7 +70,7 @@ func newStack(c *gin.Context, level string) *hub.Stack {
 		value = *inReqData
 	}
 
-	base := make(map[string]string)
+	base := make(map[string]interface{})
 	name := c.Param(`Id`)
 	version := c.Param(`version`)
 	if len(version) > 0 {
@@ -87,9 +87,9 @@ func newStack(c *gin.Context, level string) *hub.Stack {
 	return &hub.Stack{
 		GinContext: c,
 		Heap:       map[string]interface{}{hub.OriginName: value, hub.BaseName: base},
-		Base:       base,
+		BaseString: util.MapToString(base),
 		Now:        now,
-	}
+	}, name
 }
 
 func callCommon(stack *hub.Stack, command string, content string) {
@@ -144,22 +144,22 @@ func callCommon(stack *hub.Stack, command string, content string) {
 
 // 执行1个API调用
 func callHttpApi(c *gin.Context) {
-	stack := newStack(c, "httpapi")
+	stack, _ := newStack(c, "httpapi")
 	callCommon(stack, "flowApi", defaultApp.httpApi)
 }
 
 // 执行一个调用流程
 func callFlow(c *gin.Context) {
-	stack := newStack(c, "flow")
+	stack, name := newStack(c, "flow")
 	// 执行编排
-	callCommon(stack, "flowApi", stack.Base[hub.RootParamName])
+	callCommon(stack, "flowApi", name)
 }
 
 // 执行一个计划流程
 func callSchedule(c *gin.Context) {
-	stack := newStack(c, "schedule")
+	stack, name := newStack(c, "schedule")
 	// 执行编排
-	callCommon(stack, "scheduleApi", stack.Base[hub.RootParamName])
+	callCommon(stack, "scheduleApi", name)
 }
 
 func apiGatewayRun(host string, portString string, bucketEnable string,

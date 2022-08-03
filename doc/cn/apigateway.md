@@ -25,6 +25,7 @@ curl  -H "Content-Type: application/json" -d '{"cities":["sh", "bj", "sh", "sh"]
 ```
 
 ## 值得参考的商业/开源方案
+![compare](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/cn/api_compare.png)
 ![5](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/cn/apigateway5.png)
 ![1](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/cn/apigateway1.jpg)
 ![2](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/cn/apigateway4.png)
@@ -34,6 +35,9 @@ curl  -H "Content-Type: application/json" -d '{"cities":["sh", "bj", "sh", "sh"]
 https://www.restcloud.cn/restcloud/mycms/product-gateway.html
 ![3](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/cn/apigateway2.jpg)
 ![4](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/cn/apigateway3.jpg)
+
+多个api网关比较
+https://blog.csdn.net/pushiqiang/article/details/95726137
 
 私有云开源解决方案：
 Netflix Zuul，zuul是spring cloud的一个推荐组件，https://github.com/Netflix/zuul
