@@ -36,14 +36,11 @@ func postApis(stack *hub.Stack, apiDef *hub.ApiDef, result interface{}, code int
 	if stack == nil {
 		return
 	}
-	base, ok := stack.Heap[hub.HeapBaseName]
-	if !ok {
-		return
-	}
+
 	if code == http.StatusOK {
-		klog.Infoln("___post API OK command:"+apiDef.Command, " base:", base, " name："+apiDef.Name, " result:", result, " duration:", duration)
+		klog.Infoln("___post API OK command:"+apiDef.Command, " base:", stack.BaseString, " name："+apiDef.Name, " result:", result, " duration:", duration)
 	} else {
-		klog.Errorln("!!!post API NOK command :"+apiDef.Command, " base:", base, " name："+apiDef.Name, " result:", result, " duration:", duration)
+		klog.Errorln("!!!post API NOK command :"+apiDef.Command, " base:", stack.BaseString, " name："+apiDef.Name, " result:", result, " duration:", duration)
 	}
 }
 
