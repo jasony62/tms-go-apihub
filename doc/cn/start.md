@@ -9,9 +9,60 @@
 |软件环境|Golang1.17及以上、GCC9及以上|
 |涉及目录|broker、schema、example|
 
-    注：源码也可在Windows环境进行编译运行，具体步骤见4.1章节注。
+    注：源码也可在Windows环境进行编译运行，具体步骤见3.1章节注。
+
+如果已经配置过Go运行环境，可直接跳到第3章节内容。
+## 1.1 Linux环境配置
+### 1.1.1 Golang下载
+进入Golang下载官网，需选择Linux最新Go版本下载即可
+```
+https://studygolang.com/dl
+```
+### 1.1.2 安装
+将`go1.18.3.linux-amd64.tar.gz`压缩包下载到Linux指定位置，例如：/home/
+
+执行解压指令
+```
+tar zxvf go1.18.3.linux-amd64.tar.gz
+```
+此时解压后的go文件夹路径为：/home/go
+### 1.1.3 配置环境
+建议在同一目录下建立go语言工作环境文件夹，新建一个gopath文件夹，路径为：/home/gopath
+
+执行命令，打开profile文件
+```
+sudo vim /etc/profile
+```
+然后在打开的文件末尾添加：
+```
+export GOROOT=/home/go
+export GOPATH=/home/gopath
+export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
+export GOPROXY="https://goproxy.io"
+```
+然后刷新文档
+```
+source /etc/profile
+```
+以上配置好之后，我们打开终端，属于如下命令，就可以看到go的版本等信息了。
+```
+go version
+```
+## 1.2 Windows环境配置
+### 1.2.1 Golang下载
+进入Golang下载官网，需选择Windows最新Go版本下载即可
+```
+https://studygolang.com/dl
+```
+### 1.2.2 安装
+执行可执行文件exe安装即可。
+### 1.2.3 配置环境
+右击此电脑->属性->高级系统设置->环境变量，打开环境变量设置窗口。
+
+需要新建两个环境变量配置，一个是 GOROOT ，这个就是 Go 环境所在目录的配置。另一个是 GOPATH ，这个是 Go 项目的工作目录
 
 # 2 章节涉及目录介绍
+在介绍如何编译和运行源码前，首先介绍源码所涉及目录，以及各目录主要功能。若不感兴趣，想要快速执行API网关程序，可直接跳转第3章节。
 ## 2.1 broker文件目录介绍
 
 apihub源码均在`broker`目录下，即针对源码的`build`编译在broker目录下运行。
@@ -19,11 +70,11 @@ apihub源码均在`broker`目录下，即针对源码的`build`编译在broker�
 
 |名称|用途|
 | -- | -- |
-|apis||
+|apis| API信息 |
 |hub|API信息结构定义|
 |util|工具包|
 |main.go|主程序|
-|go.mod|相关Go包的集合，替换旧的基于`GOPATH`的方法，来指定使用哪些源文件，执行`build`时自动下载相关依赖包到本地指定位置|
+|go.mod|相关Go包的集合，替换旧的基于`GOPATH`的方法，来指定使用哪些源文件，执行`go get`可自动下载相关依赖包到本地gopath默认位置|
 
 ## 2.2 schema文件目录介绍
 `schema`目录中存放`json schema`校验文件，`schema`检查`example`文件夹中json文件是否合法，即是否符合API网关格式规范。
@@ -59,31 +110,36 @@ API网关与API服务配置文件相互分离。一方面，增加了程序部�
 
 json文件定义参考[JSON定义](https://github.com/jasony62/tms-go-apihub/blob/main/doc/cn/json.md)
 
-## 3.1 flows、httpapis、schedules
+### 2.3.1 flows、httpapis、schedules
 `broker`目录中`flows`、`httpapis`、`schedules`三个文件夹主要存放API相关文件。
 
-## 3.2 privates
+### 2.3.2 privates
 因为`privates`文件夹存放密码文件，所以没有暴露在git，即git中查找不到为正常现象。
 
-## 3.3 文件关联
+## 2.4 文件关联
 上述主要的三个文件夹`example`、`broker`、`schema`具体工作关系如下:
 
 `broker`目录下编译并执行`tms-go-apihub`文件，`tms-go-apihub`文件通过`schema`文件夹中的校验格式，检查`example`文件夹中json文件的合法性。最后启动API网关的监听服务。
 
-# 4 apihub启动
-## 4.1 build
+# 3 apihub启动
+## 3.1 build
 源码中已经初始化完成`go.mod`文件，即已经生成依赖包地址。
+
+在`broker`程序源码文件下，执行命令，下载依赖包到主机gopath默认位置。
+```
+go get
+```
 
 在`broker`程序源码文件下，执行命令
 ```
 go build -o tms-go-apihub
 ```
-命令生成名称为`tms-go-apihub`的可执行文件，同时自动下载依赖包到主机。
+命令生成名称为`tms-go-apihub`的可执行文件。
     
     注：若build编译Windows版本，则需要在PowerShell终端窗口执行 
     go build -o tms-go-apihub.exe 
     生成exe可执行文件，后续步骤与Linux环境下一致
-## 4.2 run
+## 3.2 run
 由于程序源码的代码预设，需要手动对某些文件进行指定或者软连接，也可根据实际文件位置与运行状态修改代码灵活调整，这里按照源代码预设路径进行操作。
 
 * 方法一：`--env`指定环境变量文件
@@ -126,9 +182,9 @@ Content-Length: 4
 [GIN] 2022/07/19 - 17:30:44 | 403 |      3.2014ms |       127.0.0.1 | POST     "/httpapi/amap_district"
 ```
 至此，apihub程序正常启动并工作。
-# 5 补充
+# 4 补充
 若有响应需求，可进行补充操作，或者功能查找。
-## 5.1 docker
+## 4.1 docker
 若在docker环境下运行，执行如下命令。
 
 
@@ -150,7 +206,7 @@ docker compose build tms-gah-broker
 docker compose up tms-gah-broker
 ```
 
-## 5.2 安装插件
+## 4.2 安装插件
 插件编译不依赖于本代码。
 
 ```
