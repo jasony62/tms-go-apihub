@@ -43,6 +43,7 @@ value.from为"funcs",value.content填入函数名字;
       }
     },
 ### FuncMapForTemplate说明
+关于Template用法详细说明见[Template语法说明](https://github.com/jasony62/tms-go-apihub/blob/main/doc/cn/template.md)
 #### 定义
 var FuncMapForTemplate map\[string](interface{})
 #### 使用

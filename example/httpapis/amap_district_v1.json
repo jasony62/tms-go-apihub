@@ -1,1 +1,43 @@
-amap_district.json
+{
+    "id": "amap_district",
+    "description": "高德地图查询城市区域编码",
+    "url": "https://restapi.amap.com/v3/config/district",
+    "method": "GET",
+    "private": "amap_keys",
+    "requestContentType": "none",  
+    "args": [
+      {
+        "in": "query",
+        "name": "user",
+        "value": {
+          "from": "query",
+          "content": "appID"
+        }
+      },
+      {
+        "in": "query",
+        "name": "key",
+        "value": {
+          "from": "private",
+          "content": "key1"
+        }
+      },
+      {
+        "in": "query",
+        "name": "subdistrict",
+        "value": {
+          "from": "literal",
+          "content": "0"
+        }
+      },
+      {
+        "in": "query",
+        "name": "keywords",
+        "value": {
+          "from": "origin",
+          "content": "city"
+        }
+      }
+    ]
+  }
+  
