@@ -1,0 +1,31 @@
+{
+    "folders": [
+        {
+            "path": ".\\broker"
+        },
+        {
+            "path": ".\\doc"
+        },
+        {
+            "path": ".\\example"
+        },
+        {
+            "path": ".\\schema"
+        },
+    ],
+    "launch": {
+        "version": "0.2.0",
+        "configurations": [
+        
+            {
+                "name": "Go Launch Package",
+                "type": "go",
+                "request": "launch",
+                "mode": "auto",
+                "program": "${fileDirname}/broker",
+                "cwd": "${fileDirname}/broker", // 调试程序时的工作目录，一般为${workspaceRoot}即代码所在目录
+                "args": ["--base", "../example/"],
+            }
+        ]
+    },
+}
