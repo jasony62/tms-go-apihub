@@ -3,14 +3,19 @@
   - 【readme.md】中应该站在用户的角度解释一下，每个文件有什么用，是解决什么问题的
   - 【apis.md】应该提供一下示例。api的描述应该更规范些，参照一下互联网上开放api的描述。
   - 关于内容模版应该有个说明，说明一些模板的基本逻辑
+* 支持导入openapi 3.0（swagger 2.0不需要）
+* 增加对NLP的更多厂商支持
 
-* 防止fasthttp出错
-  Use this brilliant tool - race detector - for detecting and eliminating data races in your program. If you detected data race related to fasthttp in your program, then there is high probability you forgot calling TimeoutError before returning from RequestHandler.
+* 在base中记录访问源IP
+* hystrix-go旨在让 Go 程序员轻松构建具有与基于 Java 的 Hystrix 库类似的执行语义的应用程序。  
+
+*如何在回应json里面增加UUID，修改createJson？
 
 * postman或者apifox的测试脚本
 * 根据http response content type查看是否需要分解json
 * error code转错误码+错误信息
-* prom alert研究
+* 防止fasthttp出错
+  Use this brilliant tool - race detector - for detecting and eliminating data races in your program. If you detected data race related to fasthttp in your program, then there is high probability you forgot calling TimeoutError before returning from RequestHandler.
 
 
 ## 中期

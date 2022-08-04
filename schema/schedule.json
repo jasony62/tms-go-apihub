@@ -1,191 +1,228 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
-  "required": ["name", "steps"],
-  "properties": {
-    "name": {
-      "type": "string"
-    },
-    "description": {
-      "type": "string"
-    },
-    "concurrentNum": {
-      "type": "number"
-    },
-    "steps": {
-      "type": "array",
-      "items": {
-        "$ref" : "#/scheduleApiDef"
-      }
-    }
-  },
-  
-	"apiDef": {
+	"$schema": "http://json-schema.org/draft-07/schema#",
 	"type": "object",
-	"required": ["name", "command"],
+	"required": [
+		"name",
+		"steps"
+	],
 	"properties": {
-	  "name": {
-		"type": "string"
-	  },
-	  "command": {
-		"type": "string"
-	  },
-	  "description": {
-		"type": "string"
-	  },
-	  "private": {
-		"type": "string"
-	  },
-	  "resultKey": {
-		"type": "string"
-	  },
-	  "args": {
-		"type": "array",
-		"items": {
-		  "type": "object",
-		  "required": ["name", "value"],
-		  "properties": {
-			"name": {
-			"type": "string"
-			},
-			"value": {
-			"$ref" : "#/baseValueDef"
-			}
-		  }
-		}
-	  },
-	  "origin": {
-		"type": "array",
-		"items": {
-		  "type": "object",
-		  "required": ["name", "value"],
-		  "properties": {
-			"name": {
-			"type": "string"
-			},
-			"value": {
-			"$ref" : "#/baseValueDef"
-			}
-		  }
-		}
-	  }
-	},
-	"additionalProperties" : false
-  },
-	
-  "scheduleSwitchCaseDef": {
-	"type": "object",
-	"required": ["value"],
-	"properties": {
-	  "value": {
-		"type": "string"
-	  },
-	  "concurrentNum": {
-		"type": "number"
-	  },
-	  "steps": {
-		"type": "array",
-		"items": {
-		  "$ref" : "#/scheduleApiDef"
-		}
-	  }
-	},
-	"additionalProperties" : false
-  },
-  
-  "controlDef": {
-  "type": "object",
-	  "required": ["name"],
-	  "properties": {
 		"name": {
-		  "type": "string"
+			"type": "string"
 		},
 		"description": {
-		  "type": "string"
-		},
-		"private": {
-		  "type": "string"
-		},
-		"resultKey": {
-		  "type": "string"
+			"type": "string"
 		},
 		"concurrentNum": {
-		  "type": "number"
-		},
-		"concurrentLoopNum": {
-		  "type": "number"
-		},
-		"key": {
-		  "$ref" : "#/baseValueDef"
+			"type": "number"
 		},
 		"steps": {
 			"type": "array",
 			"items": {
-			  "$ref" : "#/scheduleApiDef"
-			}
-		},
-		"cases": {
-		    "type": "array",
-			"items": {
-			  "$ref" : "#/scheduleSwitchCaseDef"
+				"$ref": "#/scheduleApiDef"
 			}
 		}
-	  },
-	  "additionalProperties" : false
-  },
-	  
-  "scheduleApiDef": {
-	"type": "object",
-	"required": ["type"],
-	"properties": {
-	  "type": {
-		"type": "string"
-	  },
-	  "mode": {
-		"type": "string"
-	  },
-	  "private": {
-		"type": "string"
-	  },
-	  "control": {
-		"$ref" : "#/controlDef"
-	  },
-	  "api": {
-		"$ref" : "#/apiDef"
-	  }
 	},
-	"additionalProperties" : false
-  },	
-
-	
-  "baseValueDef": {
-	"type": "object",
-	"required": ["from"],
-	"properties": {
-	  "from": {
-		"type": "string",
-		"enum": ["origin", "private", "query", "header", "literal", "template", "heap", "json", "jsonRaw","env", "func"]
-	  },
-	  "content": {
-		"type": "string"
-	  },
-	  "json": {
-		"type": "object"
-	  },
-	  "args": {
-		"type": "string"
-	  }
+	"apiDef": {
+		"type": "object",
+		"required": [
+			"name",
+			"command"
+		],
+		"properties": {
+			"name": {
+				"type": "string"
+			},
+			"command": {
+				"type": "string"
+			},
+			"description": {
+				"type": "string"
+			},
+			"private": {
+				"type": "string"
+			},
+			"resultKey": {
+				"type": "string"
+			},
+			"args": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"required": [
+						"name",
+						"value"
+					],
+					"properties": {
+						"name": {
+							"type": "string"
+						},
+						"value": {
+							"$ref": "#/baseValueDef"
+						}
+					}
+				}
+			},
+			"origin": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"required": [
+						"name",
+						"value"
+					],
+					"properties": {
+						"name": {
+							"type": "string"
+						},
+						"value": {
+							"$ref": "#/baseValueDef"
+						}
+					}
+				}
+			}
+		},
+		"additionalProperties": false
 	},
-	"if": {
-	  "properties": { "from": { "enum": ["json", "jsonRaw"] } }
+	"scheduleSwitchCaseDef": {
+		"type": "object",
+		"required": [
+			"value"
+		],
+		"properties": {
+			"value": {
+				"type": "string"
+			},
+			"concurrentNum": {
+				"type": "number"
+			},
+			"steps": {
+				"type": "array",
+				"items": {
+					"$ref": "#/scheduleApiDef"
+				}
+			}
+		},
+		"additionalProperties": false
 	},
-	"then": {
-	  "required": ["json"]
+	"controlDef": {
+		"type": "object",
+		"required": [
+			"name"
+		],
+		"properties": {
+			"name": {
+				"type": "string"
+			},
+			"description": {
+				"type": "string"
+			},
+			"private": {
+				"type": "string"
+			},
+			"resultKey": {
+				"type": "string"
+			},
+			"concurrentNum": {
+				"type": "number"
+			},
+			"concurrentLoopNum": {
+				"type": "number"
+			},
+			"key": {
+				"$ref": "#/baseValueDef"
+			},
+			"steps": {
+				"type": "array",
+				"items": {
+					"$ref": "#/scheduleApiDef"
+				}
+			},
+			"cases": {
+				"type": "array",
+				"items": {
+					"$ref": "#/scheduleSwitchCaseDef"
+				}
+			}
+		},
+		"additionalProperties": false
 	},
-	"else": {
-	  "required": ["content"]
+	"scheduleApiDef": {
+		"type": "object",
+		"required": [
+			"type"
+		],
+		"properties": {
+			"type": {
+				"type": "string"
+			},
+			"mode": {
+				"type": "string"
+			},
+			"private": {
+				"type": "string"
+			},
+			"control": {
+				"$ref": "#/controlDef"
+			},
+			"api": {
+				"$ref": "#/apiDef"
+			}
+		},
+		"additionalProperties": false
 	},
-	"additionalProperties" : false
-  },
-  "additionalProperties" : false
+	"baseValueDef": {
+		"type": "object",
+		"required": [
+			"from"
+		],
+		"properties": {
+			"from": {
+				"type": "string",
+				"enum": [
+					"origin",
+					"private",
+					"query",
+					"header",
+					"literal",
+					"template",
+					"heap",
+					"json",
+					"jsonRaw",
+					"env",
+					"func"
+				]
+			},
+			"content": {
+				"type": "string"
+			},
+			"json": {
+				"type": "object"
+			},
+			"args": {
+				"type": "string"
+			}
+		},
+		"if": {
+			"properties": {
+				"from": {
+					"enum": [
+						"json",
+						"jsonRaw"
+					]
+				}
+			}
+		},
+		"then": {
+			"required": [
+				"json"
+			]
+		},
+		"else": {
+			"required": [
+				"content"
+			]
+		},
+		"additionalProperties": false
+	},
+	"additionalProperties": false
 }

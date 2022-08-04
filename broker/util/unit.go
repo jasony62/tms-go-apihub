@@ -68,7 +68,7 @@ func GetParameterRawValue(stack *hub.Stack, private *hub.PrivateArray, from *hub
 	case "query":
 		// 从请求参数中获取查询参数
 		value = stack.GinContext.Query(from.Content)
-	case hub.OriginName:
+	case hub.HeapOriginName:
 		value, err = queryFromHeap(stack, "{{.origin."+from.Content+"}}")
 	case "private":
 		value = findPrivateValue(private, from.Content)

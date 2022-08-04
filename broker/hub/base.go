@@ -15,11 +15,13 @@ type ApiHandler func(*Stack, map[string]string) (interface{}, int)
 type FuncHandler func(params []string) string
 type TemplateHandler func(args ...interface{}) string
 
-const OriginName = "origin"
-const VarsName = "vars"
-const LoopName = "loop"
-const BaseName = "base"
-const RootParamName = "root"
+const HeapOriginName = "origin"
+const HeapVarsName = "vars"
+const HeapLoopName = "loop"
+const HeapBaseName = "base"
+const HeapRootName = "root"
+const HeapStatsName = "stats"
+const HeapResultName = "result"
 
 const Right_Access = "access"
 const Right_Deny = "deny"

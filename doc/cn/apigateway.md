@@ -23,3 +23,28 @@ curl -H "Content-Type: application/json" -d '{"city": "北京"}' "http://localho
 ```
 curl  -H "Content-Type: application/json" -d '{"cities":["sh", "bj", "sh", "sh"], "image":"https://img.zcool.cn/community/01ff2059770a25a8012193a37c7695.jpg"}' "http://localhost:8080/schedule/amap_qywx"
 ```
+
+## 值得参考的商业/开源方案
+![compare](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/cn/api_compare.png)
+![5](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/cn/apigateway5.png)
+![1](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/cn/apigateway1.jpg)
+![2](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/cn/apigateway4.png)
+![6](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/cn/apigateway6.png)
+![7](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/cn/apigateway7.png)
+
+https://www.restcloud.cn/restcloud/mycms/product-gateway.html
+![3](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/cn/apigateway2.jpg)
+![4](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/cn/apigateway3.jpg)
+
+多个api网关比较
+https://blog.csdn.net/pushiqiang/article/details/95726137
+
+私有云开源解决方案：
+Netflix Zuul，zuul是spring cloud的一个推荐组件，https://github.com/Netflix/zuul
+Kong kong是基于Nginx+Lua进行二次开发的方案， https://konghq.com/
+Tyk是2014年创建的开源API网关，甚至比AWS的API网关即服务功能还要早。Tyk用Golang编写并使用Golang自己的HTTP服务器。
+
+公有云解决方案：
+Amazon API Gateway，https://aws.amazon.com/cn/api-gateway/
+阿里云API网关，https://www.aliyun.com/product/apigateway/
+腾讯云API网关， https://cloud.tencent.com/product/apigateway
