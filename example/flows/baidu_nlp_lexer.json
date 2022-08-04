@@ -1,0 +1,66 @@
+{
+  "name": "baidu_nlp_lexer",
+  "description": "百度自然语言处理",
+  "steps": [
+	{
+      "name": "gettoken",
+      "description": "获得access_token",
+      "command": "httpApi",
+      "args": [
+        {
+          "name": "name",
+          "value": {
+            "from": "literal",
+            "content": "baidu_nlp_token"
+          }
+        }
+      ],
+      "resultKey": "tokenResult"
+    },
+    {
+      "name": "lexer",
+      "description": "自然语言处理分类",
+      "command": "httpApi",
+      "args": [
+        {
+          "name": "name",
+          "value": {
+            "from": "literal",
+            "content": "baidu_nlp_lexer"
+          }
+        }
+      ],
+      "origin": [
+        {
+          "name": "token",
+          "value": {
+            "from": "heap",
+            "content": "tokenResult.access_token"
+          }
+        }
+      ],
+      "resultKey": "lexerResult"
+    },
+    {
+      "name": "response",
+      "command": "httpResponse",
+      "description": "返回结果",    
+      "args": [
+        {
+          "name": "type",
+          "value": {
+            "from": "literal",
+            "content": "json"
+          }
+        },
+        {
+          "name": "key",
+          "value": {
+            "from": "literal",
+            "content": "lexerResult"
+          }
+        }        
+      ]
+    }    
+  ]
+}

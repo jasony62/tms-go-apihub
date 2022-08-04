@@ -45,7 +45,7 @@
         {
           "name": "type",
           "value": {
-            "from": "literal",
+            "from": "template",
             "content": "{{.base.type}}"
           }
         }

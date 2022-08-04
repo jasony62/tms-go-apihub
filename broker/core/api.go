@@ -36,14 +36,11 @@ func postApis(stack *hub.Stack, apiDef *hub.ApiDef, result interface{}, code int
 	if stack == nil {
 		return
 	}
-	base, ok := stack.Heap[hub.BaseName]
-	if !ok {
-		return
-	}
+
 	if code == http.StatusOK {
-		klog.Infoln("___post API OK command:"+apiDef.Command, " base:", base, " name："+apiDef.Name, " result:", result, " duration:", duration)
+		klog.Infoln("___post API OK command:"+apiDef.Command, " base:", stack.BaseString, " name："+apiDef.Name, " result:", result, " duration:", duration)
 	} else {
-		klog.Errorln("!!!post API NOK command :"+apiDef.Command, " base:", base, " name："+apiDef.Name, " result:", result, " duration:", duration)
+		klog.Errorln("!!!post API NOK command :"+apiDef.Command, " base:", stack.BaseString, " name："+apiDef.Name, " result:", result, " duration:", duration)
 	}
 }
 
@@ -84,7 +81,7 @@ func ApiRun(stack *hub.Stack, api *hub.ApiDef, private string, internal bool) (r
 	}
 
 	if api.OriginParameters != nil {
-		origin = stack.Heap[hub.OriginName].(map[string]interface{})
+		origin = stack.Heap[hub.HeapOriginName].(map[string]interface{})
 		for index := range *api.OriginParameters {
 			item := (*api.OriginParameters)[index]
 			origin[item.Name], err = util.GetParameterRawValue(stack, privateDef, &item.Value)

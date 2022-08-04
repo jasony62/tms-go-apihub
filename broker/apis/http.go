@@ -24,21 +24,21 @@ var jsonEx = jsoniter.Config{
 }.Froze()
 
 func preHttpapis(stack *hub.Stack, name string) {
-	klog.Infoln("___pre HTTPAPI base：", stack.Base, " Name:", name)
+	klog.Infoln("___pre HTTPAPI base：", stack.BaseString, " Name:", name)
 }
 
 func postHttpapis(stack *hub.Stack, name string, result string, code int, duration float64) {
 	if stack == nil {
 		return
 	}
-	_, ok := stack.Heap[hub.BaseName]
+	_, ok := stack.Heap[hub.HeapBaseName]
 	if !ok {
 		return
 	}
 
 	stats := make(map[string]string)
-	stack.Heap["stats"] = stats
-	defer delete(stack.Heap, "stats")
+	stack.Heap[hub.HeapStatsName] = stats
+	defer delete(stack.Heap, hub.HeapStatsName)
 
 	stats["child"] = name
 	stats["duration"] = strconv.FormatFloat(duration, 'f', 5, 64)
@@ -46,14 +46,14 @@ func postHttpapis(stack *hub.Stack, name string, result string, code int, durati
 	if code == http.StatusOK {
 		stats["id"] = "0"
 		stats["msg"] = "ok"
-		klog.Infoln("___post HTTPAPI OK:", stack.Base, " name：", name, ", result:", result, " code:", code, " stats:", stats)
+		klog.Infoln("___post HTTPAPI OK:", stack.BaseString, " name：", name, ", result:", result, " code:", code, " stats:", stats)
 		params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "_HTTPOK"}}}
 		core.ApiRun(stack, &hub.ApiDef{Name: "HTTPAPI_POST_OK", Command: "flowApi", Args: &params}, "", true)
 	} else {
 		/*TODO real value*/
 		stats["id"] = strconv.FormatInt(int64(code), 10)
 		stats["msg"] = result
-		klog.Errorln("!!!!post HTTPAPI NOK:", stack.Base, " name：", name, ", result:", result, " code:", code, " stats:", stats)
+		klog.Errorln("!!!!post HTTPAPI NOK:", stack.BaseString, " name：", name, ", result:", result, " code:", code, " stats:", stats)
 		params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "_HTTPNOK"}}}
 		core.ApiRun(stack, &hub.ApiDef{Name: "HTTPAPI_POST_NOK", Command: "flowApi", Args: &params}, "", true)
 	}
@@ -73,11 +73,11 @@ func newRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Priva
 			outReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		case "json":
 			outReq.Header.Set("Content-Type", "application/json")
-		case hub.OriginName:
+		case hub.HeapOriginName:
 			contentType := stack.GinContext.Request.Header.Get("Content-Type")
 			outReq.Header.Set("Content-Type", contentType)
 			// 收到的请求中的数据
-			inData, _ := json.Marshal(stack.Heap[hub.OriginName])
+			inData, _ := json.Marshal(stack.Heap[hub.HeapOriginName])
 			outBody = string(inData)
 		default:
 			outReq.Header.Set("Content-Type", HttpApi.RequestContentType)
@@ -109,8 +109,8 @@ func newRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Priva
 			var value string
 			q := outReqURL.Query()
 			vars := make(map[string]string, paramLen)
-			stack.Heap[hub.VarsName] = vars
-			defer delete(stack.Heap, hub.VarsName)
+			stack.Heap[hub.HeapVarsName] = vars
+			defer delete(stack.Heap, hub.HeapVarsName)
 
 			for _, param := range *outReqParamRules {
 				if len(param.Name) > 0 {
@@ -125,7 +125,7 @@ func newRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Priva
 					case "header":
 						outReq.Header.Set(param.Name, value)
 					case "body":
-						if hasBody && HttpApi.RequestContentType != hub.OriginName {
+						if hasBody && HttpApi.RequestContentType != hub.HeapOriginName {
 							if HttpApi.RequestContentType == "form" {
 								args.Set(param.Name, value)
 							} else {
@@ -144,7 +144,7 @@ func newRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Priva
 						} else {
 							klog.Infoln("Refuse to set body :", HttpApi.RequestContentType, "VS\r\n", value)
 						}
-					case hub.VarsName:
+					case hub.HeapVarsName:
 					default:
 						klog.Infoln("Invalid in:", param.In, "名字", param.Name, "值", value)
 					}
@@ -221,8 +221,8 @@ func handleReq(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Privat
 
 	if HttpApi.Cache != nil {
 		//解析过期时间，如果存在则记录下来
-		stack.Heap["result"] = jsonInRspBody
-		defer delete(stack.Heap, "result")
+		stack.Heap[hub.HeapResultName] = jsonInRspBody
+		defer delete(stack.Heap, hub.HeapResultName)
 		expires, ok := handleExpireTime(stack, HttpApi, resp)
 		if !ok {
 			klog.Warningln("没有查询到过期时间")
@@ -450,16 +450,16 @@ func httpResponse(stack *hub.Stack, params map[string]string) (interface{}, int)
 	if result == nil {
 		klog.Infoln("获取result失败")
 	} else {
-			switch name {
-			case "html":
-				stack.GinContext.Header("Content-Type", "text/html; charset=utf-8")
-				stack.GinContext.String(code, "%s", result)
-			case "json":
-				stack.GinContext.IndentedJSON(code, result)
-			default:
-				stack.GinContext.Header("Content-Type", name)
-				stack.GinContext.String(code, "%s", result)
-			}
+		switch name {
+		case "html":
+			stack.GinContext.Header("Content-Type", "text/html; charset=utf-8")
+			stack.GinContext.String(code, "%s", result)
+		case "json":
+			stack.GinContext.IndentedJSON(code, result)
+		default:
+			stack.GinContext.Header("Content-Type", name)
+			stack.GinContext.String(code, "%s", result)
 		}
+	}
 	return nil, fasthttp.StatusOK
 }

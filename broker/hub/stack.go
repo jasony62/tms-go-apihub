@@ -9,6 +9,6 @@ import (
 type Stack struct {
 	GinContext *gin.Context
 	Heap       map[string]interface{}
-	Base       map[string]string
-	Now        time.Time
+	BaseString string
+	StartTime  time.Time
 }
