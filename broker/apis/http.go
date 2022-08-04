@@ -24,7 +24,7 @@ var jsonEx = jsoniter.Config{
 }.Froze()
 
 func preHttpapis(stack *hub.Stack, name string) {
-	klog.Infoln("___pre HTTPAPI base：", stack.BaseString, " Name:", name)
+	klog.Infoln("___pre HTTPAPI:", stack.BaseString, " Name:", name)
 }
 
 func postHttpapis(stack *hub.Stack, name string, result string, code int, duration float64) {
@@ -367,9 +367,9 @@ func getCacheContentWithLock(HttpApi *hub.HttpApiDef) interface{} {
 func run(stack *hub.Stack, name string, private string, internal bool) (jsonOutRspBody interface{}, ret int) {
 	var err error
 	var privateDef *hub.PrivateArray
-	HttpApi, err := util.FindHttpApiDef(name)
+	HttpApi, ok := util.FindHttpApiDef(name)
 
-	if HttpApi == nil {
+	if !ok || HttpApi == nil {
 		klog.Errorln("获得API定义失败：", err)
 		return nil, http.StatusForbidden
 	}
@@ -379,9 +379,9 @@ func run(stack *hub.Stack, name string, private string, internal bool) (jsonOutR
 	}
 
 	if len(private) != 0 {
-		privateDef, err = util.FindPrivateDef(private)
-		if err != nil {
-			klog.Errorln("获得private定义失败：", err)
+		privateDef, ok = util.FindPrivateDef(private)
+		if !ok || privateDef == nil {
+			klog.Errorln("获得private定义失败：", private)
 			return nil, http.StatusForbidden
 		}
 	}

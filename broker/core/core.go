@@ -1,6 +1,8 @@
 package core
 
 import (
+	"time"
+
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/jasony62/tms-go-apihub/util"
 	klog "k8s.io/klog/v2"
@@ -15,7 +17,10 @@ func init() {
 
 func ApiHubStartMainFlow(path string) {
 	util.LoadMainFlow(path)
+	var stack hub.Stack
+	stack.BaseString = " base: main. "
+	stack.StartTime = time.Now()
 
-	ApiRun(nil, &hub.ApiDef{Name: "main", Command: "flowApi",
+	ApiRun(&stack, &hub.ApiDef{Name: "main", Command: "flowApi",
 		Args: &[]hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "main"}}}}, "", false)
 }

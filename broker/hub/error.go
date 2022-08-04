@@ -1,8 +1,13 @@
 package hub
 
 type TmsError struct {
-	Id       uint32
+	Id       uint
 	ErrorMsg string
 	Module   string
-	Line     uint32
+	Line     int
+	Error    error
 }
+
+const TmsErrorCoreId = 10000
+const TmsErrorApisId = 20000
+const TmsErrorUtilId = 30000
