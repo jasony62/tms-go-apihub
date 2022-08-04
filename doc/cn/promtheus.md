@@ -5,15 +5,15 @@
 * _HTTPNOK.json
 
 # 统计参数
-| 字段           | 类型|解释  |
-| ------------- | -----|----- |
+| 字段 | 类型 |解释  |
+| -- | -- | -- |
 |http_in|counter|apigateway进入的请求数目|
 |http_in_duration_sec|histogram|apigateway进入的请求处理时间，0-10秒，每秒一个桶|
 |http_out|counter|httpapi发出的请求数目|
 |http_out_duration_sec|histogram|httpapi发出的请求处理时间，0-10秒，每秒一个桶|
 # label
-| 名称           | 解释  |
-| ------------- | ----- |
+| 名称 | 解释  |
+| -- | -- |
 |type|apigateway入请求的类型，可以为httpapi，flow，schedule|
 |root|apigateway入请求的名称|
 |child|对外调用的httpapi的名称|
