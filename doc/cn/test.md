@@ -8,18 +8,38 @@
 
 现将命令符操着过程编写为shell脚本，更方便提供给使用者进行黑盒测试。
 
+并且提供两种测试脚本，双脚本即apihub程序启动和postman程序启动分别由两个脚本控制，方便调试人员分别调试启动。单脚本即将apihub程序和postman启动放在一个脚本控制，方便全流程自动测试。
+
+    注：目前仅在天翼云环境测试运行，自己的Linux和Windows环境未验证！
+
+## 单脚本测试方式
+具体shell脚本在./brker目录下，脚本名称`startup-postmanup.sh`。
+
+脚本首先检查进程中是否存在`tms-go-apihub`应用程序，若存在则杀死进程。
+
+然后检查当前目录下是否有可执行文件`tms-go-apihub`（apihub的可执行文件），若有则直接运行，若无则自动build可执行文件并运行。
+
+最后等待2秒钟左右，检查当前目录下是否有`./*.postman_collection 和 *.postman_environment`文件，若有则直接运行，返回成功信息，若无打印错误信息提示用户。
+## 双脚本测试方式
 具体shell脚本在./brker目录下，分别为start.sh、postmanup.sh
 
-* start.sh检查当前目录下是否有可执行文件tms-go-apihub（apihub的可执行文件），若有则直接运行，若无则自动build可执行文件并运行。
-* postmanup.sh检查当前目录下是否有 、文件，若有则直接运行，若无打印错误信息提示用户。
+* `start.sh`首先检查进程中是否存在`tms-go-apihub`应用程序，若存在则杀死进程。检查当前目录下是否有可执行文件`tms-go-apihub`（apihub的可执行文件），若有则直接运行，若无则自动`build`可执行文件并运行。
+* `postmanup.sh`检查当前目录下是否有`./*.postman_collection 和 *.postman_environment`文件，若有则直接运行，返回成功信息，若无打印错误信息提示用户。
 
 postman测试过程中，需要注意postman发送地址和端口号与apihub监听地址和端口号要保持一致。
 
 postman地址和端口号修改位置如下
 ```
-
+./broker/34test_0623.postman_environment
 ```
+*.postman_environment修改value位置地址和端口号即可。
 ```
+{
+	"key": "url",
+	"value": "127.0.0.1:8080",
+	"type": "default",
+	"enabled": true
+},
 ```
 
 apihub地址和端口号修改位置如下
@@ -50,7 +70,24 @@ main.json文件最下方host、port
   ]
 }
 ```
-
+## 脚本参数修改
+启动程序名称和位置或许无法适配默认shell脚本，为方便使用，打开对应shell脚本，shell头直接修改文件名和位置即可。
+```
+# ############################################################
+# 可配置文件路径及名称：
+# 
+# apihub_addr：                 apihub应用程序相对位置
+# conf_addr：                   json文件相对位置
+# postman_collection_addr：     postman_collection文件相对位置
+# postman_environment_addr：    postman_environment文件相对位置
+# 
+# ############################################################
+apihub_addr="./tms-go-apihub"
+conf_addr="../example/"
+postman_collection_addr="./APIHUB_0623.postman_collection"
+postman_environment_addr="./34test_0623.postman_environment"
+# ############################################################
+```
 # 现有接口测试
 将test.sh中关键内容转换为psotman脚本，满足自动化测试要求
 ```
