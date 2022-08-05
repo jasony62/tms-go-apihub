@@ -24,6 +24,7 @@ else
     if [ -f "$runapihub" ]
     then
         $apihub_addr --base $conf_addr
+        go get
     else
         echo "error: 重新编译源码失败, 请检查源码是否正确"
     fi
