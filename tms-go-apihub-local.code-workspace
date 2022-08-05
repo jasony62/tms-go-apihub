@@ -1,16 +1,16 @@
 {
     "folders": [
         {
-            "path": ".\\broker"
+            "path": "./broker"
         },
         {
-            "path": ".\\doc"
+            "path": "./doc"
         },
         {
-            "path": ".\\example"
+            "path": "./example"
         },
         {
-            "path": ".\\schema"
+            "path": "./schema"
         },
     ],
     "launch": {
@@ -23,7 +23,6 @@
                 "request": "launch",
                 "mode": "auto",
                 "program": "${fileDirname}\\broker",
-                "cwd": "${fileDirname}\\broker", // 调试程序时的工作目录，一般为${workspaceRoot}即代码所在目录
                 "args": ["--base", "../example/"],
             }
         ]
