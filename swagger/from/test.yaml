@@ -1,0 +1,140 @@
+openapi: 3.0.0
+info:
+  description: >-
+    This is a sample server Petstore server.  You can find out more about    
+    Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net,
+    #swagger](http://swagger.io/irc/).      For this sample, you can use the api
+    key `special-key` to test the authorization     filters.
+  version: 1.0.0-oas3
+  title: 集团激活回单语音平台接口
+  termsOfService: http://10.140.140.84:9001/fk/voiceplatform/report
+  contact:
+    email: apiteam@swagger.io
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+tags:
+  - name: InterfaceExcuteResult_YUN
+    description: 激活回单语音
+    externalDocs:
+      description: 激活回单语音
+      url: http://10.140.140.84:9001/fk/voiceplatform/report
+paths:
+  /report:
+    post:
+      tags:
+        - InterfaceExcuteResult_YUN
+      summary: 激活回单语音
+      description: '###########'
+      operationId: report
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResultMsg'
+        description: 激活回单语音
+        required: true
+      parameters:
+        - name: api_key
+          in: header
+          schema:
+            type: string
+        - name: accNum
+          in: query
+          description: 号码
+          required: true
+          schema:
+            type: string
+        - name: certType
+          in: query
+          description: 证件类型
+          required: false
+          schema:
+            type: string
+        - name: certNum
+          in: query
+          description: 证件号码
+          required: false
+          schema:
+            type: string            
+      responses:
+        '405':
+          description: Invalid input
+      security:
+        - petstore_auth:
+            - write:pets
+            - read:pets
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+servers:
+  - url: https://petstore.swagger.io/v2
+  - url: http://petstore.swagger.io/v2
+components:
+  securitySchemes:
+    petstore_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: http://petstore.swagger.io/oauth/dialog
+          scopes:
+            write:pets: modify pets in your account
+            read:pets: read your pets
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header
+  schemas:
+    model:
+      type: object
+      required:
+        - name
+        - photoUrls
+      properties:
+        interfaceName:
+          type: string
+          example: InterfaceExcuteResult_VOLTE
+        msg:
+          $ref: '#/components/schemas/msg'
+      xml:
+        name: Pet
+    msg:
+      type: object
+      required:
+        - name
+        - photoUrls
+      properties:
+        ResultMsg:
+          $ref: '#/components/schemas/ResultMsg'
+      xml:
+        name: Pet
+    ResultMsg:
+      type: object
+      required:
+        - name
+        - photoUrls
+      properties:
+        DstSysId:
+          type: string
+          example: 0_45_YUN
+        ServiceId:
+          type: string
+          example: '26452007011031132000000000919816'
+        RetCode:
+          type: string
+          example: '0'
+        RetDesc:
+          type: string
+          example: 执行成功
+    ResponseMsg:
+      type: object
+      required:
+        - name
+        - photoUrls
+      properties:
+        RetCode:
+          type: string
+          example: '0'
+        RetDesc:
+          type: string
+          example: success
