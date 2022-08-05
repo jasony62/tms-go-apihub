@@ -7,9 +7,9 @@ value定义为:
 | 字段名称 | 是否必选 | 数据类型 | 描述 | 
 | -- | -- | -- | -- | 
 | from |  必选 | String | 获取参数值的位置,支持:</br>`literal`：直接从content里获取;</br>`query`：http query，请求的参数，外部传入参数;</br>`header`：http header，请求的头，外部传入;</br>`private`：从秘钥文件读取;</br>`origin`：原始报文body中的json;</br>`env`：系统env;</br>`heap`：从原始报文和处理结果获取;</br>`json`：根据json生成字符串;</br>`jsonRaw`：根据json生成json结构体;</br>`template`：从content中根据模板生成，具体语法见[Template语法说明](https://github.com/jasony62/tms-go-apihub/blob/main/doc/cn/template.md);</br>`func`：hub.FuncMap内部定义函数的名称。 |
-| content | 可选 | String | 参数名称，或者函数名称，或者template的内容。|
-| args | 可选 | String | from为func时，func的输入参数，多个参数时需要以空格分割，如："args": "apikey X-CurTime X-Param"。 |
-| json | 可选 | String | json的输入值,支持`.origin.`访问输入json，.vars.访问在parameters定义的值，支持采用template的FuncMap的方式直接调用hub.FuncMapForTemplate内部定义的函数(例如"template": "{{md5 .vars.apikey .vars.XCurTime .vars.XParam}}")。如果入参名字含有字符-，则需要定义一个新的vars，去掉原名字中的-。 |
+| content | 可选 | String | 参数名称，或者函数名称，或者`template`的内容。|
+| args | 可选 | String | `from`为`func`时，`func`的输入参数，多个参数时需要以空格分割，如：</br>`"args": "apikey X-CurTime X-Param"`。 |
+| json | 可选 | String | json的输入值,支持`.origin.`访问输入`json`，`.vars.`访问在`parameters`定义的值，支持采用template的`FuncMap`的方式直接调用`hub.FuncMapForTemplate`内部定义的函数(例如：`"template": "{{md5 .vars.apikey .vars.XCurTime .vars.XParam}}"`)。如果入参名字含有字符-，则需要定义一个新的vars，去掉原名字中的-。 |
 
 param定义为:
 
