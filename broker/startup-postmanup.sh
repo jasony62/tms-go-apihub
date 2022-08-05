@@ -21,7 +21,11 @@ echo "-------auto run tms-go-apihub-------"
 killnum=`ps -C tms-go-apihub -o pid=`
 kill $killnum
 
+killnum=`ps -C http-server -o pid=`
+kill $killnum
+
 runapihub="./tms-go-apihub"
+../test/http-server/http-server --addr 127.0.0.1:6060 &
 if [ -f "$runapihub" ];then
     $apihub_addr --base $conf_addr &
     echo "success: tms-go-apihub运行结束"

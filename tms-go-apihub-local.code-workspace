@@ -22,7 +22,8 @@
                 "type": "go",
                 "request": "launch",
                 "mode": "auto",
-                "program": "${fileDirname}\\broker",
+                "program": "${fileDirname}",
+                // "cwd": "${workspaceFolder}",
                 "args": ["--base", "../example/"],
             }
         ]
