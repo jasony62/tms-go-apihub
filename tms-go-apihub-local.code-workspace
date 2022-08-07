@@ -12,6 +12,9 @@
         {
             "path": "./schema"
         },
+        {
+            "path": "test"
+        }
     ],
     "launch": {
         "version": "0.2.0",
