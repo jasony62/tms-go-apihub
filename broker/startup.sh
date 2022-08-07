@@ -38,3 +38,6 @@ else
         echo "tms-go-apihub应用程序启动失败, 未找到源码或可执行文件, 请检查shell文件路径"
     fi
 fi
+
+echo "提示: 如果需要重新编译应用程序, 直接删除可执行文件, 重新运行本脚本即可!"
+echo "删除命令提示: rm ./tms-go-apihub"
