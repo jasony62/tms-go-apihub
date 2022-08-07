@@ -2,35 +2,39 @@
 # ############################################################
 # 可配置文件路径及名称：
 # 
-# apihub_addr：                 apihub应用程序相对位置
-# conf_addr：                   json文件相对位置
+# apihub_app：                 apihub应用程序相对位置
+# conf_path：                  json文件夹相对位置
 # 
-# ############################################################
+##############################################################
 
-apihub_addr="./tms-go-apihub"
-conf_addr="../example/"
+apihub_app="./tms-go-apihub"
+conf_path="../example/"
 
-# ############################################################
-echo "-------auto run tms-go-apihub-------"
+##############################################################
+
+ps aux | grep tms-go-apihub
 killnum=`ps -C tms-go-apihub -o pid=`
 kill $killnum
-runapihub="./tms-go-apihub"
-if [ -f "$runapihub" ];then
-    $apihub_addr --base $conf_addr
-    echo "success: tms-go-apihub运行结束"
+if [ -f $? ];then
+    echo "error: tms-go-apihub进程杀死失败"
+else
+    echo "success: tms-go-apihub进程杀死成功!"
+fi
+
+# 启动tms-go-apihub服务程序
+echo "--------------auto run tms-go-apihub--------------"
+if [ -f "$apihub_app" ];then
+    $apihub_app --base $conf_path &
+    echo "success: tms-go-apihub后台运行成功!"
 else
     echo "error: ./tms-go-apihub 可执行文件不存在"
     go build -o tms-go-apihub
-    if [ -f "$runapihub" ]
-    then
-        $apihub_addr --base $conf_addr
+    if [ -f "$apihub_app" ];then
+        $apihub_app --base $conf_path &
+        echo "success: tms-go-apihub重新编译且后台运行成功!"
         go get
     else
-        echo "error: 重新编译源码失败, 请检查源码是否正确"
+        echo "error: tms-go-apihub重新编译源码失败, 请检查 ./ 源码是否正确"
+        echo "tms-go-apihub应用程序启动失败, 未找到源码或可执行文件, 请检查shell文件路径"
     fi
 fi
-
-
-
-
-
