@@ -67,6 +67,7 @@
 }
 ```
 `http-server`程序暂时不需要修改IP和端口号，保持默认即可。
+
 ## 2. 单脚本测试方式
 具体shell脚本在`./brker`目录下，脚本名称`startup-postmanup.sh`。
 
@@ -75,6 +76,7 @@
 然后检查当前目录下是否有可执行文件`tms-go-apihub`（apihub的可执行文件）、`http-server`（http-server程序模拟API网关调用的外部server返回结果），若有则直接运行，若无则自动build可执行文件并运行。
 
 最后等待2秒钟左右，检查当前目录下是否有`./*.postman_collection 和 *.postman_environment`文件，若有则直接运行，返回成功信息，若无打印错误信息提示用户。
+
 ## 3. 双脚本测试方式
 具体shell脚本在./brker目录下，分别为start.sh、postmanup.sh
 
