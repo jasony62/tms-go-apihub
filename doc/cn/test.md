@@ -14,14 +14,17 @@
 
 现将命令符操着过程编写为shell脚本，更方便提供给使用者进行黑盒测试。
 
-并且提供两种测试脚本，双脚本即`apihub`程序启动和`postman`程序启动分别由两个脚本控制，方便调试人员分别调试启动。单脚本即将`apihub`程序和`postman`启动放在一个脚本控制，方便全流程自动测试。
+并且提供两种测试脚本，双脚本即`apihub`、`http-server`程序启动和`postman`程序启动分别由两个脚本控制，方便调试人员分别调试启动。
+
+单脚本即将`apihub`程序、`http-server`程序、`postman`测试脚本放在一个Shell脚本控制，方便全流程自动测试。
 
     注：目前仅在天翼云、本地Linux环境测试运行，本地的Linux首次运行需要配置nodejs、newman、go环境。Windows环境未验证！
+    http-server程序模拟API网关调用的外部server返回结果
 
 ## 1. ！！！测前必看
-postman测试过程中，需要注意postman发送地址和端口号与apihub监听地址和端口号要保持一致。
+`postman`测试过程中，需要注意`postman`发送地址和端口号与apihub监听地址和端口号要保持一致。
 
-postman地址和端口号修改位置如下
+`postman`地址和端口号修改位置如下
 ```
 ./broker/34test_0623.postman_environment
 ```
@@ -35,11 +38,11 @@ postman地址和端口号修改位置如下
 },
 ```
 
-apihub地址和端口号修改位置如下
+`apihub`地址和端口号修改位置如下
 ```
 ../example/main.json
 ```
-main.json文件最下方host、port
+`main.json`文件最下方`host、port`
 ```
 {
   "name": "apiGateway",
@@ -63,38 +66,52 @@ main.json文件最下方host、port
   ]
 }
 ```
+`http-server`程序暂时不需要修改IP和端口号，保持默认即可。
 ## 2. 单脚本测试方式
-具体shell脚本在./brker目录下，脚本名称`startup-postmanup.sh`。
+具体shell脚本在`./brker`目录下，脚本名称`startup-postmanup.sh`。
 
-脚本首先检查进程中是否存在`tms-go-apihub`应用程序，若存在则杀死进程。
+脚本首先检查进程中是否存在`tms-go-apihub`、`http-server`应用程序，若存在则杀死进程。
 
-然后检查当前目录下是否有可执行文件`tms-go-apihub`（apihub的可执行文件），若有则直接运行，若无则自动build可执行文件并运行。
+然后检查当前目录下是否有可执行文件`tms-go-apihub`（apihub的可执行文件）、`http-server`（http-server程序模拟API网关调用的外部server返回结果），若有则直接运行，若无则自动build可执行文件并运行。
 
 最后等待2秒钟左右，检查当前目录下是否有`./*.postman_collection 和 *.postman_environment`文件，若有则直接运行，返回成功信息，若无打印错误信息提示用户。
 ## 3. 双脚本测试方式
 具体shell脚本在./brker目录下，分别为start.sh、postmanup.sh
 
-* `start.sh`首先检查进程中是否存在`tms-go-apihub`应用程序，若存在则杀死进程。检查当前目录下是否有可执行文件`tms-go-apihub`（apihub的可执行文件），若有则直接运行，若无则自动`build`可执行文件并运行。
+* `start.sh`首先检查进程中是否存在`tms-go-apihub`、`http-server`应用程序，若存在则杀死进程。检查当前目录下是否有可执行文件`tms-go-apihub`（apihub的可执行文件）、`http-server`，若有则直接运行，若无则自动`build`可执行文件并运行。
 * `postmanup.sh`检查当前目录下是否有`./*.postman_collection 和 *.postman_environment`文件，若有则直接运行，返回成功信息，若无打印错误信息提示用户。
 
 
 ## 4. 脚本参数修改
 启动程序名称和位置或许无法适配默认shell脚本，为方便使用，打开对应shell脚本，shell头直接修改文件名和位置即可。
 ```
-# ############################################################
+##############################################################
 # 可配置文件路径及名称：
 # 
-# apihub_addr：                 apihub应用程序相对位置
-# conf_addr：                   json文件相对位置
-# postman_collection_addr：     postman_collection文件相对位置
-# postman_environment_addr：    postman_environment文件相对位置
+# apihub_app：                 apihub应用程序相对位置
+# conf_path：                  json文件夹相对位置
+#
+# postman_collection_app：     postman_collection文件相对位置
+# postman_environment_app：    postman_environment文件相对位置
+#
+# httpserver_app：             httpserver应用程序相对位置
+# httpserver_ip：              httpserver应用程序默认监听IP和端口号
 # 
-# ############################################################
-apihub_addr="./tms-go-apihub"
-conf_addr="../example/"
-postman_collection_addr="./APIHUB_0623.postman_collection"
-postman_environment_addr="./34test_0623.postman_environment"
-# ############################################################
+##############################################################
+####################自定义位置#################################
+
+apihub_app="./tms-go-apihub"
+conf_path="../example/"
+
+postman_collection_app="./APIHUB_0623.postman_collection"
+postman_environment_app="./34test_0623.postman_environment"
+
+httpserver_app="../test/http-server/http-server"
+httpserver_path="../test/http-server/"
+httpserver_ip="127.0.0.1:6060"
+
+##############################################################
+##############################################################
 ```
 # 现有接口测试
 将test.sh中关键内容转换为psotman脚本，满足自动化测试要求
