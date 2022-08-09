@@ -17,6 +17,9 @@
         },
         {
             "path": "swagger"
+        },
+        {
+            "path": "postman_to_json"
         }
     ],
     "launch": {
