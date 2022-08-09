@@ -8,6 +8,7 @@ import (
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/jasony62/tms-go-apihub/util"
 	klog "k8s.io/klog/v2"
 )
 
@@ -100,8 +101,9 @@ func promHttpCounterInc(stack *hub.Stack, params map[string]string) (interface{}
 	val := params["duration"]
 	duration, err := strconv.ParseFloat(val, 64)
 	if err != nil {
-		klog.Errorln("解析http out duration失败, err: ", err)
-		return nil, 400
+		str:= "解析http out duration失败, err: " + err.Error()
+		klog.Errorln(stack.BaseString, str)
+		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), 400
 	}
 	if params["httpInOut"] == "httpIn" {
 		httpInDurationPromHistogram.With(promLabels).Observe(duration)
@@ -110,8 +112,9 @@ func promHttpCounterInc(stack *hub.Stack, params map[string]string) (interface{}
 		httpOutDurationPromHistogram.With(promLabels).Observe(duration)
 		httpOutPromCounter.With(promLabels).Inc()
 	} else {
-		klog.Errorln("httpInOut参数配置错误！")
-		return nil, 400
+		str:= "httpInOut参数配置错误！"
+		klog.Errorln(stack.BaseString, str)
+		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), 400
 	}
 	return nil, 200
 }

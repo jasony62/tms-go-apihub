@@ -67,8 +67,9 @@ func ApiRun(stack *hub.Stack, api *hub.ApiDef, private string, internal bool) (r
 		args["private"] = api.Private
 		privateDef, ok = util.FindPrivateDef(api.Private)
 		if !ok || err != nil {
-			klog.Errorln(stack.BaseString, "获得private定义失败：", api.Private)
-			return nil, http.StatusForbidden
+			str := "获得private定义失败：" + api.Private
+			klog.Errorln(stack.BaseString, str)
+			return util.CreateTmsError(hub.TmsErrorCoreId, str, nil), http.StatusForbidden
 		}
 	}
 
@@ -77,8 +78,9 @@ func ApiRun(stack *hub.Stack, api *hub.ApiDef, private string, internal bool) (r
 			item := (*api.Args)[index]
 			args[item.Name], err = util.GetParameterStringValue(stack, privateDef, &item.Value)
 			if err != nil {
-				klog.Errorln(stack.BaseString, "获得value失败：", err)
-				return nil, http.StatusInternalServerError
+				str := "获得value失败：" + err.Error()
+				klog.Errorln(stack.BaseString, str)
+				return util.CreateTmsError(hub.TmsErrorCoreId, str, nil), http.StatusInternalServerError
 			}
 		}
 	}
@@ -89,8 +91,9 @@ func ApiRun(stack *hub.Stack, api *hub.ApiDef, private string, internal bool) (r
 			item := (*api.OriginParameters)[index]
 			origin[item.Name], err = util.GetParameterRawValue(stack, privateDef, &item.Value)
 			if err != nil {
-				klog.Errorln(stack.BaseString, "获得origin失败：", err)
-				return nil, http.StatusInternalServerError
+				str := "获得origin失败：" + err.Error()
+				klog.Errorln(stack.BaseString, str)
+				return util.CreateTmsError(hub.TmsErrorCoreId, str, nil), http.StatusInternalServerError
 			}
 		}
 	}

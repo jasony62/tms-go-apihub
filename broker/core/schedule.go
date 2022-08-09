@@ -80,7 +80,7 @@ func handleSwitchTask(stack *hub.Stack, task *hub.ScheduleApiDef) (interface{}, 
 	if len(key) == 0 {
 		err := "invalid switch key"
 		klog.Errorln(stack.BaseString, err)
-		return nil, http.StatusInternalServerError
+		return util.CreateTmsError(hub.TmsErrorCoreId, err, nil), http.StatusInternalServerError
 	}
 
 	for _, item := range *task.Control.Cases {
@@ -88,7 +88,7 @@ func handleSwitchTask(stack *hub.Stack, task *hub.ScheduleApiDef) (interface{}, 
 			return handleTasks(stack, item.Steps, task.Control.ConcurrentNum)
 		}
 	}
-	return nil, http.StatusInternalServerError
+	return util.CreateTmsError(hub.TmsErrorCoreId, "No task control", nil), http.StatusInternalServerError
 }
 
 func concurrentLoopWorker(apis chan concurrentLoopIn, out chan concurrentLoopOut) {
@@ -154,7 +154,7 @@ func handleLoopTask(stack *hub.Stack, task *hub.ScheduleApiDef) (interface{}, in
 	if len(keyStr) == 0 {
 		err := "invalid loop key"
 		klog.Errorln(stack.BaseString, err)
-		return nil, http.StatusInternalServerError
+		return util.CreateTmsError(hub.TmsErrorCoreId, err, nil), http.StatusInternalServerError
 	}
 	loopLength, _ := strconv.Atoi(keyStr)
 	loopResult := make([]interface{}, loopLength)
@@ -195,7 +195,7 @@ func handleOneScheduleApi(stack *hub.Stack, task *hub.ScheduleApiDef) (result in
 			} else {
 				err := "No switch cases"
 				klog.Errorln(stack.BaseString, err)
-				return nil, http.StatusInternalServerError
+				return util.CreateTmsError(hub.TmsErrorCoreId, err, nil), http.StatusInternalServerError
 			}
 		case hub.HeapLoopName:
 			klog.Infoln(stack.BaseString, "运行 loop name", task.Control.Name)
@@ -206,7 +206,7 @@ func handleOneScheduleApi(stack *hub.Stack, task *hub.ScheduleApiDef) (result in
 		default:
 			err := "don't support type " + task.Type
 			klog.Errorln(stack.BaseString, err)
-			return nil, http.StatusInternalServerError
+			return util.CreateTmsError(hub.TmsErrorCoreId, err, nil), http.StatusInternalServerError
 		}
 	}
 	return result, status
@@ -264,8 +264,9 @@ func handleTasks(stack *hub.Stack, apis *[]hub.ScheduleApiDef, concurrentNum int
 		}
 	}
 	if apis == nil {
-		klog.Errorln(stack.BaseString, "apis nil")
-		return nil, http.StatusInternalServerError
+		str := "apis nil"
+		klog.Errorln(stack.BaseString, str)
+		return util.CreateTmsError(hub.TmsErrorCoreId, str, nil), http.StatusInternalServerError
 	}
 	klog.Infoln(stack.BaseString, "apis lens：", len(*apis))
 	for index := range *apis {
@@ -303,8 +304,9 @@ func handleTasks(stack *hub.Stack, apis *[]hub.ScheduleApiDef, concurrentNum int
 func runSchedule(stack *hub.Stack, name string, private string) (interface{}, int) {
 	scheduleDef, ok := util.FindScheduleDef(name)
 	if !ok || scheduleDef == nil || scheduleDef.Steps == nil {
-		klog.Errorln(stack.BaseString, "获得Schedule定义失败：", name)
-		return nil, http.StatusInternalServerError
+		str := "获得Schedule定义失败：" + name
+		klog.Errorln(stack.BaseString, str)
+		return util.CreateTmsError(hub.TmsErrorCoreId, str, nil), http.StatusInternalServerError
 	}
 	stack.Heap[hub.HeapLoopName] = make(map[string]int)
 
@@ -316,7 +318,7 @@ func runScheduleApi(stack *hub.Stack, params map[string]string) (interface{}, in
 	if !OK {
 		str := "缺少flow名称"
 		klog.Errorln(stack.BaseString, str)
-		return nil, http.StatusInternalServerError
+		return util.CreateTmsError(hub.TmsErrorCoreId, str, nil), http.StatusInternalServerError
 	}
 	private := params["private"]
 

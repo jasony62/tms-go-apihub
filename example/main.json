@@ -41,14 +41,14 @@
       "description": "promStart",
       "args": [
         {
-          "name": "promHost",
+          "name": "host",
           "value": {
             "from": "literal",
             "content": "0.0.0.0"
           }
         },
         {
-          "name": "promPort",
+          "name": "port",
           "value": {
             "from": "literal",
             "content": "8000"

@@ -23,8 +23,9 @@ func runFlow(stack *hub.Stack, name string, private string) (result interface{},
 	var lastResult string
 	flowDef, ok := util.FindFlowDef(name)
 	if !ok || flowDef == nil {
-		klog.Errorln(stack.BaseString, "获得Flow定义失败：", name)
-		return nil, http.StatusForbidden
+		str := "获得Flow定义失败：" + name
+		klog.Errorln(stack.BaseString, str)
+		return util.CreateTmsError(hub.TmsErrorCoreId, str, nil), http.StatusForbidden
 	}
 
 	for i := range flowDef.Steps {
@@ -32,8 +33,9 @@ func runFlow(stack *hub.Stack, name string, private string) (result interface{},
 
 		result, code = handleOneApi(stack, &apiDef, private)
 		if code != http.StatusOK {
-			klog.Errorln(stack.BaseString, "运行API："+apiDef.Name+"失败")
-			return nil, code
+			str := "运行API：" + apiDef.Name + "失败"
+			klog.Errorln(stack.BaseString, str)
+			return util.CreateTmsError(hub.TmsErrorCoreId, str, nil), code
 		}
 
 		if len(apiDef.ResultKey) > 0 {

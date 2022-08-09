@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/jasony62/tms-go-apihub/hub"
+	"github.com/jasony62/tms-go-apihub/util"
 	"github.com/valyala/fasthttp"
 	klog "k8s.io/klog/v2"
 )
@@ -38,29 +39,30 @@ func storageStore(stack *hub.Stack, params map[string]string) (interface{}, int)
 
 	user, OK = params["user"]
 	if !OK {
-		str := "缺少user定义"
-		klog.Errorln(str)
-		return nil, http.StatusForbidden
+		str := "storageStore缺少user定义"
+		klog.Errorln(stack.BaseString, str)
+		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusForbidden
 	}
 
 	klog.Infoln("storageStore user: ", user)
 	if len(user) == 0 {
-		klog.Errorln("storageStore user is null")
-		return nil, fasthttp.StatusInternalServerError
+		str:="storageStore缺少user"
+		klog.Errorln(stack.BaseString, str)
+		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusForbidden
 	}
 
 	key, OK = params["key"]
 	if !OK {
-		str := "缺少key索引"
-		klog.Errorln(str)
-		return nil, http.StatusForbidden
+		str := "storageStore缺少key索引"
+		klog.Errorln(stack.BaseString, str)
+		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusForbidden
 	}
 
 	index, OK = params["index"]
 	if !OK {
-		str := "缺少index索引"
-		klog.Errorln(str)
-		return nil, http.StatusForbidden
+		str := "storageStore缺少index索引"
+		klog.Errorln(stack.BaseString, str)
+		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusForbidden
 	}
 
 	source, OK = params["source"]
@@ -70,9 +72,9 @@ func storageStore(stack *hub.Stack, params map[string]string) (interface{}, int)
 
 	content, OK = params["content"]
 	if !OK {
-		str := "缺少存储内容content"
-		klog.Errorln(str)
-		return nil, http.StatusForbidden
+		str := "storageStore缺少存储内容content"
+		klog.Errorln(stack.BaseString, str)
+		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusForbidden
 	}
 
 	klog.Infoln("storageStore: user:", user, "params:", params)
@@ -90,9 +92,9 @@ func storageLoad(stack *hub.Stack, params map[string]string) (interface{}, int) 
 
 	index, OK = params["index"]
 	if !OK {
-		str := "缺少index索引"
-		klog.Errorln(str)
-		return nil, http.StatusForbidden
+		str := "storageLoad缺少index索引"
+		klog.Errorln(stack.BaseString, str)
+		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusForbidden
 	}
 
 	source, OK = params["source"]
@@ -102,9 +104,9 @@ func storageLoad(stack *hub.Stack, params map[string]string) (interface{}, int) 
 
 	content, OK = params["content"]
 	if !OK {
-		str := "缺少存储内容content"
-		klog.Errorln(str)
-		return nil, http.StatusForbidden
+		str := "storageLoad缺少存储内容content"
+		klog.Errorln(stack.BaseString, str)
+		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusForbidden
 	}
 
 	if source == "local" {
@@ -125,7 +127,9 @@ func storeLocal(stack *hub.Stack, user string, key string, index string, content
 	klog.Infoln("storeLocal: result:", result)
 	byteJson, err := jsonEx.Marshal(result)
 	if err != nil {
-		return nil, fasthttp.StatusInternalServerError
+		str := "storeLocal解析失败"+err.Error()
+		klog.Errorln(stack.BaseString, str)
+		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusInternalServerError
 	}
 
 	if content == "json" {
@@ -144,8 +148,9 @@ func loadLocal(stack *hub.Stack, index string, source string, content string) (i
 	klog.Infoln("loadLocal:", index, " source:", source, " content:", content)
 
 	if val, ok = storeMap.StorageMap[index]; !ok {
-		klog.Infoln("storageLoad失败:", index)
-		return nil, fasthttp.StatusInternalServerError
+		str := "loadLocal加载失败"+index
+		klog.Errorln(stack.BaseString, str)
+		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusInternalServerError
 	}
 
 	klog.Infoln("loadLocal value:", val)
@@ -156,7 +161,7 @@ func loadLocal(stack *hub.Stack, index string, source string, content string) (i
 		ret = val
 	}
 
-	klog.Infoln("loadLocal ret:", ret)
+	//	klog.Infoln("loadLocal ret:", ret)
 	delete(storeMap.StorageMap, index)
 	return ret, fasthttp.StatusOK
 }

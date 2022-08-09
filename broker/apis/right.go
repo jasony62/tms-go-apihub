@@ -25,7 +25,7 @@ func userInList(arr *hub.RightArray, user string) bool {
 
 func hasRight(stack *hub.Stack, user string, name string, callType string) (interface{}, int) {
 	// check是否有权限
-	klog.Infoln("CheckRight user:", user, " callType:", callType, " name:", name)
+	//	klog.Infoln("CheckRight user:", user, " callType:", callType, " name:", name)
 	rightInfo := util.FindRightDef(user, name, callType)
 
 	haveRight := false
@@ -48,8 +48,9 @@ func hasRight(stack *hub.Stack, user string, name string, callType string) (inte
 	}
 
 	if !haveRight {
-		klog.Errorln("Deny access right for: ", user, ",api ", name)
-		return nil, http.StatusForbidden
+		str:= "Deny access right for: " + user + ",api " +  name
+		klog.Errorln(stack.BaseString, str)
+		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusForbidden
 	} else {
 		return nil, http.StatusOK
 	}
@@ -70,15 +71,15 @@ func checkRight(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	name, OK = params["name"]
 	if !OK {
 		str := "缺少api名称"
-		klog.Errorln(str)
-		return nil, http.StatusForbidden
+		klog.Errorln(stack.BaseString, str)
+		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusForbidden
 	}
 
 	apiType, OK = params["type"]
 	if !OK {
 		str := "缺少type类型"
-		klog.Errorln(str)
-		return nil, http.StatusForbidden
+		klog.Errorln(stack.BaseString, str)
+		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusForbidden
 	}
 
 	//判断执行权限
@@ -88,8 +89,9 @@ func checkRight(stack *hub.Stack, params map[string]string) (interface{}, int) {
 func setDefaultAccessRight(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	policy, OK := params["default"]
 	if !OK {
-		klog.Infoln("缺少default")
-		return nil, fasthttp.StatusOK
+		str:= "缺少default权限值"
+		klog.Errorln(stack.BaseString, str)
+		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), 400
 	}
 	switch policy {
 	case "deny":
