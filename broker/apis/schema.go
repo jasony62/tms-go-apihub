@@ -63,12 +63,14 @@ func schemaChecker(path string, schema *gojsonschema.Schema) int {
 
 func confValidator(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	if len(params) == 0 {
-		return nil, http.StatusInternalServerError
+		str := "confValidator 参数为空"
+		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusInternalServerError
 	}
 
 	path, OK := params["schema"]
 	if !OK {
-		return nil, http.StatusInternalServerError
+		str := "confValidator schema为空"
+		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusInternalServerError
 	}
 
 	return loadSchemaDefData(path)
@@ -78,7 +80,7 @@ func loadSchemaDefData(path string) (interface{}, int) {
 	fileInfoList, err := ioutil.ReadDir(path)
 	if err != nil {
 		klog.Errorln(err)
-		return nil, http.StatusInternalServerError
+		return util.CreateTmsError(hub.TmsErrorApisId, err.Error(), nil), http.StatusInternalServerError
 	}
 
 	for i := range fileInfoList {
@@ -116,8 +118,9 @@ func loadSchemaDefData(path string) (interface{}, int) {
 			}
 
 			if schemaChecker(util.GetBasePath()+apipath, schema) != 200 {
-				klog.Errorln("Schema检查json文件不合法，目录: ", util.GetBasePath()+apipath)
-				return nil, http.StatusInternalServerError
+				str := "Schema检查json文件不合法，目录: " + util.GetBasePath()+apipath
+			//	klog.Errorln("Schema检查json文件不合法，目录: ", util.GetBasePath()+apipath)
+				return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusInternalServerError
 			}
 			klog.Infoln("Schema检查json文件合法，目录: ", util.GetBasePath()+apipath)
 		}

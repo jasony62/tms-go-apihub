@@ -12,7 +12,9 @@ import (
 func loadConf(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	basePath := util.GetBasePath()
 	if len(basePath) == 0 {
-		return nil, http.StatusInternalServerError
+		str := "basePath is empty"
+		klog.Errorln(stack.BaseString, str)
+		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusInternalServerError
 	}
 
 	util.LoadConf(basePath)
@@ -24,18 +26,21 @@ func loadConf(stack *hub.Stack, params map[string]string) (interface{}, int) {
 func downloadConf(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	basePath := util.GetBasePath()
 	if len(basePath) == 0 {
-		return nil, http.StatusInternalServerError
+		str := "downloadConf base path is empty"
+		klog.Errorln(stack.BaseString, str)
+		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusInternalServerError
 	}
 
 	remoteUrl := params["url"]
-	klog.Infoln("DownloadConf remoteUrl:", remoteUrl)
+	klog.Infoln("DownloadConf: ", stack.BaseString, " remoteUrl:", remoteUrl)
 	if len(remoteUrl) != 0 {
 		password := params["password"]
-		klog.Infoln("DownloadConf password:", password)
 		if util.DownloadConf(remoteUrl, basePath, password) {
-			klog.Infoln("Download conf zip package from remote url OK")
+			klog.Infoln("Download conf OK:", remoteUrl)
 		} else {
-			return nil, http.StatusInternalServerError
+			str := "downloadConf conf failed"
+			klog.Errorln(stack.BaseString, str)
+			return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusInternalServerError
 		}
 	}
 	return nil, 200
@@ -46,7 +51,9 @@ func decompressZip(stack *hub.Stack, params map[string]string) (interface{}, int
 	basePath := util.GetBasePath()
 	path := params["path"]
 	if len(basePath) == 0 && len(path) == 0 {
-		return nil, http.StatusInternalServerError
+		str := "decompressZip path is empty"
+		klog.Errorln(stack.BaseString, str)
+		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusInternalServerError
 	}
 
 	if len(path) > 0 {
@@ -54,14 +61,14 @@ func decompressZip(stack *hub.Stack, params map[string]string) (interface{}, int
 	}
 
 	filename := params["file"]
-	klog.Infoln("DecompressZip filename:", filename, " path:", basePath)
+	klog.Infoln("DecompressZip ", stack.BaseString, " filename:", filename, " path:", basePath)
 	if len(filename) != 0 {
 		password := params["password"]
-		klog.Infoln("DecompressZip password:", password)
+		//		klog.Infoln("DecompressZip password:", password)
 		err := util.DeCompressZip(filename, basePath, password, nil, 0)
 		if err != nil {
-			klog.Errorln(err)
-			return nil, http.StatusInternalServerError
+			klog.Errorln(stack.BaseString, err)
+			return util.CreateTmsError(hub.TmsErrorApisId, err.Error(), nil), http.StatusInternalServerError
 		}
 	}
 	return nil, 200

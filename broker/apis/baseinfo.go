@@ -16,8 +16,8 @@ func fillBaseInfo(stack *hub.Stack, params map[string]string) (interface{}, int)
 	base := stack.Heap[hub.HeapBaseName].(map[string]interface{})
 
 	if base == nil {
-		return nil, 500
-
+		str := "获得Base map失败" + hub.HeapBaseName
+		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), 500
 	}
 	/* 添加信息，例如：
 	 * "user":""
