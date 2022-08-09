@@ -50,7 +50,7 @@ func fillStats(stack *hub.Stack, result interface{}, code int) {
 		stats["id"] = strconv.FormatInt(int64(code), 10)
 		/*TODO real value*/
 		stats["msg"] = "err"
-		klog.Errorln("!!!!post apigateway NOK:", stack.BaseString, ", result:", result, " code:", code, " stats:", stats)
+		klog.Errorln("!!!!post apigateway NOK:", stack.BaseString, "result:", result, " code:", code, " stats:", stats)
 		params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "_HTTPNOK"}}}
 		core.ApiRun(stack, &hub.ApiDef{Name: "HTTPAPI_POST_NOK", Command: "flowApi", Args: &params}, "", true)
 	}
@@ -84,7 +84,7 @@ func newStack(c *gin.Context, level string) (*hub.Stack, string) {
 	return &hub.Stack{
 		GinContext: c,
 		Heap:       map[string]interface{}{hub.HeapOriginName: value, hub.HeapBaseName: base},
-		BaseString: util.MapToString(base),
+		BaseString: util.CreateBaseString(base),
 		StartTime:  now,
 	}, name
 }
@@ -103,12 +103,12 @@ func callCommon(stack *hub.Stack, command string, content string) {
 				params[0].Value.Content = defaultApp.postNOK
 				result1, status1 := core.ApiRun(stack, &hub.ApiDef{Name: "main_pre_post_nok", Command: "flowApi", Args: &params}, "", true)
 				if status1 != http.StatusOK {
-					klog.Errorln("PRE - post NOK status:", status1, " result:", result1)
+					klog.Errorln("PRE - post NOK status:", stack.BaseString, status1, " result:", result1)
 				}
 			} else {
 				//成功时的回复应该定义在flow的step中
 				stack.GinContext.IndentedJSON(status, result)
-				klog.Errorln("PRE status:", status, " result:", result)
+				klog.Errorln("PRE status:", stack.BaseString, status, " result:", result)
 			}
 			return
 		}

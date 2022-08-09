@@ -3,7 +3,6 @@ package util
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"plugin"
@@ -235,41 +234,32 @@ func loadTemplateData(path string, prefix string) {
 	}
 }
 
-func FindHttpApiDef(id string) (*hub.HttpApiDef, error) {
-	apiDef, ok := defaultConfMap.ApiMap[id]
-	if !ok {
-		return nil, errors.New("No api found")
-	}
-
-	return apiDef, nil
-}
-
-func FindPrivateDef(name string) (*hub.PrivateArray, error) {
+func FindHttpApiDef(name string) (value *hub.HttpApiDef, ok bool) {
 	if len(name) == 0 {
-		return nil, nil
+		return nil, false
 	}
 
-	result, ok := defaultConfMap.PrivateMap[name]
-	if !ok {
-		return nil, errors.New("No private found")
-	}
-	return result, nil
+	value, ok = defaultConfMap.ApiMap[name]
+	return
 }
 
-func FindFlowDef(id string) (*hub.FlowDef, error) {
-	value, ok := defaultConfMap.FlowMap[id]
-	if !ok {
-		return nil, errors.New("No flow found")
+func FindPrivateDef(name string) (value *hub.PrivateArray, ok bool) {
+	if len(name) == 0 {
+		return nil, false
 	}
-	return value, nil
+
+	value, ok = defaultConfMap.PrivateMap[name]
+	return
 }
 
-func FindScheduleDef(id string) (*hub.ScheduleDef, error) {
-	value, ok := defaultConfMap.ScheduleMap[id]
-	if !ok {
-		return nil, errors.New("No schedule found")
-	}
-	return value, nil
+func FindFlowDef(id string) (value *hub.FlowDef, ok bool) {
+	value, ok = defaultConfMap.FlowMap[id]
+	return
+}
+
+func FindScheduleDef(id string) (value *hub.ScheduleDef, ok bool) {
+	value, ok = defaultConfMap.ScheduleMap[id]
+	return
 }
 
 func FindResourceDef(id string) (value string, ok bool) {

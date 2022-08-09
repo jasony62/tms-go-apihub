@@ -21,9 +21,9 @@ func handleOneApi(stack *hub.Stack, apiDef *hub.ApiDef, private string) (result 
 func runFlow(stack *hub.Stack, name string, private string) (result interface{}, ret int) {
 	var code int
 	var lastResult string
-	flowDef, err := util.FindFlowDef(name)
-	if flowDef == nil {
-		klog.Errorln("获得Flow定义失败：", err)
+	flowDef, ok := util.FindFlowDef(name)
+	if !ok || flowDef == nil {
+		klog.Errorln(stack.BaseString, "获得Flow定义失败：", name)
 		return nil, http.StatusForbidden
 	}
 
@@ -32,7 +32,7 @@ func runFlow(stack *hub.Stack, name string, private string) (result interface{},
 
 		result, code = handleOneApi(stack, &apiDef, private)
 		if code != http.StatusOK {
-			klog.Errorln("运行API：" + apiDef.Name + "失败")
+			klog.Errorln(stack.BaseString, "运行API："+apiDef.Name+"失败")
 			return nil, code
 		}
 
@@ -53,7 +53,7 @@ func runFlowApi(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	name, OK := params["name"]
 	if !OK {
 		str := "缺少flow名称"
-		klog.Errorln(str)
+		klog.Errorln(stack.BaseString, str)
 		return nil, http.StatusForbidden
 	}
 	private := params["private"]
