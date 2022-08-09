@@ -1,0 +1,77 @@
+openapi: 3.0.0
+info:
+  title:  量本类型API
+  description: 实现提供给外围平台或其他API进行量本类型的查询提交等功能,主要包括新增、修改、查询接口
+  version:  1.0.0
+
+paths:
+  /customer:
+    get:
+      tags:
+        - 客户资料查询
+      summary: 客户资料查询_省份_映射编排
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              properties:
+                name:
+                  type: string
+                  description: Updated name of the pet
+                status:
+                  type: string
+                  description: Updated status of the pet
+      parameters:
+        - name: api_key
+          in: header
+          schema:
+            type: string
+        - name: accNum
+          in: query
+          description: 号码
+          required: true
+          schema:
+            type: string
+        - name: certType
+          in: query
+          description: 证件类型
+          required: false
+          schema:
+            type: string
+        - name: certNum
+          in: query
+          description: 证件号码
+          required: false
+          schema:
+            type: string            
+      responses:
+        '200':
+          description: 返回客户信息
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/customer'
+
+components:
+  schemas:
+    customer:
+      type: object
+      properties:
+        custId:
+          type: string
+          description: 客户id
+        extCustId:
+          type: string
+          description: 扩展id
+        custName:
+          type: string
+          description: 客户姓名
+        custNumber:
+          type: string
+          description: 客户地址
+          
+
+
+
+
+

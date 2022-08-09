@@ -32,6 +32,6 @@ func fillBaseInfo(stack *hub.Stack, params map[string]string) (interface{}, int)
 		base["uuid"] = uuid.New().String()
 	}
 
-	stack.BaseString = util.MapToString(base)
+	stack.BaseString = util.CreateBaseString(base)
 	return nil, 200
 }

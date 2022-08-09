@@ -17,19 +17,20 @@ func RegisterApis(list map[string]hub.ApiHandler) {
 	mapLock.Lock()
 	defer mapLock.Unlock()
 
-	for k, v := range list {
+	for k := range list {
 		_, OK := apiMap[k]
 		if OK {
-			str := "task重名:" + k
+			str := "main : task重名:" + k
 			klog.Errorln(str)
 			panic(str)
 		} else {
-			apiMap[k] = v
+			apiMap[k] = list[k]
 		}
 	}
 }
+
 func preApis(stack *hub.Stack, apiDef *hub.ApiDef) {
-	klog.Infoln("___pre API, command:"+apiDef.Command, "name:"+apiDef.Name)
+	klog.Infoln("___pre API,", stack.BaseString, "command:", apiDef.Command, "name:"+apiDef.Name)
 }
 
 func postApis(stack *hub.Stack, apiDef *hub.ApiDef, result interface{}, code int, duration float64) {
@@ -38,9 +39,9 @@ func postApis(stack *hub.Stack, apiDef *hub.ApiDef, result interface{}, code int
 	}
 
 	if code == http.StatusOK {
-		klog.Infoln("___post API OK command:"+apiDef.Command, " base:", stack.BaseString, " name："+apiDef.Name, " result:", result, " duration:", duration)
+		klog.Infoln("___post API OK:", stack.BaseString, "command:"+apiDef.Command, " name："+apiDef.Name, " result:", result, " duration:", duration)
 	} else {
-		klog.Errorln("!!!post API NOK command :"+apiDef.Command, " base:", stack.BaseString, " name："+apiDef.Name, " result:", result, " duration:", duration)
+		klog.Errorln("!!!post API NOK:", stack.BaseString, "command :"+apiDef.Command, " name："+apiDef.Name, " result:", result, " duration:", duration)
 	}
 }
 
@@ -54,18 +55,19 @@ func ApiRun(stack *hub.Stack, api *hub.ApiDef, private string, internal bool) (r
 	var err error
 	if function == nil {
 		str := "不能执行" + api.Command
-		klog.Errorln(str)
-		return nil, http.StatusForbidden
+		klog.Errorln(stack.BaseString, str)
+		return util.CreateTmsError(hub.TmsErrorCoreId, str, nil), http.StatusForbidden
 	}
 
 	var origin map[string]interface{}
 	args := make(map[string]string)
 	var privateDef *hub.PrivateArray
 	if len(api.Private) > 0 {
+		var ok bool
 		args["private"] = api.Private
-		privateDef, err = util.FindPrivateDef(api.Private)
-		if err != nil {
-			klog.Errorln("获得private定义失败：", err)
+		privateDef, ok = util.FindPrivateDef(api.Private)
+		if !ok || err != nil {
+			klog.Errorln(stack.BaseString, "获得private定义失败：", api.Private)
 			return nil, http.StatusForbidden
 		}
 	}
@@ -75,6 +77,7 @@ func ApiRun(stack *hub.Stack, api *hub.ApiDef, private string, internal bool) (r
 			item := (*api.Args)[index]
 			args[item.Name], err = util.GetParameterStringValue(stack, privateDef, &item.Value)
 			if err != nil {
+				klog.Errorln(stack.BaseString, "获得value失败：", err)
 				return nil, http.StatusInternalServerError
 			}
 		}
@@ -86,6 +89,7 @@ func ApiRun(stack *hub.Stack, api *hub.ApiDef, private string, internal bool) (r
 			item := (*api.OriginParameters)[index]
 			origin[item.Name], err = util.GetParameterRawValue(stack, privateDef, &item.Value)
 			if err != nil {
+				klog.Errorln(stack.BaseString, "获得origin失败：", err)
 				return nil, http.StatusInternalServerError
 			}
 		}

@@ -17,4 +17,5 @@ example/privates
 broker/conf
 broker/tms-go-apihub
 broker/vendor/
+.vscode
 
