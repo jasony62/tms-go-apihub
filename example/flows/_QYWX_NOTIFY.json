@@ -33,7 +33,7 @@
     },
     {
       "name": "message_send",
-      "description": "查询城市的区域码",
+      "description": "发送通知消息",
       "command": "httpApi",
       "args": [
         {
