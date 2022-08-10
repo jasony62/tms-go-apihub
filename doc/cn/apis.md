@@ -952,9 +952,9 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 ### 1.3. API输入介绍
 `promStart API`输入数组`args`参数介绍：
 | 输入name | 是否必选 | 获参位置 | value内容 | 描述 |
-| -- | -- | -- | -- | -- | 
-| promHost | 可选 | literal | 0.0.0.0 ~ 255.255.255.255 | prometheus默认监听地址0.0.0.0 |
-| promPort | 可选 | literal | 1024 ~ 65535 | prometheus默认监听端口8000 |
+| -- | -- | -- | -- | -- |
+| host | 可选 | literal | 0.0.0.0 ~ 255.255.255.255 | prometheus默认监听地址0.0.0.0 |
+| port | 可选 | literal | 1024 ~ 65535 | prometheus默认监听端口8000 |
 
 
 示例：
@@ -965,14 +965,14 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
   "description": "promStart",
   "args": [
     {
-      "name": "promHost",
+      "name": "host",
       "value": {
         "from": "literal",
         "content": "0.0.0.0"
       }
     },
     {
-      "name": "promPort",
+      "name": "port",
       "value": {
         "from": "literal",
         "content": "8000"

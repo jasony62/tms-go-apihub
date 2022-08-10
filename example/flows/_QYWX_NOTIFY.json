@@ -1,5 +1,5 @@
 {
-  "name": "qywx_message_send",
+  "name": "_QYWX_NOTIFY",
   "description": "给企业微信用户发送消息",
   "steps": [
     {

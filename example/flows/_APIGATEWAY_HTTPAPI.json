@@ -1,5 +1,5 @@
 {
-  "name": "httpapi",
+  "name": "_APIGATEWAY_HTTPAPI",
   "description": "执行httpapi流程",
   "steps": [
     {

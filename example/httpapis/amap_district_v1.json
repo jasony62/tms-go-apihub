@@ -1,5 +1,5 @@
 {
-    "id": "amap_district",
+    "id": "amap_district_v1",
     "description": "高德地图查询城市区域编码",
     "url": "https://restapi.amap.com/v3/config/district",
     "method": "GET",
