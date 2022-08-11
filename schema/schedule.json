@@ -80,8 +80,7 @@
 					}
 				}
 			}
-		},
-		"additionalProperties": false
+		}
 	},
 	"scheduleSwitchCaseDef": {
 		"type": "object",
@@ -101,8 +100,7 @@
 					"$ref": "#/scheduleApiDef"
 				}
 			}
-		},
-		"additionalProperties": false
+		}
 	},
 	"controlDef": {
 		"type": "object",
@@ -143,8 +141,7 @@
 					"$ref": "#/scheduleSwitchCaseDef"
 				}
 			}
-		},
-		"additionalProperties": false
+		}
 	},
 	"scheduleApiDef": {
 		"type": "object",
@@ -167,8 +164,7 @@
 			"api": {
 				"$ref": "#/apiDef"
 			}
-		},
-		"additionalProperties": false
+		}
 	},
 	"baseValueDef": {
 		"type": "object",
@@ -221,8 +217,6 @@
 			"required": [
 				"content"
 			]
-		},
-		"additionalProperties": false
-	},
-	"additionalProperties": false
+		}
+	}
 }

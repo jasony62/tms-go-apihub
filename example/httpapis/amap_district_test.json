@@ -1,5 +1,5 @@
 {
-  "id": "amap_district",
+  "id": "amap_district_test",
   "description": "高德地图查询城市区域编码",
   "url": "http://localhost:6060/v3/config/district",
   "method": "GET",

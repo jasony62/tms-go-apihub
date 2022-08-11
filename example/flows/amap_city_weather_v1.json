@@ -1,5 +1,5 @@
 {
-  "name": "amap_city_weather",
+  "name": "amap_city_weather_v1",
   "description": "高德地图查询城市的天气",
   "steps": [
     {
