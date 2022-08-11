@@ -1,0 +1,201 @@
+{
+	"info": {
+		"_postman_id": "365a77b8-fe2f-4da4-99fb-74a8de289b79",
+		"name": "天津",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "发送接口",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"postman.setGlobalVariable(\"time\",Math.round(new Date().getTime()))\r",
+							"time = postman.getGlobalVariable('time')\r",
+							"body = request.data\r",
+							"var string = \"105286\"+time+\"18217002347\"+\"【签名测试】这是一条测试短信\"+\"234\"+\"\"+\"04d6854880943e5c\"\r",
+							"//postman.setEnvironmentVariable(\"string\",string)\r",
+							"var sign =CryptoJS.MD5(string).toString()\r",
+							"postman.setEnvironmentVariable(\"sign\",sign)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"appKey\": \"105286\",\r\n    \"timestamp\": {{time}},\r\n    \"mobile\": \"18217002347\",\r\n    \"content\": \"【签名测试】这是一条测试短信\",\r\n    \"spNumber\": \"234\",\r\n    \"sendTime\": \"\",\r\n    \"reportUrl\": \"\",\r\n    \"moUrl\": \"\",\r\n    \"attach\": \"\",\r\n    \"sign\": {{sign}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://182.92.7.106:7892/api/sms/air/send",
+					"protocol": "http",
+					"host": [
+						"182",
+						"92",
+						"7",
+						"106"
+					],
+					"port": "7892",
+					"path": [
+						"api",
+						"sms",
+						"air",
+						"send"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "查询余额",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var string = \"105286\"+\"04d6854880943e5c\"\r",
+							"var sign =CryptoJS.MD5(string).toString()\r",
+							"postman.setEnvironmentVariable(\"sign\",sign)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"appKey\": \"105286\",\r\n    \"sign\": {{sign}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://182.92.7.106:7892/api/sms/air/balance",
+					"protocol": "http",
+					"host": [
+						"182",
+						"92",
+						"7",
+						"106"
+					],
+					"port": "7892",
+					"path": [
+						"api",
+						"sms",
+						"air",
+						"balance"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "查询报告",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var string = \"105286\"+\"04d6854880943e5c\"\r",
+							"var sign =CryptoJS.MD5(string).toString()\r",
+							"postman.setEnvironmentVariable(\"sign\",sign)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"appKey\": \"105286\",\r\n    \"sign\": {{sign}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://182.92.7.106:7892/api/sms/air/report",
+					"protocol": "http",
+					"host": [
+						"182",
+						"92",
+						"7",
+						"106"
+					],
+					"port": "7892",
+					"path": [
+						"api",
+						"sms",
+						"air",
+						"report"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "查询mo",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var string = \"105286\"+\"04d6854880943e5c\"\r",
+							"var sign =CryptoJS.MD5(string).toString()\r",
+							"postman.setEnvironmentVariable(\"sign\",sign)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"appKey\": \"105286\",\r\n    \"sign\": {{sign}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://182.92.7.106:7892/api/sms/air/mo",
+					"protocol": "http",
+					"host": [
+						"182",
+						"92",
+						"7",
+						"106"
+					],
+					"port": "7892",
+					"path": [
+						"api",
+						"sms",
+						"air",
+						"mo"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
