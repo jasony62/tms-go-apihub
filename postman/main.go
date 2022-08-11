@@ -177,18 +177,21 @@ func getPostmanURL(postmanUrl *postman.URL) string {
 }
 
 // 获取Args
-// func getHttpapiArgs(postmanURL *postman.URL) {
+func getHttpapiArgs(postmanURL *postman.URL) {
 
-// 	// postmanURL.Query 是个type interface{}，坑！！！
-// 	var list []string
-// 	if reflect.TypeOf(postmanURL.Query).Kind() == reflect.Slice {
-// 		s := reflect.ValueOf(postmanURL.Query)
-// 		for i := 0; i < s.Len(); i++ {
-// 			ele := s.Index(i)
-// 			list = append(list, ele.Interface().(string))
-// 		}
-// 	}
-// }
+	// postmanURL.Query 是个type interface{}，坑！！！
+	if postmanURL.Query != nil {
+		httpapiQuery := postmanURL.Query.([]interface{})
+		for i := range httpapiQuery {
+			// args := Args{In: "query", Name: httpapiQuery[i], Value: Value{From: "query", Content: httpapiQuery[i]}}
+			// apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+			_ = i
+			fmt.Printf("%v\n", httpapiQuery[i])
+		}
+
+	}
+
+}
 
 // func getHttpapiOneQuery(postmanQuery *postman.Query) string {
 // 	if postmanURL.Query == "query" {
