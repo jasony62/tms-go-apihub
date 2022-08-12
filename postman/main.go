@@ -120,25 +120,36 @@ func convertPostmanFiles(path string) {
 			}
 
 			for i := range postmanfileBytes.Items {
-				httpapiArgsLen := covertOneRequest(postmanfileBytes.Items[i])
+				converOneRequest(postmanfileBytes.Items[i])
 				generateApiHubJson(postmanfileBytes)
-				deleHttpapiQuery(httpapiArgsLen)
 			}
 		}
 	}
 }
 
-func covertOneRequest(postmanItem *postman.Items) int {
+func converOneRequest(postmanItem *postman.Items) {
+
+	if postmanItem == nil {
+		return
+	}
+
+	httpapiArgsLen := len(apiHubHttpConf.Args)
+	delHttpapiQuery(httpapiArgsLen)
 
 	getHttpapiInfo(postmanItem)
-	return getHttpapiArgs(postmanItem.Request)
+	getHttpapiArgs(postmanItem.Request)
 }
 
-func deleHttpapiQuery(httpapiQueryLen int) {
+// 删除上个request append到args的值
+func delHttpapiQuery(httpapiQueryLen int) {
 	apiHubHttpConf.Args = append(apiHubHttpConf.Args[:0], apiHubHttpConf.Args[httpapiQueryLen:]...)
 }
 
 func getHttpapiInfo(postmanItem *postman.Items) {
+
+	if postmanItem == nil {
+		return
+	}
 
 	apiHubHttpConf.ID = postmanItem.Name
 	klog.Infoln("__request Name : ", apiHubHttpConf.ID)
@@ -159,6 +170,10 @@ func getHttpapiInfo(postmanItem *postman.Items) {
 
 // 获取Request URL
 func getPostmanURL(postmanUrl *postman.URL) string {
+
+	if postmanUrl == nil {
+		return ""
+	}
 
 	httpapiUrl := postmanUrl.Protocol + "://"
 	// Host IP
@@ -186,15 +201,17 @@ func getPostmanURL(postmanUrl *postman.URL) string {
 }
 
 // 获取Args
-func getHttpapiArgs(postmanRequest *postman.Request) int {
+func getHttpapiArgs(postmanRequest *postman.Request) {
 
-	httpapiArgsLen := 0
+	if postmanRequest == nil {
+		return
+	}
+
 	if postmanRequest.Header != nil {
 		for i := range postmanRequest.Header {
 			args := Args{In: "header", Name: postmanRequest.Header[i].Key, Value: Value{From: "header", Content: postmanRequest.Header[i].Key}}
 			apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
 		}
-		httpapiArgsLen = len(postmanRequest.Header)
 	}
 
 	// postmanURL.Query 是个type interface{}，坑！！！
@@ -209,7 +226,6 @@ func getHttpapiArgs(postmanRequest *postman.Request) int {
 			// klog.Infoln("__httpapiQueryArgs valuename is : ", valuename.(string))
 			// klog.Infoln("__httpapiQueryArgs valuecontent is : ", valuecontent.(string))
 		}
-		httpapiArgsLen = httpapiArgsLen + len(httpapiQuery)
 	}
 
 	// if postmanRequest.Body != nil {
@@ -217,16 +233,19 @@ func getHttpapiArgs(postmanRequest *postman.Request) int {
 
 	// 	}
 	// }
-	return httpapiArgsLen
 }
 
 func generateApiHubJson(postmanBytes *postman.Collection) {
+	if postmanBytes == nil {
+		return
+	}
 
-	infoName := covertCNtoPinyin(postmanBytes.Info.Name)
-	infoID := covertCNtoPinyin(apiHubHttpConf.ID)
+	infoName := converCNtoPinyin(postmanBytes.Info.Name)
+	infoID := converCNtoPinyin(apiHubHttpConf.ID)
 	fileName := apiHubJsonPath + infoName + "_" + infoID + ".json"
 	byteHttpApi, err := json.Marshal(apiHubHttpConf)
 	if err != nil {
+		klog.Errorln("json.Marshal失败!", fileName)
 		return
 	}
 	// ！！！os.Create无法自动创建文件路径中不存在的文件夹
@@ -243,7 +262,7 @@ func generateApiHubJson(postmanBytes *postman.Collection) {
 }
 
 // name中文转拼音
-func covertCNtoPinyin(postmanBytesInfoName string) string {
+func converCNtoPinyin(postmanBytesInfoName string) string {
 	var infoName []string = []string{}
 	infoNameTemp := pinyin.LazyConvert(postmanBytesInfoName, nil)
 	for infoNameTemp, v := range infoNameTemp {
