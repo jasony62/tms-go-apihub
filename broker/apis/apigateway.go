@@ -134,7 +134,9 @@ func callCommon(stack *hub.Stack, command string, content string) {
 		params[0].Value.Content = defaultApp.postOK
 		result1, status1 := core.ApiRun(stack, &hub.ApiDef{Name: "main_post_ok", Command: "flowApi", Args: &params}, "", true)
 		if status1 != http.StatusOK {
-			klog.Errorln("common - post OK: ", stack.BaseString, " status:", status, " result:", result1)
+			klog.Errorln("common - post NOK: ", stack.BaseString, " status:", status1, " result:", result1)
+		} else {
+			klog.Infoln("用户请求执行成功! 状态码: ", status1, " 请求详情:", stack.BaseString)
 		}
 	}
 }

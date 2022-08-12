@@ -25,7 +25,7 @@ var jsonEx = jsoniter.Config{
 }.Froze()
 
 func preHttpapis(stack *hub.Stack, name string) {
-	klog.Infoln("___pre HTTPAPI:", stack.BaseString, " Name:", name)
+	//	klog.Infoln("___pre HTTPAPI:", stack.BaseString, " Name:", name)
 }
 
 func postHttpapis(stack *hub.Stack, name string, result string, code int, duration float64) {
@@ -220,7 +220,6 @@ func handleReq(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Privat
 	}
 	// 将收到的结果转为JSON对象
 	jsonEx.Unmarshal(returnBody, &jsonInRspBody)
-	//klog.Infoln("返回结果: ", string(returnBody))
 
 	if HttpApi.Cache != nil {
 		//解析过期时间，如果存在则记录下来
@@ -230,7 +229,6 @@ func handleReq(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Privat
 		if !ok {
 			klog.Warningln("没有查询到过期时间")
 		} else {
-			klog.Infof("更新Cache信息,过期时间为: %v", expires)
 			HttpApi.Cache.Expires = expires
 			HttpApi.Cache.Resp = jsonInRspBody
 		}
@@ -240,7 +238,6 @@ func handleReq(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Privat
 }
 
 func handleExpireTime(stack *hub.Stack, HttpApi *hub.HttpApiDef, resp *fasthttp.Response) (time.Time, bool) {
-	klog.Infoln("获得参数，[src]:", HttpApi.Cache.Expire.From, "; [key]:", HttpApi.Cache.Expire.Content, "; [format]:", HttpApi.Cache.Format)
 	if strings.EqualFold(HttpApi.Cache.Expire.From, "header") {
 		return handleHeaderExpireTime(HttpApi, resp)
 	} else {
@@ -335,7 +332,6 @@ func parseExpireTime(value string, format string) (time.Time, error) {
 			klog.Errorln("解析过期时间失败, err: ", err)
 			return time.Time{}, err
 		}
-		klog.Infoln("解析后过期秒数: ", seconds)
 		exptime = time.Now().Add(time.Second * time.Duration(seconds))
 	} else {
 		exptime, err = time.Parse(format, value)

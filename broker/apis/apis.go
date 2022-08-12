@@ -28,5 +28,6 @@ func init() {
 		"dump":                  dump,
 		"promStart":             promStart,
 		"promHttpCounterInc":    promHttpCounterInc,
+		"logToFile":             logToFile,
 	})
 }

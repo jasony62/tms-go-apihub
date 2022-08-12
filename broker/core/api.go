@@ -30,7 +30,7 @@ func RegisterApis(list map[string]hub.ApiHandler) {
 }
 
 func preApis(stack *hub.Stack, apiDef *hub.ApiDef) {
-	klog.Infoln("___pre API,", stack.BaseString, "command:", apiDef.Command, "name:"+apiDef.Name)
+	//	klog.Infoln("___pre API,", stack.BaseString, "command:", apiDef.Command, "name:"+apiDef.Name)
 }
 
 func postApis(stack *hub.Stack, apiDef *hub.ApiDef, result interface{}, code int, duration float64) {
