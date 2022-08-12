@@ -164,8 +164,7 @@ func getHttpapiInfo(postmanItem *postman.Items) {
 	klog.Infoln("__request Method : ", apiHubHttpConf.Method)
 
 	// getPostmanEvent(postmanItem)
-	apiHubHttpConf.Requestcontenttype = "json" // default content
-	apiHubHttpConf.Private = ""                // default private content
+	apiHubHttpConf.Private = "" // default private content
 }
 
 // 获取Request URL
@@ -228,13 +227,28 @@ func getHttpapiArgs(postmanRequest *postman.Request) {
 		}
 	}
 
-	// if postmanRequest.Body != nil {
-	// 	for i := range postmanRequest.Body {
+	if postmanRequest.Body != nil {
+		requestBody := postmanRequest.Body
+		switch requestBody.Mode {
+		case "raw":
+			apiHubHttpConf.Requestcontenttype = "jsonraw"
+		case "x-www-form-urlencoded":
+			apiHubHttpConf.Requestcontenttype = "form"
+		case "application/json":
+			apiHubHttpConf.Requestcontenttype = "json"
+		default:
+			apiHubHttpConf.Requestcontenttype = requestBody.Mode
+		}
 
-	// 	}
-	// }
+		if requestBody.Raw != "" {
+			klog.Infoln("__httpapirequestBody.Raw is : ", requestBody.Raw)
+		}
+	} else {
+		apiHubHttpConf.Requestcontenttype = ""
+	}
 }
 
+// 生成json文件
 func generateApiHubJson(postmanBytes *postman.Collection) {
 	if postmanBytes == nil {
 		return
