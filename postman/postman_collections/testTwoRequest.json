@@ -1,0 +1,126 @@
+{
+	"info": {
+		"_postman_id": "7c5608cb-60ce-453e-bdb9-356d97425182",
+		"name": "testDoubleRequest",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "22703478"
+	},
+	"item": [
+		{
+			"name": "mobiletel",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var moment = require('moment');\r",
+							"var current_timestamp = moment().format(\"YYYY-MM-DD H:mm:ss\")\r",
+							"pm.globals.set(\"current_timestamp\",current_timestamp);\r",
+							"pm.globals.set(\"current_unixtimestamp\",moment().valueOf());\r",
+							"//Get UTC\r",
+							"console.log(moment());\r",
+							"//Get Unix TimeStamp\r",
+							"console.log(moment().valueOf());\r",
+							"//Get Normal TimeStamp\r",
+							"console.log(current_timestamp);\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    pm.expect(pm.response.text()).to.include(\"string_you_want_to_search\");\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://tenapi.cn/tel/?tel=18888888888",
+					"protocol": "https",
+					"host": [
+						"tenapi",
+						"cn"
+					],
+					"path": [
+						"tel",
+						""
+					],
+					"query": [
+						{
+							"key": "tel",
+							"value": "18888888888"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "historyday",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var moment = require('moment');\r",
+							"var current_timestamp = moment().format(\"YYYY-MM-DD H:mm:ss\")\r",
+							"pm.globals.set(\"current_timestamp\",current_timestamp);\r",
+							"pm.globals.set(\"current_unixtimestamp\",moment().valueOf());\r",
+							"//Get UTC\r",
+							"console.log(moment());\r",
+							"//Get Unix TimeStamp\r",
+							"console.log(moment().valueOf());\r",
+							"//Get Normal TimeStamp\r",
+							"console.log(current_timestamp);\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    pm.expect(pm.response.text()).to.include(\"string_you_want_to_search\");\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://tenapi.cn/lishi/",
+					"protocol": "https",
+					"host": [
+						"tenapi",
+						"cn"
+					],
+					"path": [
+						"lishi",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
