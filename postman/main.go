@@ -33,6 +33,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/mozillazg/go-pinyin"
 	"github.com/rbretecher/go-postman-collection"
 	"k8s.io/klog/v2"
 )
@@ -190,7 +191,7 @@ func getHttpapiArgs(postmanRequest *postman.Request) int {
 	httpapiArgsLen := 0
 	if postmanRequest.Header != nil {
 		for i := range postmanRequest.Header {
-			args := Args{In: "header", Name: postmanRequest.Header[i].Key, Value: Value{From: "header", Content: postmanRequest.Header[i].Value}}
+			args := Args{In: "header", Name: postmanRequest.Header[i].Key, Value: Value{From: "header", Content: postmanRequest.Header[i].Key}}
 			apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
 		}
 		httpapiArgsLen = len(postmanRequest.Header)
@@ -220,7 +221,10 @@ func getHttpapiArgs(postmanRequest *postman.Request) int {
 }
 
 func generateApiHubJson(postmanBytes *postman.Collection) {
-	fileName := apiHubJsonPath + postmanBytes.Info.Name + "_" + apiHubHttpConf.ID + ".json"
+
+	infoName := covertCNtoPinyin(postmanBytes.Info.Name)
+	infoID := covertCNtoPinyin(apiHubHttpConf.ID)
+	fileName := apiHubJsonPath + infoName + "_" + infoID + ".json"
 	byteHttpApi, err := json.Marshal(apiHubHttpConf)
 	if err != nil {
 		return
@@ -236,4 +240,24 @@ func generateApiHubJson(postmanBytes *postman.Collection) {
 			klog.Errorln("写入文件失败!", fileName)
 		}
 	}
+}
+
+// name中文转拼音
+func covertCNtoPinyin(postmanBytesInfoName string) string {
+	var infoName []string = []string{}
+	infoNameTemp := pinyin.LazyConvert(postmanBytesInfoName, nil)
+	for infoNameTemp, v := range infoNameTemp {
+		if infoNameTemp == 0 {
+			infoName = append(infoName, v)
+		} else {
+			infoName = append(infoName, ",")
+			infoName = append(infoName, v)
+		}
+	}
+	resultInfoName := strings.Trim(fmt.Sprint(infoName), "[]")
+	result2InfoName := strings.Replace(resultInfoName, " , ", "", -1)
+	if result2InfoName == "" {
+		result2InfoName = postmanBytesInfoName
+	}
+	return result2InfoName
 }
