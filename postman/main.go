@@ -202,14 +202,20 @@ func getHttpapiArgs(postmanRequest *postman.Request) int {
 		for i := range httpapiQuery {
 			httpapiQueryArg := httpapiQuery[i]
 			valuename := httpapiQueryArg.(map[string]interface{})["key"]
-			valuecontent := httpapiQueryArg.(map[string]interface{})["value"]
-			args := Args{In: "query", Name: valuename.(string), Value: Value{From: "query", Content: valuecontent.(string)}}
+			// valuecontent := httpapiQueryArg.(map[string]interface{})["value"]
+			args := Args{In: "query", Name: valuename.(string), Value: Value{From: "query", Content: valuename.(string)}}
 			apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
 			// klog.Infoln("__httpapiQueryArgs valuename is : ", valuename.(string))
 			// klog.Infoln("__httpapiQueryArgs valuecontent is : ", valuecontent.(string))
 		}
 		httpapiArgsLen = httpapiArgsLen + len(httpapiQuery)
 	}
+
+	// if postmanRequest.Body != nil {
+	// 	for i := range postmanRequest.Body {
+
+	// 	}
+	// }
 	return httpapiArgsLen
 }
 
@@ -219,7 +225,7 @@ func generateApiHubJson(postmanBytes *postman.Collection) {
 	if err != nil {
 		return
 	}
-
+	// ！！！os.Create无法自动创建文件路径中不存在的文件夹
 	f, err := os.Create(fileName)
 	if err != nil {
 		klog.Errorln("创建文件失败!", fileName)
