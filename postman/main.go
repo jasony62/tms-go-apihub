@@ -26,6 +26,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -63,10 +64,13 @@ var postmanPath string
 // json结构体
 var apiHubHttpConf ApiHubHttpConf
 
+// 导出json路径
+var apiHubJsonPath string
+
 // 初始化
 func init() {
 	flag.StringVar(&postmanPath, "from", "./postman_collections/", "指定postman_collections文件路径")
-	// flag.StringVar(&apiHubConfPath, "to", "./to/", "指定转换后的apiHubConf json文件路径")
+	flag.StringVar(&apiHubJsonPath, "to", "./jsonFiles/", "指定转换后的apiHub json文件路径")
 }
 
 /*********************main主程序*****************************/
@@ -113,20 +117,24 @@ func convertPostmanFiles(path string) {
 				klog.Errorln(err)
 				panic(err)
 			}
-			// _ = postmanfileBytes
 
-			for j := range postmanfileBytes.Items {
-				covertOneRequest(postmanfileBytes.Items[j])
+			for i := range postmanfileBytes.Items {
+				httpapiArgsLen := covertOneRequest(postmanfileBytes.Items[i])
+				generateApiHubJson(postmanfileBytes)
+				deleHttpapiQuery(httpapiArgsLen)
 			}
 		}
 	}
 }
 
-func covertOneRequest(postmanItem *postman.Items) {
+func covertOneRequest(postmanItem *postman.Items) int {
 
-	// 	// _ = postmanfileBytes
 	getHttpapiInfo(postmanItem)
-	getHttpapiArgs(postmanItem.Request.URL)
+	return getHttpapiArgs(postmanItem.Request)
+}
+
+func deleHttpapiQuery(httpapiQueryLen int) {
+	apiHubHttpConf.Args = append(apiHubHttpConf.Args[:0], apiHubHttpConf.Args[httpapiQueryLen:]...)
 }
 
 func getHttpapiInfo(postmanItem *postman.Items) {
@@ -144,8 +152,8 @@ func getHttpapiInfo(postmanItem *postman.Items) {
 	klog.Infoln("__request Method : ", apiHubHttpConf.Method)
 
 	// getPostmanEvent(postmanItem)
-	apiHubHttpConf.Requestcontenttype = "none" // default content
-	apiHubHttpConf.Private = "none"            // default private content
+	apiHubHttpConf.Requestcontenttype = "json" // default content
+	apiHubHttpConf.Private = ""                // default private content
 }
 
 // 获取Request URL
@@ -177,25 +185,49 @@ func getPostmanURL(postmanUrl *postman.URL) string {
 }
 
 // 获取Args
-func getHttpapiArgs(postmanURL *postman.URL) {
+func getHttpapiArgs(postmanRequest *postman.Request) int {
 
-	// postmanURL.Query 是个type interface{}，坑！！！
-	if postmanURL.Query != nil {
-		httpapiQuery := postmanURL.Query.([]interface{})
-		for i := range httpapiQuery {
-			// args := Args{In: "query", Name: httpapiQuery[i], Value: Value{From: "query", Content: httpapiQuery[i]}}
-			// apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
-			_ = i
-			fmt.Printf("%v\n", httpapiQuery[i])
+	httpapiArgsLen := 0
+	if postmanRequest.Header != nil {
+		for i := range postmanRequest.Header {
+			args := Args{In: "header", Name: postmanRequest.Header[i].Key, Value: Value{From: "header", Content: postmanRequest.Header[i].Value}}
+			apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
 		}
-
+		httpapiArgsLen = len(postmanRequest.Header)
 	}
 
+	// postmanURL.Query 是个type interface{}，坑！！！
+	if postmanRequest.URL.Query != nil {
+		httpapiQuery := postmanRequest.URL.Query.([]interface{})
+		for i := range httpapiQuery {
+			httpapiQueryArg := httpapiQuery[i]
+			valuename := httpapiQueryArg.(map[string]interface{})["key"]
+			valuecontent := httpapiQueryArg.(map[string]interface{})["value"]
+			args := Args{In: "query", Name: valuename.(string), Value: Value{From: "query", Content: valuecontent.(string)}}
+			apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+			// klog.Infoln("__httpapiQueryArgs valuename is : ", valuename.(string))
+			// klog.Infoln("__httpapiQueryArgs valuecontent is : ", valuecontent.(string))
+		}
+		httpapiArgsLen = httpapiArgsLen + len(httpapiQuery)
+	}
+	return httpapiArgsLen
 }
 
-// func getHttpapiOneQuery(postmanQuery *postman.Query) string {
-// 	if postmanURL.Query == "query" {
-// 		args := Args{In: "query", Name: "", Value: Value{From: "query", Content: ""}}
-// 		apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
-// 	}
-// }
+func generateApiHubJson(postmanBytes *postman.Collection) {
+	fileName := apiHubJsonPath + postmanBytes.Info.Name + "_" + apiHubHttpConf.ID + ".json"
+	byteHttpApi, err := json.Marshal(apiHubHttpConf)
+	if err != nil {
+		return
+	}
+
+	f, err := os.Create(fileName)
+	if err != nil {
+		klog.Errorln("创建文件失败!", fileName)
+	} else {
+		defer f.Close()
+		_, err = f.Write(byteHttpApi)
+		if err != nil {
+			klog.Errorln("写入文件失败!", fileName)
+		}
+	}
+}
