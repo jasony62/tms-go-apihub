@@ -47,7 +47,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "https://tenapi.cn/tel/?tel=18516977886",
+					"raw": "https://tenapi.cn/tel/?tel=18888888888",
 					"protocol": "https",
 					"host": [
 						"tenapi",
@@ -60,7 +60,7 @@
 					"query": [
 						{
 							"key": "tel",
-							"value": "18516977886"
+							"value": "18888888888"
 						}
 					]
 				}
