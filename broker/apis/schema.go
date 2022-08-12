@@ -24,7 +24,7 @@ func schemaChecker(path string, schema *gojsonschema.Schema) int {
 		fileName := fmt.Sprintf("%s/%s", path, fileInfoList[i].Name())
 
 		if fileInfoList[i].IsDir() {
-			klog.Infoln("Schema检查Json子目录: ", fileName)
+			//	klog.Infoln("Schema检查Json子目录: ", fileName)
 			if schemaChecker(fileName, schema) != 200 {
 				return 500
 			}
@@ -83,10 +83,10 @@ func loadSchemaDefData(path string) (interface{}, int) {
 		return util.CreateTmsError(hub.TmsErrorApisId, err.Error(), nil), http.StatusInternalServerError
 	}
 
+	klog.Infoln("校验Schema文件...")
 	for i := range fileInfoList {
 		fileName := fmt.Sprintf("%s/%s", path, fileInfoList[i].Name())
 
-		klog.Infoln("Schema校验文件: ", fileName)
 		if fileInfoList[i].IsDir() {
 			loadSchemaDefData(fileName)
 		} else {
@@ -118,11 +118,9 @@ func loadSchemaDefData(path string) (interface{}, int) {
 			}
 
 			if schemaChecker(util.GetBasePath()+apipath, schema) != 200 {
-				str := "Schema检查json文件不合法，目录: " + util.GetBasePath()+apipath
-			//	klog.Errorln("Schema检查json文件不合法，目录: ", util.GetBasePath()+apipath)
+				str := "Schema检查json文件不合法，目录: " + util.GetBasePath() + apipath
 				return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusInternalServerError
 			}
-			klog.Infoln("Schema检查json文件合法，目录: ", util.GetBasePath()+apipath)
 		}
 	}
 	return nil, 200

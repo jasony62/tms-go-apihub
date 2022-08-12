@@ -127,8 +127,6 @@ func loadJsonDefData(jsonType int, path string, prefix string, includeDir bool) 
 				defaultConfMap.ScheduleRightMap[key] = def
 			default:
 			}
-
-			klog.Infof("加载Json文件成功: key: %s\r\n", key)
 		}
 	}
 }
@@ -217,7 +215,6 @@ func loadTemplateData(path string, prefix string) {
 
 			fname := fileInfoList[i].Name()
 			defaultConfMap.SourceMap[fname] = string(byteFile)
-			klog.Infof("加载Template文件成功: key: %s\r\n", fname)
 		}
 	}
 }
