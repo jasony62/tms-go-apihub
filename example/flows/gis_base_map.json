@@ -34,7 +34,7 @@
           "name": "content",
           "value": {
             "from": "literal",
-            "content": "beijing_map.tmpl"
+            "content": "gis_base_map.tmpl"
           }
         }
       ],

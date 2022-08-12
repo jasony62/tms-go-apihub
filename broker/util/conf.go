@@ -93,11 +93,7 @@ func loadJsonDefData(jsonType int, path string, prefix string, includeDir bool) 
 				fname = fname[:index]
 			}
 
-			if prefix == "" {
-				key = fname
-			} else {
-				key = prefix + "/" + fname
-			}
+			key = fname
 
 			decoder := json.NewDecoder(bytes.NewReader(byteFile))
 			switch jsonType {
@@ -131,8 +127,6 @@ func loadJsonDefData(jsonType int, path string, prefix string, includeDir bool) 
 				defaultConfMap.ScheduleRightMap[key] = def
 			default:
 			}
-
-			klog.Infof("加载Json文件成功: key: %s\r\n", key)
 		}
 	}
 }
@@ -219,17 +213,8 @@ func loadTemplateData(path string, prefix string) {
 				panic(str)
 			}
 
-			var key string
 			fname := fileInfoList[i].Name()
-
-			if prefix == "" {
-				key = fname
-			} else {
-				key = prefix + "/" + fname
-			}
-
-			defaultConfMap.SourceMap[key] = string(byteFile)
-			klog.Infof("加载Template文件成功: key: %s\r\n", key)
+			defaultConfMap.SourceMap[fname] = string(byteFile)
 		}
 	}
 }

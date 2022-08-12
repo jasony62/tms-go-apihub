@@ -1,5 +1,5 @@
 {
-  "id": "baidu_nlp_lexer",
+  "id": "baidu_nlp_parser",
   "url": "https://aip.baidubce.com/rpc/2.0/nlp/v2/depparser",
   "private": "baidu_nlp_key",
   "method": "POST",

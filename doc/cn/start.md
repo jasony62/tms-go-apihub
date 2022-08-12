@@ -98,10 +98,14 @@ schema目录下:
 
 | 名称| 用途|
 | -- | -- |
-| httpapi.json | 定义httpapi的json schema |
-| flow.json | 定义flow的json schema |
-| right.json | 定义right的json schema |
-| schedule.json | 定义schedule的json schema |
+| httpapi.json | 定义httpapi的json schema，采用了schema高级功能，目前mongoweb对于有些高级功能不支持，默认使用httpapi-simple.json |
+| flow.json | 定义flow的json schema，采用了schema高级功能，目前mongoweb对于有些高级功能不支持，默认使用flow-simple.json |
+| right.json | 定义right的json schema，采用了schema高级功能，目前mongoweb对于有些高级功能不支持，默认使用right-simple.json |
+| schedule.json | 定义schedule的json schema，采用了schema高级功能，目前mongoweb对于有些高级功能不支持，默认使用schedule-simple.json |
+| httpapi-simple.json | 定义httpapi的json schema，仅仅使用基础关键字 |
+| flow-simple.json | 定义flow的json schema，仅仅使用基础关键字 |
+| right-simple.json | 定义right的json schema，仅仅使用基础关键字 |
+| schedule-simple.json | 定义schedule的json schema，仅仅使用基础关键字 |
 
 ## 2.3 example文件目录介绍
 

@@ -1,5 +1,5 @@
 {
-    "name": "handle_send",
+    "name": "amap_qywx",
     "description": "处理输入并发送微信",
     "concurrentNum": 2,
     "steps": [

@@ -45,6 +45,7 @@ API列表如下：
 | setDefaultAccessRight  | 默认执行权限 |
 | checkRight  | 检查权限 |
 | fillBaseInfo | 添加基本信息 |
+| logToFile | 将日志写入文件，默认目录放在log目录中（不支持Gin框架输出的日志） |
 
 表4：普罗米修斯相关API
 | API名称 | 功能简述 |
@@ -940,6 +941,53 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 | 403 | StatusForbidden，获取信息失败 |
 | 500 | StatusInternalServerError，获取信息失败 |
 
+## 9. 将日志写入文件，默认目录放在log目录中（logToFile API）
+
+### 9.1. 功能介绍
+
+将日志写入文件，默认目录放在log目录中，目前支持klog输出的日志，GIN框架生成的日志暂时不能写入日志文件。
+
+### 9.2. 位置
+
+```
+./broker/apis/file.go
+```
+
+### 9.3. API输入介绍
+
+`logToFile API`输入数组`args`参数介绍：
+
+| 输入name | 是否必选 | 获参位置 | value内容                                                    | 描述 |
+| -------- | -------- | -------- | ------------------------------------------------------------ | ---- |
+| filename | 可选     | literal  | 日志文件名称，应用程序会在此名称之后增加下划线和时间戳，以便每次启动生成不同的日志文件。 |      |
+
+示例：
+
+```
+    {
+      "name": "logToFile",
+      "command": "logToFile",
+      "description": "logToFile",
+      "args": [
+        {
+          "name": "filename",
+          "value": {
+            "from": "literal",
+            "content": "tms_apihub_log"
+          }
+        }
+      ]
+    },
+```
+
+### 9.4. 状态码
+
+| 状态码 | 描述                                    |
+| ------ | --------------------------------------- |
+| 200    | StatusOK，获取信息成功                  |
+| 403    | StatusForbidden，获取信息失败           |
+| 500    | StatusInternalServerError，获取信息失败 |
+
 # 普罗米修斯相关API
 
 ## 1. 普罗米修斯启动（promStart API）
@@ -952,9 +1000,9 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 ### 1.3. API输入介绍
 `promStart API`输入数组`args`参数介绍：
 | 输入name | 是否必选 | 获参位置 | value内容 | 描述 |
-| -- | -- | -- | -- | -- | 
-| promHost | 可选 | literal | 0.0.0.0 ~ 255.255.255.255 | prometheus默认监听地址0.0.0.0 |
-| promPort | 可选 | literal | 1024 ~ 65535 | prometheus默认监听端口8000 |
+| -- | -- | -- | -- | -- |
+| host | 可选 | literal | 0.0.0.0 ~ 255.255.255.255 | prometheus默认监听地址0.0.0.0 |
+| port | 可选 | literal | 1024 ~ 65535 | prometheus默认监听端口8000 |
 
 
 示例：
@@ -965,14 +1013,14 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
   "description": "promStart",
   "args": [
     {
-      "name": "promHost",
+      "name": "host",
       "value": {
         "from": "literal",
         "content": "0.0.0.0"
       }
     },
     {
-      "name": "promPort",
+      "name": "port",
       "value": {
         "from": "literal",
         "content": "8000"

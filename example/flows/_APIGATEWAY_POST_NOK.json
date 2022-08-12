@@ -145,7 +145,7 @@
       ]
     },    
     {
-      "name": "qyxw_send_result",
+      "name": "post_nok",
       "command": "flowApi",
       "args": [
         {

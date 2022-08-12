@@ -1,5 +1,5 @@
 {
-  "name": "baidu_image_classify",
+  "name": "baidu_image_classify_base",
   "description": "百度图片动物分类",
   "steps": [
     {

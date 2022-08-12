@@ -3,6 +3,20 @@
   "description": "main for apigateway",
   "steps": [
     {
+      "name": "logToFile",
+      "command": "logToFile",
+      "description": "logToFile",
+      "args": [
+        {
+          "name": "filename",
+          "value": {
+            "from": "literal",
+            "content": "tms_apihub_log"
+          }
+        }
+      ]
+    },
+    {
       "name": "welcome",
       "command": "welcome",
       "description": "welcome",
