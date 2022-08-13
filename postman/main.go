@@ -242,6 +242,33 @@ func getHttpapiArgs(postmanRequest *postman.Request) {
 
 		if requestBody.Raw != "" {
 			klog.Infoln("__httpapirequestBody.Raw is : ", requestBody.Raw)
+			rawlen := len(requestBody.Raw)
+			// _ = rawlen
+			currentIndex := 0
+			nextIndex := 0
+			for i := 0; i < rawlen; i++ {
+				currentIndex = strings.Index(requestBody.Raw[i:], "\"") + i
+				nextIndex = strings.Index(requestBody.Raw[currentIndex+2:], "\"") + currentIndex + 2
+				nameString := requestBody.Raw[currentIndex+1 : nextIndex]
+				// _ = nameString
+				// nameString = requestBody.Raw[nextIndex+3 : nextIndex+5]
+				if requestBody.Raw[nextIndex+3:nextIndex+5] == "{{" {
+					currentIndex = nextIndex + 3
+					nextIndex = strings.Index(requestBody.Raw[currentIndex:], "}}") + currentIndex + 2
+					prefunc := requestBody.Raw[currentIndex+2 : nextIndex-2]
+					// _ = prefunc
+					args := Args{In: "header", Name: nameString, Value: Value{From: "func", Content: prefunc}}
+					apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+				} else {
+					currentIndex = strings.Index(requestBody.Raw[nextIndex:], "\"") + nextIndex + 2
+					nextIndex = strings.Index(requestBody.Raw[currentIndex+2:], "\"") + currentIndex + 2
+					nameContent := requestBody.Raw[currentIndex+2 : nextIndex]
+					// _ = nameContent
+					args := Args{In: "header", Name: nameString, Value: Value{From: "literal", Content: nameContent}}
+					apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+				}
+				i = nextIndex + i + 1
+			}
 		}
 	} else {
 		apiHubHttpConf.Requestcontenttype = ""
