@@ -59,6 +59,24 @@ type Value struct {
 	Content string `json:"content"`
 }
 
+// 创建list,提前预设
+// 左：postman js关键字
+// 右：apihub内部函数名称
+var preEventFuncReferenceList = map[string]string{
+	"getTime":      "utc",
+	"CryptoJS.MD5": "md5",
+}
+
+// postman js关键字
+var preEventFuncKeyList = []string{
+	"getTime",
+	"CryptoJS.MD5",
+}
+
+// 相当于postman脚本中全局变量转换的一个中间量，映射postman脚本requset中全局变量值到apihub内部函数名称
+// coversionFuncMap[time] = preEventFuncReferenceList["getTime"] = "utc"
+var coversionFuncMap map[string]string
+
 // postman文件路径
 var postmanPath string
 
@@ -132,21 +150,22 @@ func converOneRequest(postmanItem *postman.Items) {
 	if postmanItem == nil {
 		return
 	}
-
 	httpapiArgsLen := len(apiHubHttpConf.Args)
 	delHttpapiQuery(httpapiArgsLen)
 
 	getHttpapiInfo(postmanItem)
+	coversionFuncMap = make(map[string]string)
+	getPostmanEventFunc(postmanItem, preEventFuncKeyList)
 	getHttpapiArgs(postmanItem.Request)
+
 }
 
 // 删除上个request append到args的值
-func delHttpapiQuery(httpapiQueryLen int) {
-	apiHubHttpConf.Args = append(apiHubHttpConf.Args[:0], apiHubHttpConf.Args[httpapiQueryLen:]...)
+func delHttpapiQuery(httpapiArgsLen int) {
+	apiHubHttpConf.Args = append(apiHubHttpConf.Args[:0], apiHubHttpConf.Args[httpapiArgsLen:]...)
 }
 
 func getHttpapiInfo(postmanItem *postman.Items) {
-
 	if postmanItem == nil {
 		return
 	}
@@ -163,13 +182,11 @@ func getHttpapiInfo(postmanItem *postman.Items) {
 	apiHubHttpConf.Method = string(postmanItem.Request.Method)
 	klog.Infoln("__request Method : ", apiHubHttpConf.Method)
 
-	// getPostmanEvent(postmanItem)
 	apiHubHttpConf.Private = "" // default private content
 }
 
 // 获取Request URL
 func getPostmanURL(postmanUrl *postman.URL) string {
-
 	if postmanUrl == nil {
 		return ""
 	}
@@ -195,27 +212,34 @@ func getPostmanURL(postmanUrl *postman.URL) string {
 			httpapiUrl = httpapiUrl + postmanUrl.Path[i] + "/"
 		}
 	}
-
 	return httpapiUrl
 }
 
 // 获取Args
 func getHttpapiArgs(postmanRequest *postman.Request) {
-
 	if postmanRequest == nil {
 		return
 	}
-
+	// 解析header
 	if postmanRequest.Header != nil {
 		for i := range postmanRequest.Header {
 			args := Args{In: "header", Name: postmanRequest.Header[i].Key, Value: Value{From: "header", Content: postmanRequest.Header[i].Key}}
 			apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
 		}
 	}
-
-	// postmanURL.Query 是个type interface{}，坑！！！
+	// 解析query
 	if postmanRequest.URL.Query != nil {
-		httpapiQuery := postmanRequest.URL.Query.([]interface{})
+		parseRequestUrlQuery(postmanRequest.URL.Query)
+	}
+	// 解析body中的header、func
+	if postmanRequest.Body != nil {
+		parseRequestBody(postmanRequest.Body)
+	}
+}
+
+func parseRequestUrlQuery(postmanRequestURLQuery interface{}) {
+	if postmanRequestURLQuery != nil { // postmanURL.Query 是个type interface{}，坑！！！
+		httpapiQuery := postmanRequestURLQuery.([]interface{})
 		for i := range httpapiQuery {
 			httpapiQueryArg := httpapiQuery[i]
 			valuename := httpapiQueryArg.(map[string]interface{})["key"]
@@ -226,9 +250,11 @@ func getHttpapiArgs(postmanRequest *postman.Request) {
 			// klog.Infoln("__httpapiQueryArgs valuecontent is : ", valuecontent.(string))
 		}
 	}
+}
 
-	if postmanRequest.Body != nil {
-		requestBody := postmanRequest.Body
+func parseRequestBody(postmanRequestBody *postman.Body) {
+	if postmanRequestBody != nil {
+		requestBody := postmanRequestBody
 		switch requestBody.Mode {
 		case "raw":
 			apiHubHttpConf.Requestcontenttype = "jsonraw"
@@ -239,40 +265,96 @@ func getHttpapiArgs(postmanRequest *postman.Request) {
 		default:
 			apiHubHttpConf.Requestcontenttype = requestBody.Mode
 		}
-
 		if requestBody.Raw != "" {
-			klog.Infoln("__httpapirequestBody.Raw is : ", requestBody.Raw)
-			rawlen := len(requestBody.Raw)
-			// _ = rawlen
-			currentIndex := 0
-			nextIndex := 0
-			for i := 0; i < rawlen; i++ {
-				currentIndex = strings.Index(requestBody.Raw[i:], "\"") + i
-				nextIndex = strings.Index(requestBody.Raw[currentIndex+2:], "\"") + currentIndex + 2
-				nameString := requestBody.Raw[currentIndex+1 : nextIndex]
-				// _ = nameString
-				// nameString = requestBody.Raw[nextIndex+3 : nextIndex+5]
-				if requestBody.Raw[nextIndex+3:nextIndex+5] == "{{" {
-					currentIndex = nextIndex + 3
-					nextIndex = strings.Index(requestBody.Raw[currentIndex:], "}}") + currentIndex + 2
-					prefunc := requestBody.Raw[currentIndex+2 : nextIndex-2]
-					// _ = prefunc
-					args := Args{In: "header", Name: nameString, Value: Value{From: "func", Content: prefunc}}
+			// klog.Infoln("__httpapirequestBody.Raw is : ", requestBody.Raw)
+			nameString := ""
+			contentString := ""
+			backNameIndex := 0
+			backContentIndex := 0
+			for i := 0; i < len(requestBody.Raw); i++ {
+				nameString, backNameIndex = getStringBetweenDoubleQuotationMarks(requestBody.Raw[i:])
+				// klog.Infoln("test request raw is :", requestBody.Raw[backNameIndex+i+3:backNameIndex+i+4])
+				if requestBody.Raw[backNameIndex+i+3:backNameIndex+i+5] == "{{" {
+					contentString, backContentIndex = getStringBetweenDoubleBrackets(requestBody.Raw[backNameIndex+i+2:])
+					args := Args{In: "header", Name: nameString, Value: Value{From: "func", Content: coversionFuncMap[contentString]}}
+					apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+				} else if requestBody.Raw[backNameIndex+i+3:backNameIndex+i+4] == "\"" {
+					contentString, backContentIndex = getStringBetweenDoubleQuotationMarks(requestBody.Raw[backNameIndex+i+2:])
+					args := Args{In: "header", Name: nameString, Value: Value{From: "literal", Content: contentString}}
 					apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
 				} else {
-					currentIndex = strings.Index(requestBody.Raw[nextIndex:], "\"") + nextIndex + 2
-					nextIndex = strings.Index(requestBody.Raw[currentIndex+2:], "\"") + currentIndex + 2
-					nameContent := requestBody.Raw[currentIndex+2 : nextIndex]
-					// _ = nameContent
-					args := Args{In: "header", Name: nameString, Value: Value{From: "literal", Content: nameContent}}
-					apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+					nameString = ""
+					contentString = ""
+					klog.Infoln("__parseRequestBodyRawError:Format error")
+					break
 				}
-				i = nextIndex + i + 1
+				i = backNameIndex + backContentIndex + i + 8
 			}
 		}
 	} else {
 		apiHubHttpConf.Requestcontenttype = ""
 	}
+}
+
+func getPostmanEventFunc(postmanItem *postman.Items, preFuncKeyWord []string) {
+	if (postmanItem == nil) || (preFuncKeyWord == nil) {
+		return
+	}
+	for i := range postmanItem.Events { // 通常Events就一个
+		if postmanItem.Events[i].Script.Type == "text/javascript" {
+			for j := range postmanItem.Events[i].Script.Exec {
+				for k := range preFuncKeyWord {
+					keyWordIndex := strings.Index(postmanItem.Events[i].Script.Exec[j], preFuncKeyWord[k])
+					if keyWordIndex != -1 {
+						switch preFuncKeyWord[k] {
+						case "getTime":
+							keyWordString, index := getStringBetweenDoubleQuotationMarks(postmanItem.Events[i].Script.Exec[j])
+							// 解析js代码中EnvironmentVariable，查找到getTime代码，确定本行生成time变量名称，赋值到coversionFuncMap
+							keyWordString = strings.TrimSpace(keyWordString)
+							if index != -1 && keyWordString != "" {
+								coversionFuncMap[keyWordString] = preEventFuncReferenceList[preFuncKeyWord[k]]
+							}
+						case "CryptoJS.MD5":
+							keyWordString, index := getStringBetweenSpecifySymbols(postmanItem.Events[i].Script.Exec[j], "var", "=")
+							keyWordString = strings.TrimSpace(keyWordString)
+							if index != -1 && keyWordString != "" {
+								coversionFuncMap[keyWordString] = preEventFuncReferenceList[preFuncKeyWord[k]]
+							}
+							// klog.Infoln("__postmanItem.Events[i].Script.Exec[j]", keyWordString)
+						default:
+						}
+					}
+				}
+			}
+		} else {
+			klog.Infoln("__postmanItem.Events[i].Script.Type not text/javascript")
+			return
+		}
+	}
+}
+
+func getStringBetweenDoubleQuotationMarks(inputStrings string) (outputString string, outputIndex int) {
+	return getStringBetweenSpecifySymbols(inputStrings, "\"", "\"")
+}
+func getStringBetweenDoubleBrackets(inputStrings string) (outputString string, outputIndex int) {
+	return getStringBetweenSpecifySymbols(inputStrings, "{{", "}}")
+}
+func getStringBetweenSpecifySymbols(inputStrings string, specifySymbolBefore string, specifySymbolAfter string) (outputString string, outputIndex int) {
+	currentIndex := strings.Index(inputStrings, specifySymbolBefore)
+	if currentIndex != -1 {
+		nextIndex := strings.Index(inputStrings[currentIndex+len(specifySymbolBefore):], specifySymbolAfter)
+		if nextIndex != -1 {
+			outputString = inputStrings[currentIndex+len(specifySymbolBefore) : currentIndex+len(specifySymbolBefore)+nextIndex]
+			outputIndex = nextIndex + len(specifySymbolAfter) + currentIndex
+		} else {
+			outputString = ""
+			outputIndex = -1
+		}
+	} else {
+		outputString = ""
+		outputIndex = -1
+	}
+	return outputString, outputIndex
 }
 
 // 生成json文件
