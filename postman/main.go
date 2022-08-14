@@ -274,21 +274,27 @@ func parseRequestBody(postmanRequestBody *postman.Body) {
 			for i := 0; i < len(requestBody.Raw); i++ {
 				nameString, backNameIndex = getStringBetweenDoubleQuotationMarks(requestBody.Raw[i:])
 				// klog.Infoln("test request raw is :", requestBody.Raw[backNameIndex+i+3:backNameIndex+i+4])
-				if requestBody.Raw[backNameIndex+i+3:backNameIndex+i+5] == "{{" {
-					contentString, backContentIndex = getStringBetweenDoubleBrackets(requestBody.Raw[backNameIndex+i+2:])
-					args := Args{In: "header", Name: nameString, Value: Value{From: "func", Content: coversionFuncMap[contentString]}}
-					apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
-				} else if requestBody.Raw[backNameIndex+i+3:backNameIndex+i+4] == "\"" {
-					contentString, backContentIndex = getStringBetweenDoubleQuotationMarks(requestBody.Raw[backNameIndex+i+2:])
-					args := Args{In: "header", Name: nameString, Value: Value{From: "literal", Content: contentString}}
-					apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
-				} else {
-					nameString = ""
-					contentString = ""
-					klog.Infoln("__parseRequestBodyRawError:Format error")
-					break
+				if backNameIndex != -1 {
+					if requestBody.Raw[backNameIndex+i+3:backNameIndex+i+5] == "{{" {
+						contentString, backContentIndex = getStringBetweenDoubleBrackets(requestBody.Raw[backNameIndex+i+2:])
+						if backContentIndex != -1 {
+							args := Args{In: "header", Name: nameString, Value: Value{From: "func", Content: coversionFuncMap[contentString]}}
+							apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+						}
+					} else if requestBody.Raw[backNameIndex+i+3:backNameIndex+i+4] == "\"" {
+						contentString, backContentIndex = getStringBetweenDoubleQuotationMarks(requestBody.Raw[backNameIndex+i+2:])
+						if backContentIndex != -1 {
+							args := Args{In: "header", Name: nameString, Value: Value{From: "literal", Content: contentString}}
+							apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+						}
+					} else {
+						nameString = ""
+						contentString = ""
+						klog.Infoln("__parseRequestBodyRawError:Format error")
+						break
+					}
+					i = backNameIndex + backContentIndex + i + 8
 				}
-				i = backNameIndex + backContentIndex + i + 8
 			}
 		}
 	} else {
