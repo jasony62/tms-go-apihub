@@ -51,12 +51,13 @@ type ApiHubHttpConf struct {
 type Args struct {
 	In    string `json:"in"`
 	Name  string `json:"name"`
-	Value Value  `json:"value"`
+	Value Value  `json:"value,omitempty"`
 }
 
 type Value struct {
 	From    string `json:"from"`
 	Content string `json:"content"`
+	Args    string `json:"args,omitempty"`
 }
 
 // 创建list,提前预设
@@ -67,6 +68,7 @@ var preEventFuncReferenceList = map[string]string{
 	"CryptoJS.MD5": "md5",
 }
 
+// 创建list,提前预设
 // postman js关键字
 var preEventFuncKeyList = []string{
 	"getTime",
@@ -271,6 +273,7 @@ func parseRequestBody(postmanRequestBody *postman.Body) {
 			contentString := ""
 			backNameIndex := 0
 			backContentIndex := 0
+			nameList := ""
 			for i := 0; i < len(requestBody.Raw); i++ {
 				nameString, backNameIndex = getStringBetweenDoubleQuotationMarks(requestBody.Raw[i:])
 				// klog.Infoln("test request raw is :", requestBody.Raw[backNameIndex+i+3:backNameIndex+i+4])
@@ -278,14 +281,23 @@ func parseRequestBody(postmanRequestBody *postman.Body) {
 					if requestBody.Raw[backNameIndex+i+3:backNameIndex+i+5] == "{{" {
 						contentString, backContentIndex = getStringBetweenDoubleBrackets(requestBody.Raw[backNameIndex+i+2:])
 						if backContentIndex != -1 {
-							args := Args{In: "header", Name: nameString, Value: Value{From: "func", Content: coversionFuncMap[contentString]}}
-							apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+							if coversionFuncMap[contentString] == "md5" {
+								nameList = strings.TrimSpace(nameList)
+								args := Args{In: "header", Name: nameString, Value: Value{From: "func", Content: coversionFuncMap[contentString], Args: nameList}}
+								apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+							} else {
+								args := Args{In: "header", Name: nameString, Value: Value{From: "func", Content: coversionFuncMap[contentString]}}
+								apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+								nameList = nameList + " " + nameString
+							}
+
 						}
 					} else if requestBody.Raw[backNameIndex+i+3:backNameIndex+i+4] == "\"" {
 						contentString, backContentIndex = getStringBetweenDoubleQuotationMarks(requestBody.Raw[backNameIndex+i+2:])
 						if backContentIndex != -1 {
 							args := Args{In: "header", Name: nameString, Value: Value{From: "literal", Content: contentString}}
 							apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+							nameList = nameList + " " + nameString
 						}
 					} else {
 						nameString = ""
