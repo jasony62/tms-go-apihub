@@ -29,7 +29,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -51,13 +50,33 @@ type ApiHubHttpConf struct {
 type Args struct {
 	In    string `json:"in"`
 	Name  string `json:"name"`
-	Value Value  `json:"value"`
+	Value Value  `json:"value,omitempty"`
 }
 
 type Value struct {
 	From    string `json:"from"`
 	Content string `json:"content"`
+	Args    string `json:"args,omitempty"`
 }
+
+// 创建list,提前预设
+// 左：postman js关键字
+// 右：apihub内部函数名称
+var preEventFuncReferenceList = map[string]string{
+	"getTime":      "utc",
+	"CryptoJS.MD5": "md5",
+}
+
+// 创建list,提前预设
+// postman js关键字
+var preEventFuncKeyList = []string{
+	"getTime",
+	"CryptoJS.MD5",
+}
+
+// 相当于postman脚本中全局变量转换的一个中间量，映射postman脚本requset中全局变量值到apihub内部函数名称
+// coversionFuncMap[time] = preEventFuncReferenceList["getTime"] = "utc"
+var coversionFuncMap map[string]string
 
 // postman文件路径
 var postmanPath string
@@ -82,7 +101,7 @@ func main() {
 // Postman文件转换函数
 func convertPostmanFiles(path string) {
 	// 读取指定目录下文件信息list
-	fileInfoList, err := ioutil.ReadDir(path)
+	fileInfoList, err := os.ReadDir(path)
 	if err != nil {
 		klog.Errorln(err)
 		return
@@ -120,25 +139,37 @@ func convertPostmanFiles(path string) {
 			}
 
 			for i := range postmanfileBytes.Items {
-				httpapiArgsLen := covertOneRequest(postmanfileBytes.Items[i])
+				converOneRequest(postmanfileBytes.Items[i])
 				generateApiHubJson(postmanfileBytes)
-				deleHttpapiQuery(httpapiArgsLen)
 			}
 		}
 	}
 }
 
-func covertOneRequest(postmanItem *postman.Items) int {
+func converOneRequest(postmanItem *postman.Items) {
+
+	if postmanItem == nil {
+		return
+	}
+	httpapiArgsLen := len(apiHubHttpConf.Args)
+	delHttpapiQuery(httpapiArgsLen)
 
 	getHttpapiInfo(postmanItem)
-	return getHttpapiArgs(postmanItem.Request)
+	coversionFuncMap = make(map[string]string)
+	getPostmanEventFunc(postmanItem, preEventFuncKeyList)
+	getHttpapiArgs(postmanItem.Request)
+
 }
 
-func deleHttpapiQuery(httpapiQueryLen int) {
-	apiHubHttpConf.Args = append(apiHubHttpConf.Args[:0], apiHubHttpConf.Args[httpapiQueryLen:]...)
+// 删除上个request append到args的值
+func delHttpapiQuery(httpapiArgsLen int) {
+	apiHubHttpConf.Args = append(apiHubHttpConf.Args[:0], apiHubHttpConf.Args[httpapiArgsLen:]...)
 }
 
 func getHttpapiInfo(postmanItem *postman.Items) {
+	if postmanItem == nil {
+		return
+	}
 
 	apiHubHttpConf.ID = postmanItem.Name
 	klog.Infoln("__request Name : ", apiHubHttpConf.ID)
@@ -152,13 +183,14 @@ func getHttpapiInfo(postmanItem *postman.Items) {
 	apiHubHttpConf.Method = string(postmanItem.Request.Method)
 	klog.Infoln("__request Method : ", apiHubHttpConf.Method)
 
-	// getPostmanEvent(postmanItem)
-	apiHubHttpConf.Requestcontenttype = "json" // default content
-	apiHubHttpConf.Private = ""                // default private content
+	apiHubHttpConf.Private = "" // default private content
 }
 
 // 获取Request URL
 func getPostmanURL(postmanUrl *postman.URL) string {
+	if postmanUrl == nil {
+		return ""
+	}
 
 	httpapiUrl := postmanUrl.Protocol + "://"
 	// Host IP
@@ -181,25 +213,34 @@ func getPostmanURL(postmanUrl *postman.URL) string {
 			httpapiUrl = httpapiUrl + postmanUrl.Path[i] + "/"
 		}
 	}
-
 	return httpapiUrl
 }
 
 // 获取Args
-func getHttpapiArgs(postmanRequest *postman.Request) int {
-
-	httpapiArgsLen := 0
+func getHttpapiArgs(postmanRequest *postman.Request) {
+	if postmanRequest == nil {
+		return
+	}
+	// 解析header
 	if postmanRequest.Header != nil {
 		for i := range postmanRequest.Header {
 			args := Args{In: "header", Name: postmanRequest.Header[i].Key, Value: Value{From: "header", Content: postmanRequest.Header[i].Key}}
 			apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
 		}
-		httpapiArgsLen = len(postmanRequest.Header)
 	}
-
-	// postmanURL.Query 是个type interface{}，坑！！！
+	// 解析query
 	if postmanRequest.URL.Query != nil {
-		httpapiQuery := postmanRequest.URL.Query.([]interface{})
+		parseRequestUrlQuery(postmanRequest.URL.Query)
+	}
+	// 解析body中的header、func
+	if postmanRequest.Body != nil {
+		parseRequestBody(postmanRequest.Body)
+	}
+}
+
+func parseRequestUrlQuery(postmanRequestURLQuery interface{}) {
+	if postmanRequestURLQuery != nil { // postmanURL.Query 是个type interface{}，坑！！！
+		httpapiQuery := postmanRequestURLQuery.([]interface{})
 		for i := range httpapiQuery {
 			httpapiQueryArg := httpapiQuery[i]
 			valuename := httpapiQueryArg.(map[string]interface{})["key"]
@@ -209,24 +250,142 @@ func getHttpapiArgs(postmanRequest *postman.Request) int {
 			// klog.Infoln("__httpapiQueryArgs valuename is : ", valuename.(string))
 			// klog.Infoln("__httpapiQueryArgs valuecontent is : ", valuecontent.(string))
 		}
-		httpapiArgsLen = httpapiArgsLen + len(httpapiQuery)
 	}
-
-	// if postmanRequest.Body != nil {
-	// 	for i := range postmanRequest.Body {
-
-	// 	}
-	// }
-	return httpapiArgsLen
 }
 
-func generateApiHubJson(postmanBytes *postman.Collection) {
+func parseRequestBody(postmanRequestBody *postman.Body) {
+	if postmanRequestBody != nil {
+		requestBody := postmanRequestBody
+		switch requestBody.Mode {
+		case "raw":
+			apiHubHttpConf.Requestcontenttype = "jsonraw"
+		case "x-www-form-urlencoded":
+			apiHubHttpConf.Requestcontenttype = "form"
+		case "application/json":
+			apiHubHttpConf.Requestcontenttype = "json"
+		default:
+			apiHubHttpConf.Requestcontenttype = requestBody.Mode
+		}
+		if requestBody.Raw != "" {
+			// klog.Infoln("__httpapirequestBody.Raw is : ", requestBody.Raw)
+			nameString := ""
+			contentString := ""
+			backNameIndex := 0
+			backContentIndex := 0
+			nameList := ""
+			for i := 0; i < len(requestBody.Raw); i++ {
+				nameString, backNameIndex = getStringBetweenDoubleQuotationMarks(requestBody.Raw[i:])
+				// klog.Infoln("test request raw is :", requestBody.Raw[backNameIndex+i+3:backNameIndex+i+4])
+				if backNameIndex != -1 {
+					if requestBody.Raw[backNameIndex+i+3:backNameIndex+i+5] == "{{" {
+						contentString, backContentIndex = getStringBetweenDoubleBrackets(requestBody.Raw[backNameIndex+i+2:])
+						if backContentIndex != -1 {
+							if coversionFuncMap[contentString] == "md5" {
+								nameList = strings.TrimSpace(nameList)
+								args := Args{In: "header", Name: nameString, Value: Value{From: "func", Content: coversionFuncMap[contentString], Args: nameList}}
+								apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+							} else {
+								args := Args{In: "header", Name: nameString, Value: Value{From: "func", Content: coversionFuncMap[contentString]}}
+								apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+								nameList = nameList + " " + nameString
+							}
 
-	infoName := covertCNtoPinyin(postmanBytes.Info.Name)
-	infoID := covertCNtoPinyin(apiHubHttpConf.ID)
+						}
+					} else if requestBody.Raw[backNameIndex+i+3:backNameIndex+i+4] == "\"" {
+						contentString, backContentIndex = getStringBetweenDoubleQuotationMarks(requestBody.Raw[backNameIndex+i+2:])
+						if backContentIndex != -1 {
+							args := Args{In: "header", Name: nameString, Value: Value{From: "literal", Content: contentString}}
+							apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+							nameList = nameList + " " + nameString
+						}
+					} else {
+						nameString = ""
+						contentString = ""
+						klog.Infoln("__parseRequestBodyRawError:Format error")
+						break
+					}
+					i = backNameIndex + backContentIndex + i + 8
+				}
+			}
+		}
+	} else {
+		apiHubHttpConf.Requestcontenttype = ""
+	}
+}
+
+func getPostmanEventFunc(postmanItem *postman.Items, preFuncKeyWord []string) {
+	if (postmanItem == nil) || (preFuncKeyWord == nil) {
+		return
+	}
+	for i := range postmanItem.Events { // 通常Events就一个
+		if postmanItem.Events[i].Script.Type == "text/javascript" {
+			for j := range postmanItem.Events[i].Script.Exec {
+				for k := range preFuncKeyWord {
+					keyWordIndex := strings.Index(postmanItem.Events[i].Script.Exec[j], preFuncKeyWord[k])
+					if keyWordIndex != -1 {
+						switch preFuncKeyWord[k] {
+						case "getTime":
+							keyWordString, index := getStringBetweenDoubleQuotationMarks(postmanItem.Events[i].Script.Exec[j])
+							// 解析js代码中EnvironmentVariable，查找到getTime代码，确定本行生成time变量名称，赋值到coversionFuncMap
+							keyWordString = strings.TrimSpace(keyWordString)
+							if index != -1 && keyWordString != "" {
+								coversionFuncMap[keyWordString] = preEventFuncReferenceList[preFuncKeyWord[k]]
+							}
+						case "CryptoJS.MD5":
+							keyWordString, index := getStringBetweenSpecifySymbols(postmanItem.Events[i].Script.Exec[j], "var", "=")
+							keyWordString = strings.TrimSpace(keyWordString)
+							if index != -1 && keyWordString != "" {
+								coversionFuncMap[keyWordString] = preEventFuncReferenceList[preFuncKeyWord[k]]
+							}
+							// klog.Infoln("__postmanItem.Events[i].Script.Exec[j]", keyWordString)
+						default:
+						}
+					}
+				}
+			}
+		} else {
+			klog.Infoln("__postmanItem.Events[i].Script.Type not text/javascript")
+			return
+		}
+	}
+}
+
+func getStringBetweenDoubleQuotationMarks(inputStrings string) (outputString string, outputIndex int) {
+	return getStringBetweenSpecifySymbols(inputStrings, "\"", "\"")
+}
+func getStringBetweenDoubleBrackets(inputStrings string) (outputString string, outputIndex int) {
+	return getStringBetweenSpecifySymbols(inputStrings, "{{", "}}")
+}
+func getStringBetweenSpecifySymbols(inputStrings string, specifySymbolBefore string, specifySymbolAfter string) (outputString string, outputIndex int) {
+	currentIndex := strings.Index(inputStrings, specifySymbolBefore)
+	if currentIndex != -1 {
+		nextIndex := strings.Index(inputStrings[currentIndex+len(specifySymbolBefore):], specifySymbolAfter)
+		if nextIndex != -1 {
+			outputString = inputStrings[currentIndex+len(specifySymbolBefore) : currentIndex+len(specifySymbolBefore)+nextIndex]
+			outputIndex = nextIndex + len(specifySymbolAfter) + currentIndex
+		} else {
+			outputString = ""
+			outputIndex = -1
+		}
+	} else {
+		outputString = ""
+		outputIndex = -1
+	}
+	return outputString, outputIndex
+}
+
+// 生成json文件
+func generateApiHubJson(postmanBytes *postman.Collection) {
+	if postmanBytes == nil {
+		return
+	}
+
+	infoName := converCNtoPinyin(postmanBytes.Info.Name)
+	infoID := converCNtoPinyin(apiHubHttpConf.ID)
 	fileName := apiHubJsonPath + infoName + "_" + infoID + ".json"
 	byteHttpApi, err := json.Marshal(apiHubHttpConf)
 	if err != nil {
+		klog.Errorln("json.Marshal失败!", fileName)
 		return
 	}
 	// ！！！os.Create无法自动创建文件路径中不存在的文件夹
@@ -243,7 +402,7 @@ func generateApiHubJson(postmanBytes *postman.Collection) {
 }
 
 // name中文转拼音
-func covertCNtoPinyin(postmanBytesInfoName string) string {
+func converCNtoPinyin(postmanBytesInfoName string) string {
 	var infoName []string = []string{}
 	infoNameTemp := pinyin.LazyConvert(postmanBytesInfoName, nil)
 	for infoNameTemp, v := range infoNameTemp {
