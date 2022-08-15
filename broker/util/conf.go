@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"plugin"
 	"strings"
 
@@ -289,5 +290,5 @@ func LoadMainFlow(path string) (interface{}, int) {
 	}
 	klog.Infof("Load main flow from %s\n", defaultConfMap.BasePath)
 	loadJsonDefData(JSON_TYPE_FLOW, defaultConfMap.BasePath, "", false)
-	return nil, 200
+	return nil, http.StatusOK
 }

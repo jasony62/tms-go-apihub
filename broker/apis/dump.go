@@ -15,5 +15,5 @@ func dump(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	}
 	klog.Infoln("\r\n****************DUMP:\r\n", stack.BaseString, " params:", params, "\r\n")
 
-	return nil, 200
+	return nil, http.StatusOK
 }

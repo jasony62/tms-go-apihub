@@ -1,6 +1,8 @@
 package apis
 
 import (
+	"net/http"
+
 	"github.com/google/uuid"
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/jasony62/tms-go-apihub/util"
@@ -33,5 +35,5 @@ func fillBaseInfo(stack *hub.Stack, params map[string]string) (interface{}, int)
 	}
 
 	stack.BaseString = util.CreateBaseString(base)
-	return nil, 200
+	return nil, http.StatusOK
 }
