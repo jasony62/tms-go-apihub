@@ -29,7 +29,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -102,7 +101,7 @@ func main() {
 // Postman文件转换函数
 func convertPostmanFiles(path string) {
 	// 读取指定目录下文件信息list
-	fileInfoList, err := ioutil.ReadDir(path)
+	fileInfoList, err := os.ReadDir(path)
 	if err != nil {
 		klog.Errorln(err)
 		return
