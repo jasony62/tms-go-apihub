@@ -1,0 +1,18 @@
+{
+    "id": "mobile",
+    "description": "mobile",
+    "url": "https://tenapi.cn/tel/",
+    "method": "GET",
+    "private": "",
+    "requestContentType": "json",
+    "args": [
+        {
+            "in": "query",
+            "name": "tel",
+            "value": {
+                "from": "query",
+                "content": "tel"
+            }
+        }
+    ]
+}
