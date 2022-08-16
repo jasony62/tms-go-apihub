@@ -246,5 +246,5 @@ func apiGatewayRun(host string, portString string, bucketEnable string,
 func apiGateway(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	apiGatewayRun(params["host"], params["port"], params["bucket"],
 		params["pre"], params["postOK"], params["postNOK"], params["httpApi"])
-	return nil, 200
+	return nil, http.StatusOK
 }

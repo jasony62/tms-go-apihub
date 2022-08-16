@@ -22,7 +22,7 @@ func checkStringsEqual(stack *hub.Stack, params map[string]string) (interface{},
 			return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusInternalServerError
 		}
 	}
-	return nil, 200
+	return nil, http.StatusOK
 }
 
 func checkStringsNotEqual(stack *hub.Stack, params map[string]string) (interface{}, int) {
@@ -39,5 +39,5 @@ func checkStringsNotEqual(stack *hub.Stack, params map[string]string) (interface
 			return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusInternalServerError
 		}
 	}
-	return nil, 200
+	return nil, http.StatusOK
 }
