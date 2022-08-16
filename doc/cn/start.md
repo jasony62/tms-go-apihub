@@ -119,7 +119,7 @@ API网关与API服务配置文件相互分离。一方面，增加了程序部�
 |名称| 用途|
 | -- | -- |
 | main.json | 启动文件 |
-| privates| 文件夹，存放密码文件|
+| privates| 文件夹，存放密钥等认证信息，没有暴露在Github|
 | httpapis| 文件夹，存放HTTPAPI定义文件|
 | flows| 文件夹，存放FLOW定义文件|
 | schedules| 文件夹，存放SCHEDULE定义文件|
@@ -182,7 +182,7 @@ go build -o tms-go-apihub
 
 若出现异常现象，需要根据打印提示进行微调，例如：
 * 1.根据提示删除某些无效json文件；
-* 2.若提示端口号被占用，需要修改`/example/main.json`更改端口号
+* 2.若提示端口号被占用，需要修改`./example/main.json`更改端口号
 
 apihub程序启动后，打开新的终端窗口，执行curl命令发送请求，进而获取信息
 ```
@@ -212,17 +212,19 @@ docker build -t tms/gah-broker .
 ```
 
 ```
-docker run -it --rm --name tms-gah-broker -p 8080:8080 tms/gah-broker sh
+docker run -it --rm --name tms-go-apihub -p 8080:8080 tms/gah-broker sh
+
 cd broker/
-./tms-gah-broker --base ../example/
+
+./tms-go-apihub --base ../example/
 ```
 
 ```
-docker compose build tms-gah-broker
+docker compose build tms-go-apihub
 ```
 
 ```
-docker compose up tms-gah-broker
+docker compose up tms-go-apihub
 ```
 
 ## 4.2 安装插件

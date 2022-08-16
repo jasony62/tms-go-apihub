@@ -22,7 +22,7 @@ func loadConf(stack *hub.Stack, params map[string]string) (interface{}, int) {
 
 	util.LoadConf(basePath)
 
-	return nil, 200
+	return nil, http.StatusOK
 }
 
 //downloadConf 解压zip包
@@ -46,7 +46,7 @@ func downloadConf(stack *hub.Stack, params map[string]string) (interface{}, int)
 			return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusInternalServerError
 		}
 	}
-	return nil, 200
+	return nil, http.StatusOK
 }
 
 //DecompressZip 解压zip包
@@ -74,7 +74,7 @@ func decompressZip(stack *hub.Stack, params map[string]string) (interface{}, int
 			return util.CreateTmsError(hub.TmsErrorApisId, err.Error(), nil), http.StatusInternalServerError
 		}
 	}
-	return nil, 200
+	return nil, http.StatusOK
 }
 
 func logToFile(stack *hub.Stack, params map[string]string) (interface{}, int) {
@@ -82,7 +82,7 @@ func logToFile(stack *hub.Stack, params map[string]string) (interface{}, int) {
 
 	klog.Infoln("logToFile ", filename)
 	if len(filename) == 0 {
-		return nil, 200
+		return nil, http.StatusOK
 	}
 
 	folder := "../log/"
@@ -99,7 +99,7 @@ func logToFile(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	logName := folder + filename + "_" + timeStr + ".log"
 	flag.Set("log_file", logName)
 	flag.Parse()
-	return nil, 200
+	return nil, http.StatusOK
 }
 
 func pathExists(path string) (bool, error) {

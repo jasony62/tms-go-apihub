@@ -14,6 +14,9 @@
         },
         {
             "path": "schema"
+        },
+        {
+            "path": "postman"
         }
     ]
 }
