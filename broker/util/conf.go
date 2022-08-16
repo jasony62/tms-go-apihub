@@ -87,45 +87,42 @@ func loadJsonDefData(jsonType int, path string, prefix string, includeDir bool) 
 				panic(str)
 			}
 
-			var key string
 			fname := fileInfoList[i].Name()
 			index := strings.Index(fname, ".json")
 			if index >= 0 {
 				fname = fname[:index]
 			}
 
-			key = fname
-
 			decoder := json.NewDecoder(bytes.NewReader(byteFile))
 			switch jsonType {
 			case JSON_TYPE_API:
 				def := new(hub.HttpApiDef)
 				decoder.Decode(&def)
-				defaultConfMap.ApiMap[key] = def
+				defaultConfMap.ApiMap[fname] = def
 			case JSON_TYPE_FLOW:
 				def := new(hub.FlowDef)
 				decoder.Decode(&def)
-				defaultConfMap.FlowMap[key] = def
+				defaultConfMap.FlowMap[fname] = def
 			case JSON_TYPE_SCHEDULE:
 				def := new(hub.ScheduleDef)
 				decoder.Decode(&def)
-				defaultConfMap.ScheduleMap[key] = def
+				defaultConfMap.ScheduleMap[fname] = def
 			case JSON_TYPE_PRIVATE:
 				def := new(hub.PrivateArray)
 				decoder.Decode(&def)
-				defaultConfMap.PrivateMap[key] = def
+				defaultConfMap.PrivateMap[fname] = def
 			case JSON_TYPE_API_RIGHT:
 				def := new(hub.RightArray)
 				decoder.Decode(&def)
-				defaultConfMap.ApiRightMap[key] = def
+				defaultConfMap.ApiRightMap[fname] = def
 			case JSON_TYPE_FLOW_RIGHT:
 				def := new(hub.RightArray)
 				decoder.Decode(&def)
-				defaultConfMap.FlowRightMap[key] = def
+				defaultConfMap.FlowRightMap[fname] = def
 			case JSON_TYPE_SCHEDULE_RIGHT:
 				def := new(hub.RightArray)
 				decoder.Decode(&def)
-				defaultConfMap.ScheduleRightMap[key] = def
+				defaultConfMap.ScheduleRightMap[fname] = def
 			default:
 			}
 		}

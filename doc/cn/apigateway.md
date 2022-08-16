@@ -48,16 +48,16 @@ apihub程序通过路由`/schedule/{scheduleId}`调用指定的 FLOW。例如：
 curl  -H "Content-Type: application/json" -d '{"cities":["sh", "bj", "sh", "sh"], "image":"https://img.zcool.cn/community/01ff2059770a25a8012193a37c7695.jpg"}' "http://localhost:8080/schedule/amap_qywx"
 ```
 # 值得参考的商业/开源方案
-![compare](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/cn/api_compare.png)
-![5](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/cn/apigateway5.png)
-![1](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/cn/apigateway1.jpg)
-![2](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/cn/apigateway4.png)
-![6](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/cn/apigateway6.png)
-![7](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/cn/apigateway7.png)
+![compare](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/pic/api_compare.png)
+![5](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/pic/apigateway5.png)
+![1](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/pic/apigateway1.jpg)
+![2](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/pic/apigateway4.png)
+![6](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/pic/apigateway6.png)
+![7](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/pic/apigateway7.png)
 
 https://www.restcloud.cn/restcloud/mycms/product-gateway.html
-![3](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/cn/apigateway2.jpg)
-![4](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/cn/apigateway3.jpg)
+![3](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/pic/apigateway2.jpg)
+![4](https://github.com/wangbinbupt/tms-go-apihub/raw/main/doc/pic/apigateway3.jpg)
 
 多个api网关比较
 https://blog.csdn.net/pushiqiang/article/details/95726137
