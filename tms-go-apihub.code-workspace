@@ -1,0 +1,19 @@
+{
+    "folders": [
+        {
+            "path": ".vscode"
+        },
+        {
+            "path": "broker"
+        },
+        {
+            "path": "doc"
+        },
+        {
+            "path": "example"
+        },
+        {
+            "path": "schema"
+        }
+    ]
+}
