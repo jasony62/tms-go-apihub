@@ -22,8 +22,7 @@ APIHUB是一款基于 Golang 开发的API调度平台，能够实现基于JSON�
 介绍flow、schedule的调用流程。
 # [测试](https://github.com/jasony62/tms-go-apihub/blob/main/doc/cn/test.md)
 介绍相关测试命令以及返回值。
-
-# [swagger postman脚本兼容](https://github.com/jasony62/tms-go-apihub/blob/main/doc/cn/postmanswagger.md)
+# [swagger postman脚本兼容说明](https://github.com/jasony62/tms-go-apihub/blob/main/doc/cn/postmanswagger.md)
 介绍swagger、postman脚本转换程序使用方法。
 # [开发计划](https://github.com/jasony62/tms-go-apihub/blob/main/doc/cn/work.md)
 介绍开发计划以及开发进度。
