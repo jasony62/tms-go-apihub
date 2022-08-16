@@ -21,12 +21,18 @@
     注：目前仅在天翼云、本地Linux环境测试运行，本地的Linux首次运行需要配置nodejs、newman、go环境。Windows环境未验证！
     http-server程序模拟API网关调用的外部server返回结果
 
+
 ## 1. ！！！测前必看
+
+若本机Linux未运行或配置过postman脚本，可参考如下链接进行环境配置
+
+[postman脚本环境配置](https://blog.csdn.net/szm1234/article/details/126345866)
+
 `postman`测试过程中，需要注意`postman`发送地址和端口号与apihub监听地址和端口号要保持一致。
 
 `postman`地址和端口号修改位置如下
 ```
-./broker/34test_0623.postman_environment
+./example/34test_0623.postman_environment
 ```
 *.postman_environment修改value位置地址和端口号即可。
 ```
@@ -78,7 +84,7 @@
 最后等待2秒钟左右，检查当前目录下是否有`./*.postman_collection 和 *.postman_environment`文件，若有则直接运行，返回成功信息，若无打印错误信息提示用户。
 
 ## 3. 双脚本测试方式
-具体shell脚本在./brker目录下，分别为start.sh、postmanup.sh
+具体shell脚本在./example目录下，分别为start.sh、postmanup.sh
 
 * `start.sh`首先检查进程中是否存在`tms-go-apihub`、`http-server`应用程序，若存在则杀死进程。检查当前目录下是否有可执行文件`tms-go-apihub`（apihub的可执行文件）、`http-server`，若有则直接运行，若无则自动`build`可执行文件并运行。
 * `postmanup.sh`检查当前目录下是否有`./*.postman_collection 和 *.postman_environment`文件，若有则直接运行，返回成功信息，若无打印错误信息提示用户。
@@ -102,8 +108,8 @@
 ##############################################################
 ####################自定义位置#################################
 
-apihub_app="./tms-go-apihub"
-conf_path="../example/"
+apihub_app="../broker/tms-go-apihub"
+conf_path="./"
 
 postman_collection_app="./APIHUB_0623.postman_collection"
 postman_environment_app="./34test_0623.postman_environment"

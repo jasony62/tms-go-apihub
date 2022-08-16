@@ -146,13 +146,13 @@ func convertPostmanFiles(path string) {
 	}
 }
 
+// 转换postman collection中一个request
 func converOneRequest(postmanItem *postman.Items) {
-
 	if postmanItem == nil {
 		return
 	}
 	httpapiArgsLen := len(apiHubHttpConf.Args)
-	delHttpapiQuery(httpapiArgsLen)
+	delHttpapiConfArgs(httpapiArgsLen)
 
 	getHttpapiInfo(postmanItem)
 	coversionFuncMap = make(map[string]string)
@@ -162,7 +162,7 @@ func converOneRequest(postmanItem *postman.Items) {
 }
 
 // 删除上个request append到args的值
-func delHttpapiQuery(httpapiArgsLen int) {
+func delHttpapiConfArgs(httpapiArgsLen int) {
 	apiHubHttpConf.Args = append(apiHubHttpConf.Args[:0], apiHubHttpConf.Args[httpapiArgsLen:]...)
 }
 
@@ -238,6 +238,7 @@ func getHttpapiArgs(postmanRequest *postman.Request) {
 	}
 }
 
+// 解析query
 func parseRequestUrlQuery(postmanRequestURLQuery interface{}) {
 	if postmanRequestURLQuery != nil { // postmanURL.Query 是个type interface{}，坑！！！
 		httpapiQuery := postmanRequestURLQuery.([]interface{})
@@ -253,6 +254,7 @@ func parseRequestUrlQuery(postmanRequestURLQuery interface{}) {
 	}
 }
 
+// 解析body
 func parseRequestBody(postmanRequestBody *postman.Body) {
 	if postmanRequestBody != nil {
 		requestBody := postmanRequestBody
@@ -313,14 +315,15 @@ func parseRequestBody(postmanRequestBody *postman.Body) {
 	}
 }
 
+// 获取postman Event中的全局变量和js函数
 func getPostmanEventFunc(postmanItem *postman.Items, preFuncKeyWord []string) {
 	if (postmanItem == nil) || (preFuncKeyWord == nil) {
 		return
 	}
-	for i := range postmanItem.Events { // 通常Events就一个
+	for i := range postmanItem.Events { // 通常Events就一个，但是个数组形式，所以使用遍历
 		if postmanItem.Events[i].Script.Type == "text/javascript" {
-			for j := range postmanItem.Events[i].Script.Exec {
-				for k := range preFuncKeyWord {
+			for j := range postmanItem.Events[i].Script.Exec { // Exec中js命令一行是一个数组元素
+				for k := range preFuncKeyWord { // 查找js命令行中有无js常见命令的关键字
 					keyWordIndex := strings.Index(postmanItem.Events[i].Script.Exec[j], preFuncKeyWord[k])
 					if keyWordIndex != -1 {
 						switch preFuncKeyWord[k] {
@@ -356,6 +359,8 @@ func getStringBetweenDoubleQuotationMarks(inputStrings string) (outputString str
 func getStringBetweenDoubleBrackets(inputStrings string) (outputString string, outputIndex int) {
 	return getStringBetweenSpecifySymbols(inputStrings, "{{", "}}")
 }
+
+// 获取指定字符中间的字符串，并返回字符串最右的索引值，backIndex = -1表示错误
 func getStringBetweenSpecifySymbols(inputStrings string, specifySymbolBefore string, specifySymbolAfter string) (outputString string, outputIndex int) {
 	currentIndex := strings.Index(inputStrings, specifySymbolBefore)
 	if currentIndex != -1 {
@@ -374,7 +379,7 @@ func getStringBetweenSpecifySymbols(inputStrings string, specifySymbolBefore str
 	return outputString, outputIndex
 }
 
-// 生成json文件
+// 生成json文件，无法自动创建文件路径中不存在的文件夹
 func generateApiHubJson(postmanBytes *postman.Collection) {
 	if postmanBytes == nil {
 		return
@@ -401,7 +406,7 @@ func generateApiHubJson(postmanBytes *postman.Collection) {
 	}
 }
 
-// name中文转拼音
+// name中文转拼音，解决apihub不识别中文文件名问题。转换仅支持纯中文，若纯英文则默认不修改
 func converCNtoPinyin(postmanBytesInfoName string) string {
 	var infoName []string = []string{}
 	infoNameTemp := pinyin.LazyConvert(postmanBytesInfoName, nil)
