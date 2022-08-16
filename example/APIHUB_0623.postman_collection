@@ -118,9 +118,7 @@
 									"  pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/json; charset=utf-8');\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -261,9 +259,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -404,9 +400,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -547,9 +541,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -710,9 +702,7 @@
 									"  pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/json; charset=utf-8');\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -854,9 +844,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -998,9 +986,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -1142,9 +1128,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -1292,9 +1276,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -1436,9 +1418,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -1580,9 +1560,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -1724,9 +1702,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -1967,9 +1943,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -2040,9 +2014,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -2207,9 +2179,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -2363,9 +2333,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -2519,9 +2487,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -2675,9 +2641,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -2780,9 +2744,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -2941,9 +2903,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -3098,9 +3058,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -3255,9 +3213,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -3412,9 +3368,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -3518,9 +3472,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -3648,9 +3600,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -3782,9 +3732,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -3900,9 +3848,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -4033,9 +3979,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -4174,9 +4118,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -4310,9 +4252,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -4428,9 +4368,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -4555,9 +4493,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -4683,9 +4619,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -4876,9 +4810,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -5005,9 +4937,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -5134,9 +5064,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -5263,9 +5191,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -5332,9 +5258,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -5466,9 +5390,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -5596,9 +5518,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -5726,9 +5646,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -5856,9 +5774,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -5926,9 +5842,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -6041,9 +5955,7 @@
 									"    pm.expect(pm.response.headers.get('Content-Type')).to.eql('text/html; charset=utf-8');\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -6150,9 +6062,7 @@
 									"    pm.expect(pm.response.headers.get('Content-Type')).to.eql('text/html; charset=utf-8');\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -6259,9 +6169,7 @@
 									"    pm.expect(pm.response.headers.get('Content-Type')).to.eql('text/html; charset=utf-8');\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -6368,9 +6276,7 @@
 									"    pm.expect(pm.response.headers.get('Content-Type')).to.eql('text/html; charset=utf-8');\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -6437,9 +6343,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -6566,9 +6470,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -6690,9 +6592,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -6814,9 +6714,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -6943,9 +6841,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -7072,9 +6968,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -7189,9 +7083,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -7317,9 +7209,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -7439,9 +7329,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -7555,9 +7443,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -7678,9 +7564,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -7799,9 +7683,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"
@@ -7928,9 +7810,7 @@
 									"});\r",
 									"\r",
 									"\r",
-									"pm.test(\"Response time is less than 500ms\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(500);\r",
-									"});\r",
+
 									""
 								],
 								"type": "text/javascript"

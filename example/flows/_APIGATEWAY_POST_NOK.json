@@ -143,7 +143,7 @@
           }
         }
       ]
-    },    
+    },
     {
       "name": "post_nok",
       "command": "flowApi",

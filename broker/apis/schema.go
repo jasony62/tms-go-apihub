@@ -123,5 +123,5 @@ func loadSchemaDefData(path string) (interface{}, int) {
 			}
 		}
 	}
-	return nil, 200
+	return nil, http.StatusOK
 }

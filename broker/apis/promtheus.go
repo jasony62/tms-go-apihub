@@ -6,9 +6,9 @@ import (
 	"strconv"
 
 	"github.com/jasony62/tms-go-apihub/hub"
+	"github.com/jasony62/tms-go-apihub/util"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/jasony62/tms-go-apihub/util"
 	klog "k8s.io/klog/v2"
 )
 
@@ -31,7 +31,7 @@ func promStart(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	klog.Infoln("promStart: host: ", host, " port:", port)
 
 	promStartRun(fmt.Sprintf("%s:%s", host, port))
-	return nil, 200
+	return nil, http.StatusOK
 }
 
 func promStartRun(address string) {
@@ -88,10 +88,10 @@ func promStartRun(address string) {
 
 func getPromLabels(params map[string]string) map[string]string {
 	return prometheus.Labels{
-		"code": params["code"],
+		"code":  params["code"],
 		"child": params["child"],
-		"root": params["root"],
-		"type": params["type"]}
+		"root":  params["root"],
+		"type":  params["type"]}
 }
 
 func promHttpCounterInc(stack *hub.Stack, params map[string]string) (interface{}, int) {
@@ -101,7 +101,7 @@ func promHttpCounterInc(stack *hub.Stack, params map[string]string) (interface{}
 	val := params["duration"]
 	duration, err := strconv.ParseFloat(val, 64)
 	if err != nil {
-		str:= "解析http out duration失败, err: " + err.Error()
+		str := "解析http out duration失败, err: " + err.Error()
 		klog.Errorln(stack.BaseString, str)
 		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), 400
 	}
@@ -112,9 +112,9 @@ func promHttpCounterInc(stack *hub.Stack, params map[string]string) (interface{}
 		httpOutDurationPromHistogram.With(promLabels).Observe(duration)
 		httpOutPromCounter.With(promLabels).Inc()
 	} else {
-		str:= "httpInOut参数配置错误！"
+		str := "httpInOut参数配置错误！"
 		klog.Errorln(stack.BaseString, str)
 		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), 400
 	}
-	return nil, 200
+	return nil, http.StatusOK
 }
