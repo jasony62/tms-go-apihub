@@ -44,7 +44,7 @@ type ApiHubHttpConf struct {
 	Method             string `json:"method"`
 	Private            string `json:"private"`
 	Requestcontenttype string `json:"requestContentType"`
-	Args               []Args `json:"args"`
+	Args               []Args `json:"args,omitempty"`
 }
 
 type Args struct {
@@ -55,8 +55,8 @@ type Args struct {
 
 type Value struct {
 	From    string            `json:"from"`
-	Content string            `json:"content",omitempty"`
-	Args    string            `json:"args",omitempty"`
+	Content string            `json:"content,omitempty"`
+	Args    string            `json:"args,omitempty"`
 	Json    map[string]string `json:"json,omitempty"`
 	// Json    *interface{} `json:"json,omitempty"`
 }
@@ -285,6 +285,7 @@ func parseRequestBody(postmanRequestBody *postman.Body) {
 			contentString := ""
 			backNameIndex := 0
 			backContentIndex := 0
+			tempbodyjson := make(map[string]string)
 			for i := 0; i < len(requestBody.Raw); i++ {
 				nameString, backNameIndex = getStringBetweenDoubleQuotationMarks(requestBody.Raw[i:])
 				// klog.Infoln("test request raw is :", requestBody.Raw[backNameIndex+i+3:backNameIndex+i+4])
@@ -299,11 +300,7 @@ func parseRequestBody(postmanRequestBody *postman.Body) {
 						if backContentIndex != -1 {
 							args := Args{In: "vars", Name: nameString, Value: Value{From: "literal", Content: contentString}}
 							apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
-							tempbodyjson := Value.Json{
-								Type: "json",
-							}
-							_ = tempbodyjson
-							args = Args{In: "body", Name: "body", Value: Value{From: "json", Content: contentString}}
+							tempbodyjson[nameString] = "{{" + ".var." + nameString + "}}"
 						}
 						i = backNameIndex + backContentIndex + i + tempstringflag1
 					} else if (tempstringflag2 != -1) && (tempstring2 == ":") {
@@ -329,7 +326,8 @@ func parseRequestBody(postmanRequestBody *postman.Body) {
 					}
 				}
 			}
-
+			bodyArgs := Args{In: "body", Name: "body", Value: Value{From: "json", Json: tempbodyjson}}
+			apiHubHttpConf.Args = append(apiHubHttpConf.Args, bodyArgs)
 		}
 	} else {
 		apiHubHttpConf.Requestcontenttype = ""
