@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 	"runtime"
 
-	"github.com/jasony62/tms-go-apihub/broker/hub"
+	"github.com/Sheng-ZM/tms-go-apihub/broker//hub"
 )
 
 func CreateTmsError(id uint, msg string, err error) (ret hub.TmsError) {

@@ -7,9 +7,9 @@ import (
 	"github.com/joho/godotenv"
 	klog "k8s.io/klog/v2"
 
-	_ "github.com/jasony62/tms-go-apihub/broker/apis"
-	"github.com/jasony62/tms-go-apihub/broker/core"
-	"github.com/jasony62/tms-go-apihub/broker/hub"
+	_ "github.com/Sheng-ZM/tms-go-apihub/broker//apis"
+	"github.com/Sheng-ZM/tms-go-apihub/broker//core"
+	"github.com/Sheng-ZM/tms-go-apihub/broker//hub"
 )
 
 // 命令行指定的环境变量文件
