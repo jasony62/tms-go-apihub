@@ -139,10 +139,8 @@ func triggerConcurrentLoop(stack *hub.Stack, task *hub.ScheduleApiDef, loopLengt
 			tmpStack := copyScheduleStack(stack, task)
 			in <- concurrentLoopIn{index: i, stack: tmpStack, task: task.Control.Steps}
 			i++
-		} else {
-			if counter == 0 {
-				break
-			}
+		} else if counter == 0 {
+			break
 		}
 	}
 }
