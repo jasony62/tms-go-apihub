@@ -7,7 +7,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/jasony62/tms-go-apihub/hub"
+	"github.com/jasony62/tms-go-apihub/broker/hub"
 	klog "k8s.io/klog/v2"
 )
 

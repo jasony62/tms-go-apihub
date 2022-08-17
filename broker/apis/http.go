@@ -11,15 +11,15 @@ import (
 
 	klog "k8s.io/klog/v2"
 
-	"github.com/jasony62/tms-go-apihub/core"
-	"github.com/jasony62/tms-go-apihub/hub"
-	"github.com/jasony62/tms-go-apihub/util"
+	"github.com/jasony62/tms-go-apihub/broker/core"
+	"github.com/jasony62/tms-go-apihub/broker/hub"
+	"github.com/jasony62/tms-go-apihub/broker/util"
 	"github.com/valyala/fasthttp"
 
 	jsoniter "github.com/json-iterator/go"
 )
 
-//json反序列化是造成整数的精度丢失，所以使用一个扩展的json工具做反序列化
+// json反序列化是造成整数的精度丢失，所以使用一个扩展的json工具做反序列化
 var jsonEx = jsoniter.Config{
 	UseNumber: true,
 }.Froze()

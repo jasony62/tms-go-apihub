@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/jasony62/tms-go-apihub/core"
-	"github.com/jasony62/tms-go-apihub/hub"
-	"github.com/jasony62/tms-go-apihub/util"
+	"github.com/jasony62/tms-go-apihub/broker/core"
+	"github.com/jasony62/tms-go-apihub/broker/hub"
+	"github.com/jasony62/tms-go-apihub/broker/util"
 
 	"github.com/gin-gonic/gin"
 	klog "k8s.io/klog/v2"

@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/jasony62/tms-go-apihub/hub"
-	"github.com/jasony62/tms-go-apihub/util"
+	"github.com/jasony62/tms-go-apihub/broker/hub"
+	"github.com/jasony62/tms-go-apihub/broker/util"
 
 	klog "k8s.io/klog/v2"
 )
@@ -25,7 +25,7 @@ func loadConf(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	return nil, http.StatusOK
 }
 
-//downloadConf 解压zip包
+// downloadConf 解压zip包
 func downloadConf(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	basePath := util.GetBasePath()
 	if len(basePath) == 0 {
@@ -49,7 +49,7 @@ func downloadConf(stack *hub.Stack, params map[string]string) (interface{}, int)
 	return nil, http.StatusOK
 }
 
-//DecompressZip 解压zip包
+// DecompressZip 解压zip包
 func decompressZip(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	basePath := util.GetBasePath()
 	path := params["path"]

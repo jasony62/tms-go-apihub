@@ -6,8 +6,8 @@ import (
 
 	klog "k8s.io/klog/v2"
 
-	"github.com/jasony62/tms-go-apihub/hub"
-	"github.com/jasony62/tms-go-apihub/util"
+	"github.com/jasony62/tms-go-apihub/broker/hub"
+	"github.com/jasony62/tms-go-apihub/broker/util"
 )
 
 type concurrentLoopIn struct {
