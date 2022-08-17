@@ -1,8 +1,8 @@
 package apis
 
 import (
-	"github.com/Sheng-ZM/tms-go-apihub/broker//core"
-	"github.com/Sheng-ZM/tms-go-apihub/broker//hub"
+	"github.com/jasony62/tms-go-apihub/core"
+	"github.com/jasony62/tms-go-apihub/hub"
 	klog "k8s.io/klog/v2"
 )
 

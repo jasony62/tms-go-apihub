@@ -3,8 +3,8 @@ package apis
 import (
 	"net/http"
 
-	"github.com/Sheng-ZM/tms-go-apihub/broker//hub"
-	"github.com/Sheng-ZM/tms-go-apihub/broker//util"
+	"github.com/jasony62/tms-go-apihub/hub"
+	"github.com/jasony62/tms-go-apihub/util"
 	klog "k8s.io/klog/v2"
 )
 
