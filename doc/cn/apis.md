@@ -45,7 +45,7 @@ API列表如下：
 | setDefaultAccessRight  | 默认执行权限 |
 | checkRight  | 检查权限 |
 | fillBaseInfo | 添加基本信息 |
-| logToFile | 将日志写入文件，默认目录放在log目录中（不支持Gin框架输出的日志） |
+| logToFile | 将日志写入文件，默认目录放在log目录中（不支持Gin框架输出的日志），定义屏幕日志输出级别 |
 
 表4：普罗米修斯相关API
 | API名称 | 功能简述 |
@@ -950,7 +950,7 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 ### 9.2. 位置
 
 ```
-./broker/apis/file.go
+./broker/apis/log.go
 ```
 
 ### 9.3. API输入介绍
