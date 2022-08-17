@@ -22,6 +22,7 @@ type ApiHubHttpConf struct {
 	Requestcontenttype string `json:"requestContentType"`
 	Args               []Args `json:"args"`
 }
+
 type Value struct {
 	From    string `json:"from"`
 	Content string `json:"content"`
@@ -206,6 +207,7 @@ func covertSwaggerToApihubConf(fileBytes []byte) {
 	parsePaths(oapi)
 	parseRequestBodies(oapi.Components.RequestBodies)
 	generateApiHubConf(oapi)
+	apiHubHttpConf = ApiHubHttpConf{}
 }
 
 func generateApiHubConf(api openapi.OpenAPI) {
@@ -225,7 +227,7 @@ func generateApiHubConf(api openapi.OpenAPI) {
 		_, err = f.Write(byteHttpApi)
 		if err != nil {
 			klog.Errorln("写入文件失败!", fileName)
-
 		}
 	}
+	klog.Infoln("%%文件转换完成:", fileName)
 }

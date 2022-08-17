@@ -43,5 +43,4 @@ func main() {
 
 	defer klog.Flush()
 	core.ApiHubStartMainFlow(basePath)
-
 }

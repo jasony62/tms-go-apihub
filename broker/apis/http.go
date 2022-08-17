@@ -60,7 +60,7 @@ func postHttpapis(stack *hub.Stack, name string, result string, code int, durati
 	}
 }
 
-func newRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.PrivateArray) (*fasthttp.Request, int, error) {
+func createNewRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.PrivateArray) (*fasthttp.Request, int, error) {
 	var outBody string
 	var hasBody bool
 	var err error
@@ -173,11 +173,11 @@ func newRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Priva
 	return outReq, http.StatusOK, nil
 }
 
-func handleReq(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.PrivateArray, internal bool) (interface{}, int, error) {
+func sendRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.PrivateArray, internal bool) (interface{}, int, error) {
 	var jsonInRspBody interface{}
 	var code int
 
-	outReq, code, e := newRequest(stack, HttpApi, privateDef)
+	outReq, code, e := createNewRequest(stack, HttpApi, privateDef)
 	if code != fasthttp.StatusOK {
 		return nil, fasthttp.StatusInternalServerError, e
 	}
@@ -365,6 +365,7 @@ func getCacheContentWithLock(HttpApi *hub.HttpApiDef) interface{} {
 // 转发API调用
 func run(stack *hub.Stack, name string, private string, internal bool) (jsonOutRspBody interface{}, ret int) {
 	var privateDef *hub.PrivateArray
+	var code int
 	HttpApi, ok := util.FindHttpApiDef(name)
 
 	if !ok || HttpApi == nil {
@@ -393,21 +394,24 @@ func run(stack *hub.Stack, name string, private string, internal bool) (jsonOutR
 
 			if jsonOutRspBody = getCacheContent(HttpApi); jsonOutRspBody == nil {
 				klog.Infoln("获取缓存Cache ... ...")
-				jsonOutRspBody, _, err = handleReq(stack, HttpApi, privateDef, internal)
+				jsonOutRspBody, code, err = sendRequest(stack, HttpApi, privateDef, internal)
 			} else {
 				klog.Infoln("Cache缓存有效，直接回应")
+				code = fasthttp.StatusOK
 			}
 		} else {
 			klog.Infoln("Cache缓存有效，直接回应")
+			code = fasthttp.StatusOK
 		}
 	} else { //不支持缓存，直接请求
-		jsonOutRspBody, _, err = handleReq(stack, HttpApi, privateDef, internal)
+		jsonOutRspBody, code, err = sendRequest(stack, HttpApi, privateDef, internal)
 	}
 
-	klog.Infoln("处理", HttpApi.Url, ":", fasthttp.StatusOK, "\r\n", stack.BaseString, "\r\n返回结果：", jsonOutRspBody)
-	if jsonOutRspBody == nil {
-		return util.CreateTmsError(hub.TmsErrorApisId, err.Error(), nil), fasthttp.StatusInternalServerError
+	if code != fasthttp.StatusOK {
+		klog.Errorln(stack.BaseString, "处理", HttpApi.Url, "失败.", "code：", code)
+		return util.CreateTmsError(hub.TmsErrorApisId, err.Error(), nil), code
 	}
+	klog.Infoln(stack.BaseString, "处理", HttpApi.Url, "成功.", "返回结果：", jsonOutRspBody)
 	return jsonOutRspBody, fasthttp.StatusOK
 }
 
@@ -431,14 +435,14 @@ func httpResponse(stack *hub.Stack, params map[string]string) (interface{}, int)
 	if !OK {
 		str := "缺少api名称"
 		klog.Errorln(stack.BaseString, str)
-		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusForbidden
+		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusBadRequest
 	}
 
 	key, OK := params["key"]
 	if !OK {
 		str := "缺少api名称"
 		klog.Errorln(stack.BaseString, str)
-		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusForbidden
+		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusBadRequest
 	}
 
 	codeStr, OK := params["code"]
@@ -448,7 +452,9 @@ func httpResponse(stack *hub.Stack, params map[string]string) (interface{}, int)
 
 	result := stack.Heap[key]
 	if result == nil {
-		klog.Infoln("获取result失败:", stack.BaseString)
+		str := "缺少api名称"
+		klog.Errorln(stack.BaseString, str)
+		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusBadRequest
 	} else {
 		switch name {
 		case "html":
