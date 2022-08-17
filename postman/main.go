@@ -269,7 +269,7 @@ func parseRequestBody(postmanRequestBody *postman.Body) {
 			apiHubHttpConf.Requestcontenttype = requestBody.Mode
 		}
 		if requestBody.Raw != "" {
-			// klog.Infoln("__httpapirequestBody.Raw is : ", requestBody.Raw)
+			klog.Infoln("__httpapirequestBody.Raw is : ", requestBody.Raw)
 			nameString := ""
 			contentString := ""
 			backNameIndex := 0
@@ -279,26 +279,32 @@ func parseRequestBody(postmanRequestBody *postman.Body) {
 				nameString, backNameIndex = getStringBetweenDoubleQuotationMarks(requestBody.Raw[i:])
 				// klog.Infoln("test request raw is :", requestBody.Raw[backNameIndex+i+3:backNameIndex+i+4])
 				if backNameIndex != -1 {
-					if requestBody.Raw[backNameIndex+i+3:backNameIndex+i+5] == "{{" {
-						contentString, backContentIndex = getStringBetweenDoubleBrackets(requestBody.Raw[backNameIndex+i+2:])
+					tempstring1, tempstringflag1 := getStringBetweenDoubleQuotationMarks(requestBody.Raw[backNameIndex+i:])
+					tempstring2, tempstringflag2 := getStringBetweenSpecifySymbols(requestBody.Raw[backNameIndex+i:], "\"", "{{")
+					tempstring1 = strings.TrimSpace(tempstring1)
+					tempstring2 = strings.TrimSpace(tempstring2)
+
+					if tempstringflag1 != -1 && tempstring1 == ":" {
+						contentString, backContentIndex = getStringBetweenDoubleQuotationMarks(requestBody.Raw[backNameIndex+i+tempstringflag1:])
+						if backContentIndex != -1 {
+							args := Args{In: "body", Name: nameString, Value: Value{From: "literal", Content: contentString}}
+							apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+							nameList = nameList + " " + nameString
+						}
+						i = backNameIndex + backContentIndex + i + tempstringflag1
+					} else if tempstringflag2 != -1 && tempstring2 == ":" {
+						contentString, backContentIndex = getStringBetweenDoubleBrackets(requestBody.Raw[backNameIndex+i+tempstringflag2:])
 						if backContentIndex != -1 {
 							if coversionFuncMap[contentString] == "md5" {
 								nameList = strings.TrimSpace(nameList)
 								args := Args{In: "header", Name: nameString, Value: Value{From: "func", Content: coversionFuncMap[contentString], Args: nameList}}
 								apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
 							} else {
-								args := Args{In: "header", Name: nameString, Value: Value{From: "func", Content: coversionFuncMap[contentString]}}
+								args := Args{In: "var", Name: nameString, Value: Value{From: "func", Content: coversionFuncMap[contentString]}}
 								apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
 								nameList = nameList + " " + nameString
 							}
-
-						}
-					} else if requestBody.Raw[backNameIndex+i+3:backNameIndex+i+4] == "\"" {
-						contentString, backContentIndex = getStringBetweenDoubleQuotationMarks(requestBody.Raw[backNameIndex+i+2:])
-						if backContentIndex != -1 {
-							args := Args{In: "header", Name: nameString, Value: Value{From: "literal", Content: contentString}}
-							apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
-							nameList = nameList + " " + nameString
+							i = backNameIndex + backContentIndex + i + tempstringflag2
 						}
 					} else {
 						nameString = ""
@@ -306,7 +312,6 @@ func parseRequestBody(postmanRequestBody *postman.Body) {
 						klog.Infoln("__parseRequestBodyRawError:Format error")
 						break
 					}
-					i = backNameIndex + backContentIndex + i + 8
 				}
 			}
 		}
