@@ -26,7 +26,7 @@ func init() {
 func welcome(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	content, OK := params["content"]
 	if OK {
-		klog.Errorln(content)
+		klog.Infoln(content)
 	}
 	return nil, http.StatusOK
 }

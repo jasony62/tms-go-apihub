@@ -1,0 +1,46 @@
+Log file created at: 2022/08/16 09:40:59
+Running on machine: DESKTOP-NLET923
+Binary: Built with gc go1.18.4 for linux/amd64
+Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] msg
+I0816 09:40:28.708334    7003 api.go:42] ___post API OK:  base: main.  command:logToFile  name：logToFile  result: <nil>  duration: 0.0008785
+I0816 09:40:59.011339    7003 main.go:29] welcome to use apihub
+I0816 09:40:59.011359    7003 api.go:42] ___post API OK:  base: main.  command:welcome  name：welcome  result: <nil>  duration: 5.85e-05
+I0816 09:40:59.017482    7003 schema.go:86] 校验Schema文件...
+I0816 09:40:59.314399    7003 api.go:42] ___post API OK:  base: main.  command:confValidator  name：confValidator  result: <nil>  duration: 0.3030221
+I0816 09:40:59.314417    7003 conf.go:41] 加载API def文件...
+I0816 09:40:59.351592    7003 conf.go:43] 加载Flow def文件...
+I0816 09:40:59.393418    7003 conf.go:45] 加载Schedule def文件...
+I0816 09:40:59.398849    7003 conf.go:47] 加载Private def文件...
+I0816 09:40:59.416575    7003 conf.go:49] 加载Rights文件...
+I0816 09:40:59.455109    7003 conf.go:191] 加载Template文件...
+I0816 09:40:59.459902    7003 conf.go:145] Plugin子目录:  ../example/plugins/kdxfnlp
+I0816 09:40:59.462316    7003 api.go:42] ___post API OK:  base: main.  command:loadConf  name：loadConf  result: <nil>  duration: 0.1478987
+I0816 09:40:59.462331    7003 promtheus.go:31] promStart!
+I0816 09:40:59.462334    7003 promtheus.go:41] promStart: host:  0.0.0.0  port: 8000
+I0816 09:40:59.464123    7003 api.go:42] ___post API OK:  base: main.  command:promStart  name：promStart  result: <nil>  duration: 0.0017927
+I0816 09:40:59.464137    7003 apigateway.go:171] host:  0.0.0.0
+I0816 09:40:59.464140    7003 apigateway.go:176] port  8080
+I0816 09:40:59.464143    7003 apigateway.go:182] bucket enable  false
+I0816 09:40:59.464245    7003 promtheus.go:59] Listen and Serve  0.0.0.0:8000
+I0816 09:41:14.502031    7003 api.go:42] ___post API OK:  base :{"root":"kdxf_nlp_ke","start":"1660614074","type":"httpapi","user":"","uuid":"daae9066-49b5-4cf9-bcdc-7f885d6d9659"}.  command:fillBaseInfo  name：fillBaseInfo  result: <nil>  duration: 3.34e-05
+I0816 09:41:14.502149    7003 conf.go:257] CheckRight user:   callType: httpapi  name: kdxf_nlp_ke
+I0816 09:41:14.502156    7003 api.go:42] ___post API OK:  base :{"root":"kdxf_nlp_ke","start":"1660614074","type":"httpapi","user":"","uuid":"daae9066-49b5-4cf9-bcdc-7f885d6d9659"}.  command:checkRight  name：check_right  result: <nil>  duration: 0.0001042
+I0816 09:41:14.502162    7003 api.go:42] ___post API OK:  base :{"root":"kdxf_nlp_ke","start":"1660614074","type":"httpapi","user":"","uuid":"daae9066-49b5-4cf9-bcdc-7f885d6d9659"}.  command:flowApi  name：main_pre  result: <nil>  duration: 0.0001774
+I0816 09:41:14.671289    7003 http.go:50] ___post HTTPAPI OK:  base :{"root":"kdxf_nlp_ke","start":"1660614074","type":"httpapi","user":"","uuid":"daae9066-49b5-4cf9-bcdc-7f885d6d9659"}.   name： kdxf_nlp_ke , result:   code: 200  stats: map[child:kdxf_nlp_ke code:200 duration:0.16287 id:0 msg:ok]
+W0816 09:41:14.671546    7003 promtheus.go:77] promLabels:  map[child:kdxf_nlp_ke code:200 root:kdxf_nlp_ke type:httpapi]
+I0816 09:41:14.671588    7003 promtheus.go:104] httpOutPromCounterMap:  kdxf_nlp_ke
+I0816 09:41:14.671602    7003 api.go:42] ___post API OK:  base :{"root":"kdxf_nlp_ke","start":"1660614074","type":"httpapi","user":"","uuid":"daae9066-49b5-4cf9-bcdc-7f885d6d9659"}.  command:promHttpCounterInc  name：promHttp_OUT_OK_CounterInc  result: <nil>  duration: 0.0002795
+I0816 09:41:14.671647    7003 http.go:407] 处理 https://ltpapi.xfyun.cn/v1/ke : 200 
+  base :{"root":"kdxf_nlp_ke","start":"1660614074","type":"httpapi","user":"","uuid":"daae9066-49b5-4cf9-bcdc-7f885d6d9659"}.  
+返回结果： map[code:0 data:map[ke:[map[score:0.739 word:天气] map[score:0.696 word:北京]]] desc:success sid:ltp00007ce2@dx2d03165641b91aba00]
+I0816 09:41:14.671663    7003 api.go:42] ___post API OK:  base :{"root":"kdxf_nlp_ke","start":"1660614074","type":"httpapi","user":"","uuid":"daae9066-49b5-4cf9-bcdc-7f885d6d9659"}.  command:httpApi  name：httpapi  result: map[code:0 data:map[ke:[map[score:0.739 word:天气] map[score:0.696 word:北京]]] desc:success sid:ltp00007ce2@dx2d03165641b91aba00]  duration: 0.1694938
+I0816 09:41:14.671748    7003 api.go:42] ___post API OK:  base :{"root":"kdxf_nlp_ke","start":"1660614074","type":"httpapi","user":"","uuid":"daae9066-49b5-4cf9-bcdc-7f885d6d9659"}.  command:httpResponse  name：response  result: <nil>  duration: 7.12e-05
+I0816 09:41:14.671755    7003 api.go:42] ___post API OK:  base :{"root":"kdxf_nlp_ke","start":"1660614074","type":"httpapi","user":"","uuid":"daae9066-49b5-4cf9-bcdc-7f885d6d9659"}.  command:flowApi  name：main  result: map[code:0 data:map[ke:[map[score:0.739 word:天气] map[score:0.696 word:北京]]] desc:success sid:ltp00007ce2@dx2d03165641b91aba00]  duration: 0.1695875
+I0816 09:41:14.671771    7003 apigateway.go:46] ___post apigateway OK:  base :{"root":"kdxf_nlp_ke","start":"1660614074","type":"httpapi","user":"","uuid":"daae9066-49b5-4cf9-bcdc-7f885d6d9659"}.   result: map[code:0 data:map[ke:[map[score:0.739 word:天气] map[score:0.696 word:北京]]] desc:success sid:ltp00007ce2@dx2d03165641b91aba00]  code: 200  stats: map[child: code:200 duration:0.16994 id:0 msg:ok]
+W0816 09:41:14.672010    7003 promtheus.go:77] promLabels:  map[child: code:200 root:kdxf_nlp_ke type:httpapi]
+I0816 09:41:14.672034    7003 promtheus.go:104] httpOutPromCounterMap:  kdxf_nlp_ke
+I0816 09:41:14.672047    7003 api.go:42] ___post API OK:  base :{"root":"kdxf_nlp_ke","start":"1660614074","type":"httpapi","user":"","uuid":"daae9066-49b5-4cf9-bcdc-7f885d6d9659"}.  command:promHttpCounterInc  name：promHttp_OUT_OK_CounterInc  result: <nil>  duration: 0.000258
+W0816 09:41:14.672524    7003 promtheus.go:77] promLabels:  map[child: code:200 root:kdxf_nlp_ke type:httpapi]
+I0816 09:41:14.672542    7003 promtheus.go:91] httpInPromCounterMap:  kdxf_nlp_ke
+I0816 09:41:14.672552    7003 api.go:42] ___post API OK:  base :{"root":"kdxf_nlp_ke","start":"1660614074","type":"httpapi","user":"","uuid":"daae9066-49b5-4cf9-bcdc-7f885d6d9659"}.  command:promHttpCounterInc  name：promHttp_In_CounterInc  result: <nil>  duration: 0.0004931
+I0816 09:41:14.672559    7003 apigateway.go:139] 用户请求执行成功! 状态码:  200  请求详情:  base :{"root":"kdxf_nlp_ke","start":"1660614074","type":"httpapi","user":"","uuid":"daae9066-49b5-4cf9-bcdc-7f885d6d9659"}. 
