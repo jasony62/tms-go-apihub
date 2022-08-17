@@ -26,7 +26,7 @@ type confMap struct {
 	ScheduleRightMap map[string]*hub.RightArray
 }
 
-var defaultConfMap = confMap{
+var DefaultConfMap = confMap{
 	BasePath:         "./conf/",
 	ApiMap:           make(map[string]*hub.HttpApiDef),
 	FlowMap:          make(map[string]*hub.FlowDef),
@@ -87,42 +87,45 @@ func loadJsonDefData(jsonType int, path string, prefix string, includeDir bool) 
 				panic(str)
 			}
 
+			var key string
 			fname := fileInfoList[i].Name()
 			index := strings.Index(fname, ".json")
 			if index >= 0 {
 				fname = fname[:index]
 			}
 
+			key = fname
+
 			decoder := json.NewDecoder(bytes.NewReader(byteFile))
 			switch jsonType {
 			case JSON_TYPE_API:
 				def := new(hub.HttpApiDef)
 				decoder.Decode(&def)
-				defaultConfMap.ApiMap[fname] = def
+				DefaultConfMap.ApiMap[key] = def
 			case JSON_TYPE_FLOW:
 				def := new(hub.FlowDef)
 				decoder.Decode(&def)
-				defaultConfMap.FlowMap[fname] = def
+				DefaultConfMap.FlowMap[key] = def
 			case JSON_TYPE_SCHEDULE:
 				def := new(hub.ScheduleDef)
 				decoder.Decode(&def)
-				defaultConfMap.ScheduleMap[fname] = def
+				DefaultConfMap.ScheduleMap[key] = def
 			case JSON_TYPE_PRIVATE:
 				def := new(hub.PrivateArray)
 				decoder.Decode(&def)
-				defaultConfMap.PrivateMap[fname] = def
+				DefaultConfMap.PrivateMap[key] = def
 			case JSON_TYPE_API_RIGHT:
 				def := new(hub.RightArray)
 				decoder.Decode(&def)
-				defaultConfMap.ApiRightMap[fname] = def
+				DefaultConfMap.ApiRightMap[key] = def
 			case JSON_TYPE_FLOW_RIGHT:
 				def := new(hub.RightArray)
 				decoder.Decode(&def)
-				defaultConfMap.FlowRightMap[fname] = def
+				DefaultConfMap.FlowRightMap[key] = def
 			case JSON_TYPE_SCHEDULE_RIGHT:
 				def := new(hub.RightArray)
 				decoder.Decode(&def)
-				defaultConfMap.ScheduleRightMap[fname] = def
+				DefaultConfMap.ScheduleRightMap[key] = def
 			default:
 			}
 		}
@@ -212,7 +215,7 @@ func loadTemplateData(path string, prefix string) {
 			}
 
 			fname := fileInfoList[i].Name()
-			defaultConfMap.SourceMap[fname] = string(byteFile)
+			DefaultConfMap.SourceMap[fname] = string(byteFile)
 		}
 	}
 }
@@ -222,7 +225,7 @@ func FindHttpApiDef(name string) (value *hub.HttpApiDef, ok bool) {
 		return nil, false
 	}
 
-	value, ok = defaultConfMap.ApiMap[name]
+	value, ok = DefaultConfMap.ApiMap[name]
 	return
 }
 
@@ -231,22 +234,22 @@ func FindPrivateDef(name string) (value *hub.PrivateArray, ok bool) {
 		return nil, false
 	}
 
-	value, ok = defaultConfMap.PrivateMap[name]
+	value, ok = DefaultConfMap.PrivateMap[name]
 	return
 }
 
 func FindFlowDef(id string) (value *hub.FlowDef, ok bool) {
-	value, ok = defaultConfMap.FlowMap[id]
+	value, ok = DefaultConfMap.FlowMap[id]
 	return
 }
 
 func FindScheduleDef(id string) (value *hub.ScheduleDef, ok bool) {
-	value, ok = defaultConfMap.ScheduleMap[id]
+	value, ok = DefaultConfMap.ScheduleMap[id]
 	return
 }
 
 func FindResourceDef(id string) (value string, ok bool) {
-	value, ok = defaultConfMap.SourceMap[id]
+	value, ok = DefaultConfMap.SourceMap[id]
 	return
 }
 
@@ -256,19 +259,19 @@ func FindRightDef(user string, name string, callType string) *hub.RightArray {
 	//map
 	switch callType {
 	case "httpapi":
-		return defaultConfMap.ApiRightMap[name]
+		return DefaultConfMap.ApiRightMap[name]
 	case "flow":
-		return defaultConfMap.FlowRightMap[name]
+		return DefaultConfMap.FlowRightMap[name]
 	case "schedule":
-		return defaultConfMap.ScheduleRightMap[name]
+		return DefaultConfMap.ScheduleRightMap[name]
 	default:
-		return defaultConfMap.ApiRightMap[name]
+		return DefaultConfMap.ApiRightMap[name]
 
 	}
 }
 
 func GetBasePath() string {
-	return defaultConfMap.BasePath
+	return DefaultConfMap.BasePath
 }
 
 func LoadConf(basePath string) {
@@ -283,9 +286,9 @@ func LoadConf(basePath string) {
 
 func LoadMainFlow(path string) (interface{}, int) {
 	if len(path) > 0 {
-		defaultConfMap.BasePath = path
+		DefaultConfMap.BasePath = path
 	}
-	klog.Infof("Load main flow from %s\n", defaultConfMap.BasePath)
-	loadJsonDefData(JSON_TYPE_FLOW, defaultConfMap.BasePath, "", false)
+	klog.Infof("Load main flow from %s\n", DefaultConfMap.BasePath)
+	loadJsonDefData(JSON_TYPE_FLOW, DefaultConfMap.BasePath, "", false)
 	return nil, http.StatusOK
 }
