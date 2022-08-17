@@ -51,17 +51,17 @@ func promStartRun(address string) {
 	)
 	httpInDurationPromHistogram = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name:    "http_in_duration_sec",
+			Name:    "http_in_duration_100ms",
 			Help:    "apihub http in latency distributions.",
-			Buckets: prometheus.LinearBuckets(0, 1, 11), // bucket从0开始,间隔是1,一共11个
+			Buckets: prometheus.LinearBuckets(0, 1, 101), // bucket从0开始,间隔是100ms,一共101个
 		},
 		[]string{"code", "child", "root", "type"},
 	)
 	httpOutDurationPromHistogram = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name:    "http_out_duration_sec",
+			Name:    "http_out_duration_100ms",
 			Help:    "apihub http out latency distributions.",
-			Buckets: prometheus.LinearBuckets(0, 1, 11),
+			Buckets: prometheus.LinearBuckets(0, 1, 101),
 		},
 		[]string{"code", "child", "root", "type"},
 	)
@@ -106,10 +106,10 @@ func promHttpCounterInc(stack *hub.Stack, params map[string]string) (interface{}
 		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), 400
 	}
 	if params["httpInOut"] == "httpIn" {
-		httpInDurationPromHistogram.With(promLabels).Observe(duration)
+		httpInDurationPromHistogram.With(promLabels).Observe(duration * 10) //百毫秒=秒*10
 		httpInPromCounter.With(promLabels).Inc()
 	} else if params["httpInOut"] == "httpOut" {
-		httpOutDurationPromHistogram.With(promLabels).Observe(duration)
+		httpOutDurationPromHistogram.With(promLabels).Observe(duration * 10)
 		httpOutPromCounter.With(promLabels).Inc()
 	} else {
 		str := "httpInOut参数配置错误！"
