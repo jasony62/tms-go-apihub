@@ -32,7 +32,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/mozillazg/go-pinyin"
 	"github.com/rbretecher/go-postman-collection"
 	"k8s.io/klog/v2"
 )
@@ -143,11 +142,11 @@ func convertPostmanFiles(path string) {
 			for i := range postmanfileBytes.Items {
 				if postmanfileBytes.Items[i].Items == nil {
 					converOneRequest(postmanfileBytes.Items[i])
-					generateApiHubJson(postmanfileBytes)
+					generateApiHubJson(postmanfileBytes, "")
 				} else {
 					for j := range postmanfileBytes.Items[i].Items {
 						converOneRequest(postmanfileBytes.Items[i].Items[j])
-						generateApiHubJson(postmanfileBytes)
+						generateApiHubJson(postmanfileBytes, postmanfileBytes.Items[i].Name)
 					}
 				}
 			}
@@ -399,14 +398,16 @@ func getStringBetweenSpecifySymbols(inputStrings string, specifySymbolBefore str
 }
 
 // 生成json文件，无法自动创建文件路径中不存在的文件夹
-func generateApiHubJson(postmanBytes *postman.Collection) {
+func generateApiHubJson(postmanBytes *postman.Collection, multipleName string) {
 	if postmanBytes == nil {
 		return
 	}
-
-	infoName := converCNtoPinyin(postmanBytes.Info.Name)
-	infoID := converCNtoPinyin(apiHubHttpConf.ID)
-	fileName := apiHubJsonPath + infoName + "_" + infoID + ".json"
+	fileName := ""
+	if multipleName == "" {
+		fileName = apiHubJsonPath + postmanBytes.Info.Name + "_" + apiHubHttpConf.ID + ".json"
+	} else {
+		fileName = apiHubJsonPath + postmanBytes.Info.Name + "_" + multipleName + "_" + apiHubHttpConf.ID + ".json"
+	}
 	byteHttpApi, err := json.Marshal(apiHubHttpConf)
 	if err != nil {
 		klog.Errorln("json.Marshal失败!", fileName)
@@ -425,22 +426,22 @@ func generateApiHubJson(postmanBytes *postman.Collection) {
 	}
 }
 
-// name中文转拼音，解决apihub不识别中文文件名问题。转换仅支持纯中文，若纯英文则默认不修改
-func converCNtoPinyin(postmanBytesInfoName string) string {
-	var infoName []string = []string{}
-	infoNameTemp := pinyin.LazyConvert(postmanBytesInfoName, nil)
-	for infoNameTemp, v := range infoNameTemp {
-		if infoNameTemp == 0 {
-			infoName = append(infoName, v)
-		} else {
-			infoName = append(infoName, ",")
-			infoName = append(infoName, v)
-		}
-	}
-	resultInfoName := strings.Trim(fmt.Sprint(infoName), "[]")
-	result2InfoName := strings.Replace(resultInfoName, " , ", "", -1)
-	if result2InfoName == "" {
-		result2InfoName = postmanBytesInfoName
-	}
-	return result2InfoName
-}
+// // name中文转拼音，解决apihub不识别中文文件名问题。转换仅支持纯中文，若纯英文则默认不修改
+// func converCNtoPinyin(postmanBytesInfoName string) string {
+// 	var infoName []string = []string{}
+// 	infoNameTemp := pinyin.LazyConvert(postmanBytesInfoName, nil)
+// 	for infoNameTemp, v := range infoNameTemp {
+// 		if infoNameTemp == 0 {
+// 			infoName = append(infoName, v)
+// 		} else {
+// 			infoName = append(infoName, ",")
+// 			infoName = append(infoName, v)
+// 		}
+// 	}
+// 	resultInfoName := strings.Trim(fmt.Sprint(infoName), "[]")
+// 	result2InfoName := strings.Replace(resultInfoName, " , ", "", -1)
+// 	if result2InfoName == "" {
+// 		result2InfoName = postmanBytesInfoName
+// 	}
+// 	return result2InfoName
+// }
