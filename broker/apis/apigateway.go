@@ -39,21 +39,6 @@ func fillStats(stack *hub.Stack, result interface{}, code int) {
 	stats["child"] = ""
 	stats["duration"] = strconv.FormatFloat(time.Since(stack.StartTime).Seconds(), 'f', 5, 64)
 	stats["code"] = strconv.FormatInt(int64(code), 10)
-
-	if code == http.StatusOK {
-		stats["id"] = "0"
-		stats["msg"] = "ok"
-		klog.Infoln("___post apigateway OK:", stack.BaseString, " result:", result, " code:", code, " stats:", stats)
-		params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "_HTTPOK"}}}
-		core.ApiRun(stack, &hub.ApiDef{Name: "HTTPAPI_POST_OK", Command: "flowApi", Args: &params}, "", true)
-	} else {
-		stats["id"] = strconv.FormatInt(int64(code), 10)
-		/*TODO real value*/
-		stats["msg"] = "err"
-		klog.Errorln("!!!!post apigateway NOK:", stack.BaseString, " result:", result, " code:", code, " stats:", stats)
-		params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "_HTTPNOK"}}}
-		core.ApiRun(stack, &hub.ApiDef{Name: "HTTPAPI_POST_NOK", Command: "flowApi", Args: &params}, "", true)
-	}
 }
 
 // 1次请求的上下文
