@@ -54,9 +54,11 @@ type Args struct {
 }
 
 type Value struct {
-	From    string `json:"from"`
-	Content string `json:"content"`
-	Args    string `json:"args,omitempty"`
+	From    string            `json:"from"`
+	Content string            `json:"content",omitempty"`
+	Args    string            `json:"args",omitempty"`
+	Json    map[string]string `json:"json,omitempty"`
+	// Json    *interface{} `json:"json,omitempty"`
 }
 
 // 创建list,提前预设
@@ -139,8 +141,15 @@ func convertPostmanFiles(path string) {
 			}
 
 			for i := range postmanfileBytes.Items {
-				converOneRequest(postmanfileBytes.Items[i])
-				generateApiHubJson(postmanfileBytes)
+				if postmanfileBytes.Items[i].Items == nil {
+					converOneRequest(postmanfileBytes.Items[i])
+					generateApiHubJson(postmanfileBytes)
+				} else {
+					for j := range postmanfileBytes.Items[i].Items {
+						converOneRequest(postmanfileBytes.Items[i].Items[j])
+						generateApiHubJson(postmanfileBytes)
+					}
+				}
 			}
 		}
 	}
@@ -183,7 +192,8 @@ func getHttpapiInfo(postmanItem *postman.Items) {
 	apiHubHttpConf.Method = string(postmanItem.Request.Method)
 	klog.Infoln("__request Method : ", apiHubHttpConf.Method)
 
-	apiHubHttpConf.Private = "" // default private content
+	apiHubHttpConf.Private = ""                // default private content
+	apiHubHttpConf.Requestcontenttype = "json" //default content typeStr
 }
 
 // 获取Request URL
@@ -224,15 +234,20 @@ func getHttpapiArgs(postmanRequest *postman.Request) {
 	// 解析header
 	if postmanRequest.Header != nil {
 		for i := range postmanRequest.Header {
-			args := Args{In: "header", Name: postmanRequest.Header[i].Key, Value: Value{From: "header", Content: postmanRequest.Header[i].Key}}
-			apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+			if postmanRequest.Header[i].Key != "Content-Type" {
+				args := Args{In: "header", Name: postmanRequest.Header[i].Key, Value: Value{From: "header", Content: postmanRequest.Header[i].Value}}
+				apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+			} else if postmanRequest.Header[i].Key == "Content-Type" {
+				headerindex := strings.Index(postmanRequest.Header[i].Value, "/")
+				apiHubHttpConf.Requestcontenttype = postmanRequest.Header[i].Value[headerindex+1:]
+			}
 		}
 	}
 	// 解析query
 	if postmanRequest.URL.Query != nil {
 		parseRequestUrlQuery(postmanRequest.URL.Query)
 	}
-	// 解析body中的header、func
+	// 解析body
 	if postmanRequest.Body != nil {
 		parseRequestBody(postmanRequest.Body)
 	}
@@ -258,23 +273,18 @@ func parseRequestUrlQuery(postmanRequestURLQuery interface{}) {
 func parseRequestBody(postmanRequestBody *postman.Body) {
 	if postmanRequestBody != nil {
 		requestBody := postmanRequestBody
-		switch requestBody.Mode {
-		case "raw":
-			apiHubHttpConf.Requestcontenttype = "jsonraw"
-		case "x-www-form-urlencoded":
-			apiHubHttpConf.Requestcontenttype = "form"
-		case "application/json":
-			apiHubHttpConf.Requestcontenttype = "json"
-		default:
-			apiHubHttpConf.Requestcontenttype = requestBody.Mode
-		}
+		// switch requestBody.Mode {
+		// case "raw":
+		// case "x-www-form-urlencoded":
+		// case "application/json":
+		// default:
+		// }
 		if requestBody.Raw != "" {
 			klog.Infoln("__httpapirequestBody.Raw is : ", requestBody.Raw)
 			nameString := ""
 			contentString := ""
 			backNameIndex := 0
 			backContentIndex := 0
-			nameList := ""
 			for i := 0; i < len(requestBody.Raw); i++ {
 				nameString, backNameIndex = getStringBetweenDoubleQuotationMarks(requestBody.Raw[i:])
 				// klog.Infoln("test request raw is :", requestBody.Raw[backNameIndex+i+3:backNameIndex+i+4])
@@ -284,26 +294,31 @@ func parseRequestBody(postmanRequestBody *postman.Body) {
 					tempstring1 = strings.TrimSpace(tempstring1)
 					tempstring2 = strings.TrimSpace(tempstring2)
 
-					if tempstringflag1 != -1 && tempstring1 == ":" {
+					if (tempstringflag1 != -1) && (tempstring1 == ":") {
 						contentString, backContentIndex = getStringBetweenDoubleQuotationMarks(requestBody.Raw[backNameIndex+i+tempstringflag1:])
 						if backContentIndex != -1 {
-							args := Args{In: "body", Name: nameString, Value: Value{From: "literal", Content: contentString}}
+							args := Args{In: "vars", Name: nameString, Value: Value{From: "literal", Content: contentString}}
 							apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
-							nameList = nameList + " " + nameString
+							tempbodyjson := Value.Json{
+								Type: "json",
+							}
+							_ = tempbodyjson
+							args = Args{In: "body", Name: "body", Value: Value{From: "json", Content: contentString}}
 						}
 						i = backNameIndex + backContentIndex + i + tempstringflag1
-					} else if tempstringflag2 != -1 && tempstring2 == ":" {
+					} else if (tempstringflag2 != -1) && (tempstring2 == ":") {
 						contentString, backContentIndex = getStringBetweenDoubleBrackets(requestBody.Raw[backNameIndex+i+tempstringflag2:])
 						if backContentIndex != -1 {
-							if coversionFuncMap[contentString] == "md5" {
-								nameList = strings.TrimSpace(nameList)
-								args := Args{In: "header", Name: nameString, Value: Value{From: "func", Content: coversionFuncMap[contentString], Args: nameList}}
-								apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
-							} else {
-								args := Args{In: "var", Name: nameString, Value: Value{From: "func", Content: coversionFuncMap[contentString]}}
-								apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
-								nameList = nameList + " " + nameString
-							}
+							// if coversionFuncMap[contentString] == "md5" {
+							// 	nameList = strings.TrimSpace(nameList)
+							// 	args := Args{In: "header", Name: nameString, Value: Value{From: "func", Content: coversionFuncMap[contentString], Args: nameList}}
+							// 	apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+							// } else {
+							// 	args := Args{In: "vars", Name: nameString, Value: Value{From: "func", Content: coversionFuncMap[contentString]}}
+							// 	apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+							// 	nameList = nameList + " " + nameString
+							// }
+							_ = contentString
 							i = backNameIndex + backContentIndex + i + tempstringflag2
 						}
 					} else {
@@ -314,6 +329,7 @@ func parseRequestBody(postmanRequestBody *postman.Body) {
 					}
 				}
 			}
+
 		}
 	} else {
 		apiHubHttpConf.Requestcontenttype = ""
