@@ -1,10 +1,7 @@
 package apis
 
 import (
-	"flag"
 	"net/http"
-	"os"
-	"time"
 
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/jasony62/tms-go-apihub/util"
@@ -25,7 +22,7 @@ func loadConf(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	return nil, http.StatusOK
 }
 
-// downloadConf 解压zip包
+//downloadConf 解压zip包
 func downloadConf(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	basePath := util.GetBasePath()
 	if len(basePath) == 0 {
@@ -49,7 +46,7 @@ func downloadConf(stack *hub.Stack, params map[string]string) (interface{}, int)
 	return nil, http.StatusOK
 }
 
-// DecompressZip 解压zip包
+//DecompressZip 解压zip包
 func decompressZip(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	basePath := util.GetBasePath()
 	path := params["path"]
@@ -75,40 +72,4 @@ func decompressZip(stack *hub.Stack, params map[string]string) (interface{}, int
 		}
 	}
 	return nil, http.StatusOK
-}
-
-func logToFile(stack *hub.Stack, params map[string]string) (interface{}, int) {
-	filename := params["filename"]
-
-	klog.Infoln("logToFile ", filename)
-	if len(filename) == 0 {
-		return nil, http.StatusOK
-	}
-
-	folder := "../log/"
-	exist, _ := pathExists(folder)
-	if !exist {
-		os.Mkdir(folder, os.ModePerm)
-	}
-
-	//获取当前时间，命名log文件
-	timeStr := time.Now().Format("20060102150405")
-	flag.Set("logtostderr", "false")    // By default klog logs to stderr, switch that off
-	flag.Set("alsologtostderr", "true") // false is default, but this is informative
-
-	logName := folder + filename + "_" + timeStr + ".log"
-	flag.Set("log_file", logName)
-	flag.Parse()
-	return nil, http.StatusOK
-}
-
-func pathExists(path string) (bool, error) {
-	_, err := os.Stat(path)
-	if err == nil {
-		return true, nil
-	}
-	if os.IsNotExist(err) {
-		return false, nil
-	}
-	return false, err
 }

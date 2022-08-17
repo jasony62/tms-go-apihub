@@ -41,10 +41,10 @@ func createRouter() *router.Router {
 }
 
 func AmapDistrict(ctx *fasthttp.RequestCtx) {
-	klog.Infof("%%%%%%%%Connection has been established at %s\n", ctx.ConnTime())
-	klog.Infof("%%%%%%%%RequestURI is %q\n", ctx.RequestURI())
-	city := string(ctx.Request.URI().QueryArgs().Peek("keywords"))
-	klog.Infoln("%%%%%%%%City is ", city)
+	//	klog.Infof("%%%%%%%%Connection has been established at %s\n", ctx.ConnTime())
+	klog.Infof("RequestURI: %q\n", ctx.RequestURI())
+	//	city := string(ctx.Request.URI().QueryArgs().Peek("keywords"))
+	//	klog.Infoln("%%%%%%%%City is ", city)
 	// klog.Infoln("%%%%%%%%Header is ", string(ctx.Request.Header.Peek("key")))
 	// if strings.Compare(city, "北京") == 0 {
 	// 	klog.Infoln("%%%%%%%%City is 北京！ ", city)
@@ -68,12 +68,12 @@ func AmapDistrict(ctx *fasthttp.RequestCtx) {
 }
 
 func AmapWeather(ctx *fasthttp.RequestCtx) {
-	klog.Infof("%%%%%%%%Connection has been established at %s\n", ctx.ConnTime())
+	//	klog.Infof("%%%%%%%%Connection has been established at %s\n", ctx.ConnTime())
 	ctx.SetContentType("application/json; charset=utf-8")
 
-	klog.Infof("%%%%%%%%RequestURI is %q\n", ctx.RequestURI())
+	klog.Infof("RequestURI: %q\n", ctx.RequestURI())
 	cityCode := string(ctx.Request.URI().QueryArgs().Peek("city"))
-	klog.Infoln("%%%%%%%%cityCode is ", cityCode)
+	//	klog.Infoln("%%%%%%%%cityCode is ", cityCode)
 	if strings.Compare(cityCode, "110100") == 0 {
 		reqWeatherBytes, _ := json.Marshal(apiMap[cityCode])
 		ctx.Response.SetBody(reqWeatherBytes)
@@ -100,7 +100,7 @@ func checkAccountAndTokenValid(ctx *fasthttp.RequestCtx, userInfo UserInfo) bool
 }
 
 func Echo(ctx *fasthttp.RequestCtx) {
-	klog.Infof("%%%%%%%%Connection has been established at %s\n", ctx.ConnTime())
+	//	klog.Infof("%%%%%%%%Connection has been established at %s\n", ctx.ConnTime())
 	klog.Infof("DEBUG Request: %s\n", ctx.Request.Body())
 	ctx.SetContentType("application/json; charset=utf-8")
 
@@ -114,7 +114,7 @@ func Echo(ctx *fasthttp.RequestCtx) {
 }
 
 func Joint(ctx *fasthttp.RequestCtx) {
-	klog.Infof("%%%%%%%%Connection has been established at %s\n", ctx.ConnTime())
+	//	klog.Infof("%%%%%%%%Connection has been established at %s\n", ctx.ConnTime())
 	ctx.SetContentType("application/json; charset=utf-8")
 	klog.Infof("DEBUG Request: %s\n", ctx.Request.Body())
 
@@ -133,7 +133,7 @@ func Joint(ctx *fasthttp.RequestCtx) {
 }
 
 func Split(ctx *fasthttp.RequestCtx) {
-	klog.Infof("%%%%%%%%Connection has been established at %s\n", ctx.ConnTime())
+	//	klog.Infof("%%%%%%%%Connection has been established at %s\n", ctx.ConnTime())
 	ctx.SetContentType("application/json; charset=utf-8")
 	klog.Infof("DEBUG Request: %s\n", ctx.Request.Body())
 	//检查该usr是否已经配置了key,并验证token
@@ -153,7 +153,7 @@ func Split(ctx *fasthttp.RequestCtx) {
 }
 
 func Register(ctx *fasthttp.RequestCtx) {
-	klog.Infof("%%%%%%%%Connection has been established at %s\n", ctx.ConnTime())
+	//	klog.Infof("%%%%%%%%Connection has been established at %s\n", ctx.ConnTime())
 	ctx.SetContentType("application/json; charset=utf-8")
 	klog.Infof("DEBUG Request: %s\n", ctx.Request.Body())
 	reqBody := &RegistEntity{}

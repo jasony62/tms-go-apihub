@@ -48,7 +48,7 @@ func hasRight(stack *hub.Stack, user string, name string, callType string) (inte
 	}
 
 	if !haveRight {
-		str := "Deny access right for: " + user + ",api " + name
+		str:= "Deny access right for: " + user + ",api " +  name
 		klog.Errorln(stack.BaseString, str)
 		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusForbidden
 	} else {
@@ -89,7 +89,7 @@ func checkRight(stack *hub.Stack, params map[string]string) (interface{}, int) {
 func setDefaultAccessRight(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	policy, OK := params["default"]
 	if !OK {
-		str := "缺少default权限值"
+		str:= "缺少default权限值"
 		klog.Errorln(stack.BaseString, str)
 		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), 400
 	}

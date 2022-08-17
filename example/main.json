@@ -11,7 +11,14 @@
           "name": "filename",
           "value": {
             "from": "literal",
-            "content": "tms_apihub_log"
+            "content": ""
+          }
+        },
+        {
+          "name": "loglevel",
+          "value": {
+            "from": "literal",
+            "content": ""
           }
         }
       ]

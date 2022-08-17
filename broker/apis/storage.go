@@ -46,7 +46,7 @@ func storageStore(stack *hub.Stack, params map[string]string) (interface{}, int)
 
 	klog.Infoln("storageStore user: ", user)
 	if len(user) == 0 {
-		str := "storageStore缺少user"
+		str:="storageStore缺少user"
 		klog.Errorln(stack.BaseString, str)
 		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusForbidden
 	}
@@ -127,7 +127,7 @@ func storeLocal(stack *hub.Stack, user string, key string, index string, content
 	klog.Infoln("storeLocal: result:", result)
 	byteJson, err := jsonEx.Marshal(result)
 	if err != nil {
-		str := "storeLocal解析失败" + err.Error()
+		str := "storeLocal解析失败"+err.Error()
 		klog.Errorln(stack.BaseString, str)
 		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusInternalServerError
 	}
@@ -148,7 +148,7 @@ func loadLocal(stack *hub.Stack, index string, source string, content string) (i
 	klog.Infoln("loadLocal:", index, " source:", source, " content:", content)
 
 	if val, ok = storeMap.StorageMap[index]; !ok {
-		str := "loadLocal加载失败" + index
+		str := "loadLocal加载失败"+index
 		klog.Errorln(stack.BaseString, str)
 		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusInternalServerError
 	}

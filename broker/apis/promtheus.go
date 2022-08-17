@@ -35,40 +35,7 @@ func promStart(stack *hub.Stack, params map[string]string) (interface{}, int) {
 }
 
 func promStartRun(address string) {
-	httpInPromCounter = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Name: "http_in",
-			Help: "api hub http in counters",
-		},
-		[]string{"code", "child", "root", "type"},
-	)
-	httpOutPromCounter = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Name: "http_out",
-			Help: "api hub http out counters",
-		},
-		[]string{"code", "child", "root", "type"},
-	)
-	httpInDurationPromHistogram = prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Name:    "http_in_duration_sec",
-			Help:    "apihub http in latency distributions.",
-			Buckets: prometheus.LinearBuckets(0, 1, 11), // bucket从0开始,间隔是1,一共11个
-		},
-		[]string{"code", "child", "root", "type"},
-	)
-	httpOutDurationPromHistogram = prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Name:    "http_out_duration_sec",
-			Help:    "apihub http out latency distributions.",
-			Buckets: prometheus.LinearBuckets(0, 1, 11),
-		},
-		[]string{"code", "child", "root", "type"},
-	)
-	prometheus.MustRegister(httpInPromCounter)
-	prometheus.MustRegister(httpOutPromCounter)
-	prometheus.MustRegister(httpInDurationPromHistogram)
-	prometheus.MustRegister(httpOutDurationPromHistogram)
+	promInitData()
 
 	// Expose the registered metrics via HTTP
 	http.Handle("/metrics", promhttp.HandlerFor(
@@ -79,7 +46,7 @@ func promStartRun(address string) {
 		},
 	))
 	go func() {
-		klog.Infoln("Listen and Serve ", address)
+		klog.Infoln("Listen and Serve: ", address)
 		if err := http.ListenAndServe(address, nil); err != nil {
 			klog.Fatal("Error in ListenAndServe: %v", err)
 		}
@@ -103,8 +70,9 @@ func promHttpCounterInc(stack *hub.Stack, params map[string]string) (interface{}
 	if err != nil {
 		str := "解析http out duration失败, err: " + err.Error()
 		klog.Errorln(stack.BaseString, str)
-		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), 400
+		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusBadRequest
 	}
+	duration = duration * 10
 	if params["httpInOut"] == "httpIn" {
 		httpInDurationPromHistogram.With(promLabels).Observe(duration)
 		httpInPromCounter.With(promLabels).Inc()
@@ -114,7 +82,45 @@ func promHttpCounterInc(stack *hub.Stack, params map[string]string) (interface{}
 	} else {
 		str := "httpInOut参数配置错误！"
 		klog.Errorln(stack.BaseString, str)
-		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), 400
+		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusBadRequest
 	}
 	return nil, http.StatusOK
+}
+
+func promInitData() {
+	//Init total counter and histogram
+	httpInPromCounter = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "http_in",
+			Help: "api hub http in counters",
+		},
+		[]string{"code", "child", "root", "type"},
+	)
+	httpOutPromCounter = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "http_out",
+			Help: "api hub http out counters",
+		},
+		[]string{"code", "child", "root", "type"},
+	)
+	httpInDurationPromHistogram = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "http_in_duration_100ms",
+			Help:    "apihub http in latency distributions.",
+			Buckets: prometheus.LinearBuckets(0, 1, 101), // bucket从0开始,间隔是100ms,一共101个
+		},
+		[]string{"code", "child", "root", "type"},
+	)
+	httpOutDurationPromHistogram = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "http_out_duration_100ms",
+			Help:    "apihub http out latency distributions.",
+			Buckets: prometheus.LinearBuckets(0, 1, 101),
+		},
+		[]string{"code", "child", "root", "type"},
+	)
+	prometheus.MustRegister(httpInPromCounter)
+	prometheus.MustRegister(httpOutPromCounter)
+	prometheus.MustRegister(httpInDurationPromHistogram)
+	prometheus.MustRegister(httpOutDurationPromHistogram)
 }

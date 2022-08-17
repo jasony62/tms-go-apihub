@@ -39,9 +39,9 @@ func postApis(stack *hub.Stack, apiDef *hub.ApiDef, result interface{}, code int
 	}
 
 	if code == http.StatusOK {
-		klog.Infoln("___post API OK:", stack.BaseString, "command:"+apiDef.Command, " name："+apiDef.Name, " result:", result, " duration:", duration)
+		klog.Infoln("___post API OK:", stack.BaseString, "command:"+apiDef.Command, " name："+apiDef.Name, " result:", result, " duration(s):", duration)
 	} else {
-		klog.Errorln("!!!post API NOK:", stack.BaseString, "command :"+apiDef.Command, " name："+apiDef.Name, " result:", result, " duration:", duration)
+		klog.Errorln("!!!post API NOK:", stack.BaseString, "command :"+apiDef.Command, " name："+apiDef.Name, " result:", result, " duration(s):", duration)
 	}
 }
 
