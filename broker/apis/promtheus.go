@@ -17,16 +17,6 @@ var httpOutPromCounter *prometheus.CounterVec
 var httpInDurationPromHistogram *prometheus.HistogramVec
 var httpOutDurationPromHistogram *prometheus.HistogramVec
 
-var httpInPromCounterMap map[string]*prometheus.CounterVec
-var httpOutPromCounterMap map[string]*prometheus.CounterVec
-var httpInDurationPromHistogramMap map[string]*prometheus.HistogramVec
-var httpOutDurationPromHistogramMap map[string]*prometheus.HistogramVec
-
-var httpInPromCounterFlowMap map[string]*prometheus.CounterVec
-var httpOutPromCounterFlowMap map[string]*prometheus.CounterVec
-var httpInDurationPromHistogramFlowMap map[string]*prometheus.HistogramVec
-var httpOutDurationPromHistogramFlowMap map[string]*prometheus.HistogramVec
-
 func promStart(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	klog.Infoln("promStart!")
 	host := params["host"]
@@ -86,28 +76,9 @@ func promHttpCounterInc(stack *hub.Stack, params map[string]string) (interface{}
 	if params["httpInOut"] == "httpIn" {
 		httpInDurationPromHistogram.With(promLabels).Observe(duration)
 		httpInPromCounter.With(promLabels).Inc()
-
-		if promLabels["type"] == "httpapi" {
-			klog.Infoln("httpInPromCounterMap: ", promLabels["root"])
-			httpInPromCounterMap[promLabels["root"]].With(promLabels).Inc()
-			httpInDurationPromHistogramMap[promLabels["root"]].With(promLabels).Observe(duration)
-		} else if promLabels["type"] == "flow" {
-			httpInPromCounterFlowMap[promLabels["root"]].With(promLabels).Inc()
-			httpInDurationPromHistogramFlowMap[promLabels["root"]].With(promLabels).Observe(duration)
-		}
-
 	} else if params["httpInOut"] == "httpOut" {
 		httpOutDurationPromHistogram.With(promLabels).Observe(duration)
 		httpOutPromCounter.With(promLabels).Inc()
-
-		if promLabels["type"] == "httpapi" {
-			klog.Infoln("httpOutPromCounterMap: ", promLabels["root"])
-			httpOutPromCounterMap[promLabels["root"]].With(promLabels).Inc()
-			httpOutDurationPromHistogramMap[promLabels["root"]].With(promLabels).Observe(duration)
-		} else if promLabels["type"] == "flow" {
-			httpOutPromCounterFlowMap[promLabels["root"]].With(promLabels).Inc()
-			httpOutDurationPromHistogramFlowMap[promLabels["root"]].With(promLabels).Observe(duration)
-		}
 	} else {
 		str := "httpInOut参数配置错误！"
 		klog.Errorln(stack.BaseString, str)
@@ -117,7 +88,6 @@ func promHttpCounterInc(stack *hub.Stack, params map[string]string) (interface{}
 }
 
 func promInitData() {
-
 	//Init total counter and histogram
 	httpInPromCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
@@ -153,113 +123,4 @@ func promInitData() {
 	prometheus.MustRegister(httpOutPromCounter)
 	prometheus.MustRegister(httpInDurationPromHistogram)
 	prometheus.MustRegister(httpOutDurationPromHistogram)
-
-	httpInPromCounterMap = make(map[string]*prometheus.CounterVec)
-	httpOutPromCounterMap = make(map[string]*prometheus.CounterVec)
-	httpInDurationPromHistogramMap = make(map[string]*prometheus.HistogramVec)
-	httpOutDurationPromHistogramMap = make(map[string]*prometheus.HistogramVec)
-
-	httpInPromCounterFlowMap = make(map[string]*prometheus.CounterVec)
-	httpOutPromCounterFlowMap = make(map[string]*prometheus.CounterVec)
-	httpInDurationPromHistogramFlowMap = make(map[string]*prometheus.HistogramVec)
-	httpOutDurationPromHistogramFlowMap = make(map[string]*prometheus.HistogramVec)
-
-	//Init each httpapi counter and histogram
-	for k, v := range util.DefaultConfMap.ApiMap {
-		inCounter := prometheus.NewCounterVec(
-			prometheus.CounterOpts{
-				Name: "http_in_" + v.Id,
-				Help: "api hub http in counters",
-			},
-			[]string{"code", "child", "root", "type"},
-		)
-		httpInPromCounterMap[k] = inCounter
-
-		outCounter := prometheus.NewCounterVec(
-			prometheus.CounterOpts{
-				Name: "http_out_" + v.Id,
-				Help: "api hub http out counters",
-			},
-			[]string{"code", "child", "root", "type"},
-		)
-		httpOutPromCounterMap[k] = outCounter
-
-		inHistogram := prometheus.NewHistogramVec(
-			prometheus.HistogramOpts{
-				Name:    "http_in_" + v.Id + "_duration_100ms",
-				Help:    "apihub http in latency distributions.",
-				Buckets: prometheus.LinearBuckets(0, 1, 101), // bucket从0开始,间隔是100ms,一共101个
-			},
-			[]string{"code", "child", "root", "type"},
-		)
-
-		httpInDurationPromHistogramMap[k] = inHistogram
-
-		outHistogram := prometheus.NewHistogramVec(
-			prometheus.HistogramOpts{
-				Name:    "http_out_" + v.Id + "_duration_100ms",
-				Help:    "apihub http out latency distributions.",
-				Buckets: prometheus.LinearBuckets(0, 1, 101), // bucket从0开始,间隔是100ms,一共101个
-			},
-			[]string{"code", "child", "root", "type"},
-		)
-
-		httpOutDurationPromHistogramMap[k] = outHistogram
-
-		prometheus.MustRegister(httpInPromCounterMap[k])
-		prometheus.MustRegister(httpInDurationPromHistogramMap[k])
-		prometheus.MustRegister(httpOutPromCounterMap[k])
-		prometheus.MustRegister(httpOutDurationPromHistogramMap[k])
-	}
-
-	for k, v := range util.DefaultConfMap.FlowMap {
-		if k == "main" {
-			klog.Infoln("promInitData flow main, skipped")
-			continue
-		}
-		inCounter := prometheus.NewCounterVec(
-			prometheus.CounterOpts{
-				Name: "flow_in_" + v.Name,
-				Help: "api hub flow in counters",
-			},
-			[]string{"code", "child", "root", "type"},
-		)
-		httpInPromCounterFlowMap[k] = inCounter
-
-		outCounter := prometheus.NewCounterVec(
-			prometheus.CounterOpts{
-				Name: "flow_out_" + v.Name,
-				Help: "api hub flow out counters",
-			},
-			[]string{"code", "child", "root", "type"},
-		)
-		httpOutPromCounterFlowMap[k] = outCounter
-
-		inHistogram := prometheus.NewHistogramVec(
-			prometheus.HistogramOpts{
-				Name:    "flow_in_" + v.Name + "_duration_100ms",
-				Help:    "apihub flow in latency distributions.",
-				Buckets: prometheus.LinearBuckets(0, 1, 101), // bucket从0开始,间隔是100ms,一共101个
-			},
-			[]string{"code", "child", "root", "type"},
-		)
-		httpInDurationPromHistogramFlowMap[k] = inHistogram
-
-		outHistogram := prometheus.NewHistogramVec(
-			prometheus.HistogramOpts{
-				Name:    "flow_out_" + v.Name + "_duration_100ms",
-				Help:    "apihub flow out latency distributions.",
-				Buckets: prometheus.LinearBuckets(0, 1, 101), // bucket从0开始,间隔是100ms,一共101个
-			},
-			[]string{"code", "child", "root", "type"},
-		)
-		httpOutDurationPromHistogramFlowMap[k] = outHistogram
-
-		prometheus.MustRegister(httpInPromCounterFlowMap[k])
-		prometheus.MustRegister(httpOutPromCounterFlowMap[k])
-		prometheus.MustRegister(httpInDurationPromHistogramFlowMap[k])
-		prometheus.MustRegister(httpOutDurationPromHistogramFlowMap[k])
-	}
-
-	klog.Infoln("promInitData: OK")
 }
