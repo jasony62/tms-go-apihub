@@ -17,5 +17,7 @@ example/privates
 broker/conf
 broker/tms-go-apihub
 broker/vendor/
+test/http-server/http-server
 .vscode
 
+postman/postman_collections/.postman/
