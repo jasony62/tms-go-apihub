@@ -32,7 +32,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/mozillazg/go-pinyin"
 	"github.com/rbretecher/go-postman-collection"
 	"k8s.io/klog/v2"
 )
@@ -42,9 +41,9 @@ type ApiHubHttpConf struct {
 	Description        string `json:"description"`
 	URL                string `json:"url"`
 	Method             string `json:"method"`
-	Private            string `json:"private"`
+	Private            string `json:"private,omitempty"`
 	Requestcontenttype string `json:"requestContentType"`
-	Args               []Args `json:"args"`
+	Args               []Args `json:"args,omitempty"`
 }
 
 type Args struct {
@@ -54,9 +53,20 @@ type Args struct {
 }
 
 type Value struct {
-	From    string `json:"from"`
-	Content string `json:"content"`
-	Args    string `json:"args,omitempty"`
+	From    string            `json:"from"`
+	Content string            `json:"content,omitempty"`
+	Args    string            `json:"args,omitempty"`
+	Json    map[string]string `json:"json,omitempty"`
+	// Json    *interface{} `json:"json,omitempty"`
+}
+
+type ApiHubHttpPrivates struct {
+	Privates []Privates `json:"privates"`
+}
+
+type Privates struct {
+	Name  string `json:"name,omitempty"`
+	Value string `json:"value,omitempty"`
 }
 
 // 创建list,提前预设
@@ -83,14 +93,17 @@ var postmanPath string
 
 // json结构体
 var apiHubHttpConf ApiHubHttpConf
+var apiHubHttpPrivates ApiHubHttpPrivates
 
 // 导出json路径
 var apiHubJsonPath string
+var apiHubPrivatesJsonPath string
 
 // 初始化
 func init() {
 	flag.StringVar(&postmanPath, "from", "./postman_collections/", "指定postman_collections文件路径")
-	flag.StringVar(&apiHubJsonPath, "to", "./jsonFiles/", "指定转换后的apiHub json文件路径")
+	flag.StringVar(&apiHubJsonPath, "to", "./httpapis/", "指定转换后的apiHub json文件路径")
+	flag.StringVar(&apiHubPrivatesJsonPath, "private", "./privates/", "指定转换后的apiHub privates json文件路径")
 }
 
 /*********************main主程序*****************************/
@@ -122,7 +135,6 @@ func convertPostmanFiles(path string) {
 				continue
 			}
 			klog.Infoln("__Load postman_collection文件: ", fileName)
-
 			// 读取文件内容到fileBytes
 			file, err := os.Open(fileName)
 			if err != nil {
@@ -130,17 +142,30 @@ func convertPostmanFiles(path string) {
 				panic(err)
 			}
 			defer file.Close()
-
 			// Parse the contents
 			postmanfileBytes, err := postman.ParseCollection(file)
 			if err != nil {
 				klog.Errorln(err)
 				panic(err)
 			}
-
 			for i := range postmanfileBytes.Items {
-				converOneRequest(postmanfileBytes.Items[i])
-				generateApiHubJson(postmanfileBytes)
+				if postmanfileBytes.Items[i].Items == nil {
+					converOneRequest(postmanfileBytes.Items[i])
+					if len(apiHubHttpPrivates.Privates) != 0 {
+						apiHubHttpConf.Private = postmanfileBytes.Info.Name + "_" + postmanfileBytes.Items[i].Name + "_key"
+						generateApiHubPrivatesJson(postmanfileBytes, apiHubHttpConf.Private)
+					}
+					generateApiHubJson(postmanfileBytes, "")
+				} else {
+					for j := range postmanfileBytes.Items[i].Items {
+						converOneRequest(postmanfileBytes.Items[i].Items[j])
+						if len(apiHubHttpPrivates.Privates) != 0 {
+							apiHubHttpConf.Private = postmanfileBytes.Info.Name + "_" + postmanfileBytes.Items[i].Name + "_" + postmanfileBytes.Items[i].Items[j].Name + "_key"
+							generateApiHubPrivatesJson(postmanfileBytes, apiHubHttpConf.Private)
+						}
+						generateApiHubJson(postmanfileBytes, postmanfileBytes.Items[i].Name)
+					}
+				}
 			}
 		}
 	}
@@ -153,6 +178,8 @@ func converOneRequest(postmanItem *postman.Items) {
 	}
 	httpapiArgsLen := len(apiHubHttpConf.Args)
 	delHttpapiConfArgs(httpapiArgsLen)
+	httpapiPrivatesLen := len(apiHubHttpPrivates.Privates)
+	delHttpapiPrivates(httpapiPrivatesLen)
 
 	getHttpapiInfo(postmanItem)
 	coversionFuncMap = make(map[string]string)
@@ -166,6 +193,10 @@ func delHttpapiConfArgs(httpapiArgsLen int) {
 	apiHubHttpConf.Args = append(apiHubHttpConf.Args[:0], apiHubHttpConf.Args[httpapiArgsLen:]...)
 }
 
+func delHttpapiPrivates(httpapiPrivatesLen int) {
+	apiHubHttpPrivates.Privates = append(apiHubHttpPrivates.Privates[:0], apiHubHttpPrivates.Privates[httpapiPrivatesLen:]...)
+}
+
 func getHttpapiInfo(postmanItem *postman.Items) {
 	if postmanItem == nil {
 		return
@@ -173,17 +204,15 @@ func getHttpapiInfo(postmanItem *postman.Items) {
 
 	apiHubHttpConf.ID = postmanItem.Name
 	klog.Infoln("__request Name : ", apiHubHttpConf.ID)
-
 	apiHubHttpConf.Description = postmanItem.Name
 	klog.Infoln("__request Description : ", apiHubHttpConf.Description)
-
 	apiHubHttpConf.URL = getPostmanURL(postmanItem.Request.URL)
 	klog.Infoln("__request URL : ", apiHubHttpConf.URL)
-
 	apiHubHttpConf.Method = string(postmanItem.Request.Method)
 	klog.Infoln("__request Method : ", apiHubHttpConf.Method)
 
-	apiHubHttpConf.Private = "" // default private content
+	apiHubHttpConf.Private = ""                // default private content
+	apiHubHttpConf.Requestcontenttype = "json" //default content typeStr
 }
 
 // 获取Request URL
@@ -210,7 +239,12 @@ func getPostmanURL(postmanUrl *postman.URL) string {
 	// Path
 	for i := range postmanUrl.Path {
 		if postmanUrl.Path[i] != "" {
-			httpapiUrl = httpapiUrl + postmanUrl.Path[i] + "/"
+			if i != (len(postmanUrl.Path) - 1) {
+				httpapiUrl = httpapiUrl + postmanUrl.Path[i] + "/"
+			} else {
+				httpapiUrl = httpapiUrl + postmanUrl.Path[i]
+			}
+
 		}
 	}
 	return httpapiUrl
@@ -224,18 +258,31 @@ func getHttpapiArgs(postmanRequest *postman.Request) {
 	// 解析header
 	if postmanRequest.Header != nil {
 		for i := range postmanRequest.Header {
-			args := Args{In: "header", Name: postmanRequest.Header[i].Key, Value: Value{From: "header", Content: postmanRequest.Header[i].Key}}
-			apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+			if postmanRequest.Header[i].Key != "Content-Type" {
+				args := Args{In: "header", Name: postmanRequest.Header[i].Key, Value: Value{From: "private", Content: postmanRequest.Header[i].Key}}
+				apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+				privates := Privates{Name: postmanRequest.Header[i].Key, Value: postmanRequest.Header[i].Value}
+				apiHubHttpPrivates.Privates = append(apiHubHttpPrivates.Privates, privates)
+			} else if postmanRequest.Header[i].Key == "Content-Type" {
+				headerindex := strings.Index(postmanRequest.Header[i].Value, "/")
+				apiHubHttpConf.Requestcontenttype = postmanRequest.Header[i].Value[headerindex+1:]
+			}
 		}
 	}
-	// 解析query
-	if postmanRequest.URL.Query != nil {
-		parseRequestUrlQuery(postmanRequest.URL.Query)
+
+	switch apiHubHttpConf.Method {
+	case "GET":
+		// 解析qury
+		if postmanRequest.URL.Query != nil {
+			parseRequestUrlQuery(postmanRequest.URL.Query)
+		}
+	case "POST":
+		// 解析body
+		if postmanRequest.Body != nil {
+			parseRequestBody(postmanRequest.Body)
+		}
 	}
-	// 解析body中的header、func
-	if postmanRequest.Body != nil {
-		parseRequestBody(postmanRequest.Body)
-	}
+
 }
 
 // 解析query
@@ -258,47 +305,48 @@ func parseRequestUrlQuery(postmanRequestURLQuery interface{}) {
 func parseRequestBody(postmanRequestBody *postman.Body) {
 	if postmanRequestBody != nil {
 		requestBody := postmanRequestBody
-		switch requestBody.Mode {
-		case "raw":
-			apiHubHttpConf.Requestcontenttype = "jsonraw"
-		case "x-www-form-urlencoded":
-			apiHubHttpConf.Requestcontenttype = "form"
-		case "application/json":
-			apiHubHttpConf.Requestcontenttype = "json"
-		default:
-			apiHubHttpConf.Requestcontenttype = requestBody.Mode
-		}
 		if requestBody.Raw != "" {
-			// klog.Infoln("__httpapirequestBody.Raw is : ", requestBody.Raw)
+			klog.Infoln("__httpapirequestBody.Raw is : ", requestBody.Raw)
 			nameString := ""
 			contentString := ""
 			backNameIndex := 0
 			backContentIndex := 0
-			nameList := ""
+			tempbodyjson := make(map[string]string)
 			for i := 0; i < len(requestBody.Raw); i++ {
 				nameString, backNameIndex = getStringBetweenDoubleQuotationMarks(requestBody.Raw[i:])
 				// klog.Infoln("test request raw is :", requestBody.Raw[backNameIndex+i+3:backNameIndex+i+4])
 				if backNameIndex != -1 {
-					if requestBody.Raw[backNameIndex+i+3:backNameIndex+i+5] == "{{" {
-						contentString, backContentIndex = getStringBetweenDoubleBrackets(requestBody.Raw[backNameIndex+i+2:])
-						if backContentIndex != -1 {
-							if coversionFuncMap[contentString] == "md5" {
-								nameList = strings.TrimSpace(nameList)
-								args := Args{In: "header", Name: nameString, Value: Value{From: "func", Content: coversionFuncMap[contentString], Args: nameList}}
-								apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
-							} else {
-								args := Args{In: "header", Name: nameString, Value: Value{From: "func", Content: coversionFuncMap[contentString]}}
-								apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
-								nameList = nameList + " " + nameString
-							}
+					tempstring1, tempstringflag1 := getStringBetweenDoubleQuotationMarks(requestBody.Raw[backNameIndex+i:])
+					tempstring2, tempstringflag2 := getStringBetweenSpecifySymbols(requestBody.Raw[backNameIndex+i:], "\"", "{{")
+					tempstring1 = strings.TrimSpace(tempstring1)
+					tempstring2 = strings.TrimSpace(tempstring2)
 
-						}
-					} else if requestBody.Raw[backNameIndex+i+3:backNameIndex+i+4] == "\"" {
-						contentString, backContentIndex = getStringBetweenDoubleQuotationMarks(requestBody.Raw[backNameIndex+i+2:])
+					if (tempstringflag1 != -1) && (tempstring1 == ":") {
+						contentString, backContentIndex = getStringBetweenDoubleQuotationMarks(requestBody.Raw[backNameIndex+i+tempstringflag1:])
 						if backContentIndex != -1 {
-							args := Args{In: "header", Name: nameString, Value: Value{From: "literal", Content: contentString}}
-							apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
-							nameList = nameList + " " + nameString
+							tempbodyjson[nameString] = contentString
+							// vars bad Code
+							// args := Args{In: "vars", Name: nameString, Value: Value{From: "private", Content: nameString}}
+							// apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+							// tempbodyjson[nameString] = "{{" + ".var." + nameString + "}}"
+							// privates := Privates{Name: nameString, Value: contentString}
+							// apiHubHttpPrivates.Privates = append(apiHubHttpPrivates.Privates, privates)
+						}
+						i = backNameIndex + backContentIndex + i + tempstringflag1
+					} else if (tempstringflag2 != -1) && (tempstring2 == ":") {
+						contentString, backContentIndex = getStringBetweenDoubleBrackets(requestBody.Raw[backNameIndex+i+tempstringflag2:])
+						if backContentIndex != -1 {
+							// if coversionFuncMap[contentString] == "md5" {
+							// 	nameList = strings.TrimSpace(nameList)
+							// 	args := Args{In: "header", Name: nameString, Value: Value{From: "func", Content: coversionFuncMap[contentString], Args: nameList}}
+							// 	apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+							// } else {
+							// 	args := Args{In: "vars", Name: nameString, Value: Value{From: "func", Content: coversionFuncMap[contentString]}}
+							// 	apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+							// 	nameList = nameList + " " + nameString
+							// }
+							_ = contentString
+							i = backNameIndex + backContentIndex + i + tempstringflag2
 						}
 					} else {
 						nameString = ""
@@ -306,9 +354,10 @@ func parseRequestBody(postmanRequestBody *postman.Body) {
 						klog.Infoln("__parseRequestBodyRawError:Format error")
 						break
 					}
-					i = backNameIndex + backContentIndex + i + 8
 				}
 			}
+			bodyArgs := Args{In: "body", Name: "body", Value: Value{From: "json", Json: tempbodyjson}}
+			apiHubHttpConf.Args = append(apiHubHttpConf.Args, bodyArgs)
 		}
 	} else {
 		apiHubHttpConf.Requestcontenttype = ""
@@ -380,14 +429,16 @@ func getStringBetweenSpecifySymbols(inputStrings string, specifySymbolBefore str
 }
 
 // 生成json文件，无法自动创建文件路径中不存在的文件夹
-func generateApiHubJson(postmanBytes *postman.Collection) {
+func generateApiHubJson(postmanBytes *postman.Collection, multipleName string) {
 	if postmanBytes == nil {
 		return
 	}
-
-	infoName := converCNtoPinyin(postmanBytes.Info.Name)
-	infoID := converCNtoPinyin(apiHubHttpConf.ID)
-	fileName := apiHubJsonPath + infoName + "_" + infoID + ".json"
+	fileName := ""
+	if multipleName == "" {
+		fileName = apiHubJsonPath + postmanBytes.Info.Name + "_" + apiHubHttpConf.ID + ".json"
+	} else {
+		fileName = apiHubJsonPath + postmanBytes.Info.Name + "_" + multipleName + "_" + apiHubHttpConf.ID + ".json"
+	}
 	byteHttpApi, err := json.Marshal(apiHubHttpConf)
 	if err != nil {
 		klog.Errorln("json.Marshal失败!", fileName)
@@ -406,22 +457,44 @@ func generateApiHubJson(postmanBytes *postman.Collection) {
 	}
 }
 
-// name中文转拼音，解决apihub不识别中文文件名问题。转换仅支持纯中文，若纯英文则默认不修改
-func converCNtoPinyin(postmanBytesInfoName string) string {
-	var infoName []string = []string{}
-	infoNameTemp := pinyin.LazyConvert(postmanBytesInfoName, nil)
-	for infoNameTemp, v := range infoNameTemp {
-		if infoNameTemp == 0 {
-			infoName = append(infoName, v)
-		} else {
-			infoName = append(infoName, ",")
-			infoName = append(infoName, v)
+func generateApiHubPrivatesJson(postmanBytes *postman.Collection, privateName string) {
+
+	fileName := apiHubPrivatesJsonPath + privateName + ".json"
+
+	byteHttpApi, err := json.Marshal(apiHubHttpPrivates)
+	if err != nil {
+		klog.Errorln("json.Marshal失败!", fileName)
+		return
+	}
+	// ！！！os.Create无法自动创建文件路径中不存在的文件夹
+	f, err := os.Create(fileName)
+	if err != nil {
+		klog.Errorln("创建文件失败!", fileName)
+	} else {
+		defer f.Close()
+		_, err = f.Write(byteHttpApi)
+		if err != nil {
+			klog.Errorln("写入文件失败!", fileName)
 		}
 	}
-	resultInfoName := strings.Trim(fmt.Sprint(infoName), "[]")
-	result2InfoName := strings.Replace(resultInfoName, " , ", "", -1)
-	if result2InfoName == "" {
-		result2InfoName = postmanBytesInfoName
-	}
-	return result2InfoName
 }
+
+// // name中文转拼音，解决apihub不识别中文文件名问题。转换仅支持纯中文，若纯英文则默认不修改
+// func converCNtoPinyin(postmanBytesInfoName string) string {
+// 	var infoName []string = []string{}
+// 	infoNameTemp := pinyin.LazyConvert(postmanBytesInfoName, nil)
+// 	for infoNameTemp, v := range infoNameTemp {
+// 		if infoNameTemp == 0 {
+// 			infoName = append(infoName, v)
+// 		} else {
+// 			infoName = append(infoName, ",")
+// 			infoName = append(infoName, v)
+// 		}
+// 	}
+// 	resultInfoName := strings.Trim(fmt.Sprint(infoName), "[]")
+// 	result2InfoName := strings.Replace(resultInfoName, " , ", "", -1)
+// 	if result2InfoName == "" {
+// 		result2InfoName = postmanBytesInfoName
+// 	}
+// 	return result2InfoName
+// }
