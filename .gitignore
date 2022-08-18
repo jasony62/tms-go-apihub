@@ -19,3 +19,4 @@ broker/tms-go-apihub
 broker/vendor/
 .vscode
 
+postman/postman_collections/.postman/
