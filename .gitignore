@@ -20,3 +20,4 @@ broker/vendor/
 log/
 .vscode
 
+postman/postman_collections/.postman/
