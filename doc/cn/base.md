@@ -48,6 +48,17 @@ graph LR
 ```
 flow是指串行调用一组API，并且可以将其中的每个API的执行结果都进行记录，后续API可以使用之前API的执行结果作为输入参数。
 注意其中的API没有任何限定，可以是httpapi，flow，也可以是其他功能性API，比如根据输入的json生成html页面。
+
+注意系统中有些默认flow
+| 名称 | 用途 |
+| -- | -- |
+| _APIGATEWAY_PRE.json | 在API网关中对于每个输入都要执行的操作，包括多租户获取用户名，进行权限检查 |
+| _APIGATEWAY_HTTPAPI.json | 在API网关中，对于HTTPAPI的调用，包括调用底层HTTPAPI，进行HTTP response |
+| _APIGATEWAY_HTTPAPI.json | 在API网关中，对于HTTPAPI的调用，包括调用底层HTTPAPI，进行HTTP response |
+| _APIGATEWAY_POST_OK.json | 在API网关中，对于执行成功的调用，调用此flow，主要用于更新promtheus http_in。注意如果此调用失败，并不会影响原调用，也不会触发_APIGATEWAY_POST_NOK.json。|
+| _APIGATEWAY_POST_NOK.json | 在API网关中，对于执行不成功的调用，调用此flow，主要用于更新promtheus http_in和失败通知（如调用企业微信_QYWX_NOTIFY.json）。注意如果此调用失败，并不会影响原调用，也不会触发_APIGATEWAY_POST_NOK.json。|
+| _HTTPOK.json | 在对外调用HTTP请求成功后，调用此flow，主要用于更新promtheus http_out |
+| _HTTPNOK.json | 在对外调用HTTP请求不成功后，调用此flow，主要用于更新promtheus http_out |
 # SCHEDULE
 schedule是在FLOW的基础上，支持了了两种控制命令switch/case和loop，并且支持并行执行和loop内并行执行.
 
