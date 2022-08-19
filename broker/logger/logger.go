@@ -50,10 +50,10 @@ func InitLogger(conf LogConfigs, logwithlevel bool) error {
 			return err
 		}
 		//第三个及之后的参数为写入文件的日志级别,ErrorLevel模式只记录error级别的日志
-		infoFileCore := zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(infoFileWriteSyncer, zapcore.AddSync(os.Stdout)), lowPriority)
+		infoFileCore := zapcore.NewCore(encoder, infoFileWriteSyncer, lowPriority)
 
 		//第三个及之后的参数为写入文件的日志级别,ErrorLevel模式只记录error级别的日志
-		errorFileCore := zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(errorFileWriteSyncer, zapcore.AddSync(os.Stdout)), highPriority)
+		errorFileCore := zapcore.NewCore(encoder, errorFileWriteSyncer, highPriority)
 
 		coreArr = append(coreArr, infoFileCore)
 		coreArr = append(coreArr, errorFileCore)
@@ -69,7 +69,7 @@ func InitLogger(conf LogConfigs, logwithlevel bool) error {
 		}
 
 		//第三个及之后的参数为写入文件的日志级别,ErrorLevel模式只记录error级别的日志
-		infoFileCore := zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(infoFileWriteSyncer, zapcore.AddSync(os.Stdout)), lowPriority)
+		infoFileCore := zapcore.NewCore(encoder, infoFileWriteSyncer, lowPriority)
 
 		coreArr = append(coreArr, infoFileCore)
 	}
@@ -142,6 +142,10 @@ func getLogWriter(level string, conf LogConfigs) (zapcore.WriteSyncer, error) {
 		// 日志只输出到日志文件
 		return zapcore.AddSync(lumberJackLogger), nil
 	}
+}
+
+func Logger() *zap.SugaredLogger {
+	return zap.S()
 }
 
 func Debugln(template string, args ...interface{}) {
