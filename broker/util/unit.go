@@ -8,7 +8,7 @@ import (
 	"text/template"
 
 	"github.com/jasony62/tms-go-apihub/hub"
-	klog "k8s.io/klog/v2"
+	"go.uber.org/zap"
 )
 
 const (
@@ -25,13 +25,13 @@ const (
 func queryFromHeap(stack *hub.Stack, name string) (string, error) {
 	tmpl, err := template.New("key").Funcs(funcMapForTemplate).Parse(name)
 	if err != nil {
-		klog.Errorln("NOK 创建并解析template失败:", err)
+		zap.S().Errorln("NOK 创建并解析template失败:", err)
 		return "", err
 	}
 	buf := new(bytes.Buffer)
 	err = tmpl.Execute(buf, stack.Heap)
 	if err != nil {
-		klog.Errorln("NOK execute template:", err, " name:", name, "heap:", stack.Heap)
+		zap.S().Errorln("NOK execute template:", err, " name:", name, "heap:", stack.Heap)
 		return "", err
 	}
 	return buf.String(), err
@@ -94,7 +94,7 @@ func GetParameterRawValue(stack *hub.Stack, private *hub.PrivateArray, from *hub
 		function := funcMap[from.Content]
 		if function == nil {
 			str := "获取function定义失败："
-			klog.Errorln(str)
+			zap.S().Errorln(str)
 			panic(str)
 		}
 		var params []string
@@ -105,7 +105,7 @@ func GetParameterRawValue(stack *hub.Stack, private *hub.PrivateArray, from *hub
 		value = function(params)
 	default:
 		str := "不支持的type " + from.From
-		klog.Errorln(str)
+		zap.S().Errorln(str)
 		panic(str)
 	}
 	return

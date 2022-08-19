@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jasony62/tms-go-apihub/hub"
+	"github.com/jasony62/tms-go-apihub/tool"
 	"github.com/jasony62/tms-go-apihub/util"
 )
 
@@ -34,6 +35,6 @@ func fillBaseInfo(stack *hub.Stack, params map[string]string) (interface{}, int)
 		base["uuid"] = uuid.New().String()
 	}
 
-	stack.BaseString = util.CreateBaseString(base)
+	stack.BaseString = tool.CreateBaseString(base)
 	return nil, http.StatusOK
 }

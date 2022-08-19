@@ -9,12 +9,11 @@ import (
 	"strings"
 	"time"
 
-	klog "k8s.io/klog/v2"
-
 	"github.com/jasony62/tms-go-apihub/core"
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/jasony62/tms-go-apihub/util"
 	"github.com/valyala/fasthttp"
+	"go.uber.org/zap"
 
 	jsoniter "github.com/json-iterator/go"
 )
@@ -25,7 +24,7 @@ var jsonEx = jsoniter.Config{
 }.Froze()
 
 func preHttpapis(stack *hub.Stack, name string) {
-	//	klog.Infoln("___pre HTTPAPI:", stack.BaseString, " Name:", name)
+	//	zap.S().Infoln("___pre HTTPAPI:", stack.BaseString, " Name:", name)
 }
 
 func postHttpapis(stack *hub.Stack, name string, result string, code int, duration float64) {
@@ -47,14 +46,14 @@ func postHttpapis(stack *hub.Stack, name string, result string, code int, durati
 	if code == http.StatusOK {
 		stats["id"] = "0"
 		stats["msg"] = "ok"
-		klog.Infoln("___post HTTPAPI OK:", stack.BaseString, " name：", name, ", result:", result, " code:", code, " stats:", stats)
+		zap.S().Infoln("___post HTTPAPI OK:", stack.BaseString, " name：", name, ", result:", result, " code:", code, " stats:", stats)
 		params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "_HTTPOK"}}}
 		core.ApiRun(stack, &hub.ApiDef{Name: "HTTPAPI_POST_OK", Command: "flowApi", Args: &params}, "", true)
 	} else {
 		/*TODO real value*/
 		stats["id"] = strconv.FormatInt(int64(code), 10)
 		stats["msg"] = result
-		klog.Errorln("!!!!post HTTPAPI NOK:", stack.BaseString, " name：", name, ", result:", result, " code:", code, " stats:", stats)
+		zap.S().Errorln("!!!!post HTTPAPI NOK:", stack.BaseString, " name：", name, ", result:", result, " code:", code, " stats:", stats)
 		params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "_HTTPNOK"}}}
 		core.ApiRun(stack, &hub.ApiDef{Name: "HTTPAPI_POST_NOK", Command: "flowApi", Args: &params}, "", true)
 	}
@@ -96,7 +95,7 @@ func createNewRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub
 			}
 		} else {
 			str := "无有效url：" + stack.BaseString
-			klog.Errorln(str)
+			zap.S().Errorln(str)
 			return nil, http.StatusForbidden, errors.New(str)
 		}
 	} else {
@@ -133,25 +132,25 @@ func createNewRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub
 							} else {
 								if len(outBody) == 0 {
 									if value == "null" {
-										klog.Errorln("获得body失败：", stack.BaseString)
+										zap.S().Errorln("获得body失败：", stack.BaseString)
 										panic("获得body失败：")
 									} else {
 										outBody = value
-										klog.Infoln("Set body :\r\n", outBody, "\r\n", len(outBody))
+										zap.S().Infoln("Set body :\r\n", outBody, "\r\n", len(outBody))
 									}
 								} else {
-									klog.Infoln("Double content body :\r\n", outBody, "\r\nVS\r\n", value)
+									zap.S().Infoln("Double content body :\r\n", outBody, "\r\nVS\r\n", value)
 								}
 							}
 						} else {
-							klog.Infoln("Refuse to set body :", HttpApi.RequestContentType, "VS\r\n", value)
+							zap.S().Infoln("Refuse to set body :", HttpApi.RequestContentType, "VS\r\n", value)
 						}
 					case hub.HeapVarsName:
 					default:
-						klog.Infoln("Invalid in:", param.In, "名字", param.Name, "值", value)
+						zap.S().Infoln("Invalid in:", param.In, "名字", param.Name, "值", value)
 					}
 					vars[param.Name] = value
-					//klog.Infoln("设置入参，位置", param.In, "名字", param.Name, "值", value)
+					//zap.S().Infoln("设置入参，位置", param.In, "名字", param.Name, "值", value)
 				}
 			}
 			outReqURL.RawQuery = q.Encode()
@@ -197,7 +196,7 @@ func sendRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Priv
 		duration = time.Since(t).Seconds()
 	}
 	if err != nil {
-		klog.Errorln("ERR Connection error: ", err)
+		zap.S().Errorln("ERR Connection error: ", err)
 		if !internal {
 			postHttpapis(stack, HttpApi.Id, err.Error(), 500, duration)
 		}
@@ -208,7 +207,7 @@ func sendRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Priv
 	code = resp.StatusCode()
 	if code != fasthttp.StatusOK {
 		str := "错误JSON: " + string(returnBody)
-		klog.Errorln(str)
+		zap.S().Errorln(str)
 		if !internal {
 			postHttpapis(stack, HttpApi.Id, string(returnBody), code, duration)
 		}
@@ -227,7 +226,7 @@ func sendRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Priv
 		defer delete(stack.Heap, hub.HeapResultName)
 		expires, ok := handleExpireTime(stack, HttpApi, resp)
 		if !ok {
-			klog.Warningln("没有查询到过期时间")
+			zap.S().Warnln("没有查询到过期时间")
 		} else {
 			HttpApi.Cache.Expires = expires
 			HttpApi.Cache.Resp = jsonInRspBody
@@ -268,7 +267,7 @@ func handleHeaderExpireTime(HttpApi *hub.HttpApiDef, resp *fasthttp.Response) (t
 		key = strings.TrimPrefix(key, "Set-Cookie.")
 		//判断Set-Cookie中是否含有Expires 的header
 		cookie := resp.Header.Peek("Set-Cookie")
-		klog.Infoln("Header中Set-Cookie: ", cookie)
+		zap.S().Infoln("Header中Set-Cookie: ", cookie)
 		if len(cookie) > 0 {
 			expiresIndex := strings.Index(string(cookie), key) //"expires="
 			if expiresIndex >= 0 {
@@ -329,18 +328,18 @@ func parseExpireTime(value string, format string) (time.Time, error) {
 	if strings.EqualFold(format, "second") {
 		seconds, err := strconv.Atoi(value)
 		if err != nil {
-			klog.Errorln("解析过期时间失败, err: ", err)
+			zap.S().Errorln("解析过期时间失败, err: ", err)
 			return time.Time{}, err
 		}
 		exptime = time.Now().Add(time.Second * time.Duration(seconds))
 	} else {
 		exptime, err = time.Parse(format, value)
 		if err != nil {
-			klog.Errorln("解析过期时间失败, err: ", err)
+			zap.S().Errorln("解析过期时间失败, err: ", err)
 			return time.Time{}, err
 		}
 	}
-	klog.Infoln("解析后过期时间: ", exptime)
+	zap.S().Infoln("解析后过期时间: ", exptime)
 	return exptime.Local(), nil
 }
 
@@ -370,7 +369,7 @@ func run(stack *hub.Stack, name string, private string, internal bool) (jsonOutR
 
 	if !ok || HttpApi == nil {
 		str := "获得API定义失败：" + name
-		klog.Errorln(stack.BaseString, str)
+		zap.S().Errorln(stack.BaseString, str)
 		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusForbidden
 	}
 
@@ -382,7 +381,7 @@ func run(stack *hub.Stack, name string, private string, internal bool) (jsonOutR
 		privateDef, ok = util.FindPrivateDef(private)
 		if !ok || privateDef == nil {
 			str := "获得private定义失败：" + private
-			klog.Errorln(stack.BaseString, str)
+			zap.S().Errorln(stack.BaseString, str)
 			return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusForbidden
 		}
 	}
@@ -393,14 +392,14 @@ func run(stack *hub.Stack, name string, private string, internal bool) (jsonOutR
 			HttpApi.Cache.Locker.Lock()
 
 			if jsonOutRspBody = getCacheContent(HttpApi); jsonOutRspBody == nil {
-				klog.Infoln("获取缓存Cache ... ...")
+				zap.S().Infoln("获取缓存Cache ... ...")
 				jsonOutRspBody, code, err = sendRequest(stack, HttpApi, privateDef, internal)
 			} else {
-				klog.Infoln("Cache缓存有效，直接回应")
+				zap.S().Infoln("Cache缓存有效，直接回应")
 				code = fasthttp.StatusOK
 			}
 		} else {
-			klog.Infoln("Cache缓存有效，直接回应")
+			zap.S().Infoln("Cache缓存有效，直接回应")
 			code = fasthttp.StatusOK
 		}
 	} else { //不支持缓存，直接请求
@@ -408,10 +407,10 @@ func run(stack *hub.Stack, name string, private string, internal bool) (jsonOutR
 	}
 
 	if code != fasthttp.StatusOK {
-		klog.Errorln(stack.BaseString, "处理", HttpApi.Url, "失败.", "code：", code)
+		zap.S().Errorln(stack.BaseString, "处理", HttpApi.Url, "失败.", "code：", code)
 		return util.CreateTmsError(hub.TmsErrorApisId, err.Error(), nil), code
 	}
-	klog.Infoln(stack.BaseString, "处理", HttpApi.Url, "成功.", "返回结果：", jsonOutRspBody)
+	zap.S().Infoln(stack.BaseString, "处理", HttpApi.Url, "成功.", "返回结果：", jsonOutRspBody)
 	return jsonOutRspBody, fasthttp.StatusOK
 }
 
@@ -419,7 +418,7 @@ func runHttpApi(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	name, OK := params["name"]
 	if !OK {
 		str := "缺少api名称"
-		klog.Errorln(stack.BaseString, str)
+		zap.S().Errorln(stack.BaseString, str)
 		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusForbidden
 	}
 
@@ -434,14 +433,14 @@ func httpResponse(stack *hub.Stack, params map[string]string) (interface{}, int)
 	name, OK := params["type"]
 	if !OK {
 		str := "缺少api名称"
-		klog.Errorln(stack.BaseString, str)
+		zap.S().Errorln(stack.BaseString, str)
 		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusBadRequest
 	}
 
 	key, OK := params["key"]
 	if !OK {
 		str := "缺少api名称"
-		klog.Errorln(stack.BaseString, str)
+		zap.S().Errorln(stack.BaseString, str)
 		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusBadRequest
 	}
 
@@ -453,7 +452,7 @@ func httpResponse(stack *hub.Stack, params map[string]string) (interface{}, int)
 	result := stack.Heap[key]
 	if result == nil {
 		str := "缺少api名称"
-		klog.Errorln(stack.BaseString, str)
+		zap.S().Errorln(stack.BaseString, str)
 		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusBadRequest
 	} else {
 		switch name {

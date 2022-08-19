@@ -5,27 +5,27 @@ import (
 
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/jasony62/tms-go-apihub/util"
-	klog "k8s.io/klog/v2"
+	"go.uber.org/zap"
 )
 
 func createHtml(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	if len(params) == 0 {
 		str := "createHtml,缺少参数"
-		klog.Errorln(stack.BaseString, str)
+		zap.S().Errorln(stack.BaseString, str)
 		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusInternalServerError
 	}
 
 	name, OK := params["type"]
 	if !OK {
 		str := "createHtml,type为空"
-		klog.Errorln(stack.BaseString, str)
+		zap.S().Errorln(stack.BaseString, str)
 		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusInternalServerError
 	}
 
 	content, OK := params["content"]
 	if !OK {
 		str := "createHtml,content为空"
-		klog.Errorln(stack.BaseString, str)
+		zap.S().Errorln(stack.BaseString, str)
 		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusInternalServerError
 	}
 
@@ -33,7 +33,7 @@ func createHtml(stack *hub.Stack, params map[string]string) (interface{}, int) {
 		content, OK = util.FindResourceDef(content)
 		if !OK {
 			str := "createHtml FindResourceDef failed"
-			klog.Errorln(stack.BaseString, str)
+			zap.S().Errorln(stack.BaseString, str)
 			return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusInternalServerError
 		}
 	}

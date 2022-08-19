@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"time"
 
-	klog "k8s.io/klog/v2"
+	"go.uber.org/zap"
 )
 
 const (
@@ -20,27 +20,27 @@ const (
 )
 
 func downloadFile(fileUrl string) (string, error) {
-	klog.Infoln("downloadFile url: ", fileUrl)
+	zap.S().Infoln("downloadFile url: ", fileUrl)
 	url, err := url.ParseRequestURI(fileUrl)
 	if err != nil {
-		klog.Errorln("downloadFile url invalid: ", err)
+		zap.S().Errorln("downloadFile url invalid: ", err)
 		return "", err
 	}
 
 	filename := path.Base(url.Path)
-	klog.Infoln("downloadFile name: ", filename)
+	zap.S().Infoln("downloadFile name: ", filename)
 
 	client := http.DefaultClient
 	client.Timeout = time.Second * 600
 
 	resp, err := client.Get(fileUrl)
 	if err != nil {
-		klog.Errorln(err)
+		zap.S().Errorln(err.Error())
 		return "", err
 	}
 
 	if resp.ContentLength <= 0 {
-		klog.Errorln("downloadFile: server response length error")
+		zap.S().Errorln("downloadFile: server response length error")
 		return "", errors.New("downloadFile: server response length error")
 	}
 
@@ -59,7 +59,7 @@ func downloadFile(fileUrl string) (string, error) {
 		select {
 		case <-ticker.C:
 			speed := written - lastWtn
-			klog.Infof("[downloadFile] Speed %s / %s \n", bytesToSize(speed), spaceTime.String())
+			zap.S().Infoln("[downloadFile] Speed %s / %s \n", bytesToSize(speed), spaceTime.String())
 			if written-lastWtn == 0 {
 				ticker.Stop()
 				stop = true
@@ -72,18 +72,18 @@ func downloadFile(fileUrl string) (string, error) {
 		}
 	}
 
-	klog.Infoln("downloadFile OK: ", filename)
+	zap.S().Infoln("downloadFile OK: ", filename)
 	return filename, nil
 }
 
 //下载远端url文件
 func copyFileContent(raw io.ReadCloser, filename string, written *int) error {
-	klog.Infoln("Download url file starting!")
+	zap.S().Infoln("Download url file starting!")
 	reader := bufio.NewReaderSize(raw, FILE_READ_MAX_SIZE)
 
 	file, err := os.Create(filename)
 	if err != nil {
-		klog.Errorln("copyFileContent create file error:", err)
+		zap.S().Errorln("copyFileContent create file error:", err)
 		return err
 	}
 	writer := bufio.NewWriter(file)
@@ -115,7 +115,7 @@ func copyFileContent(raw io.ReadCloser, filename string, written *int) error {
 	}
 
 	if err != nil {
-		klog.Errorln("copyFileContent read or write error:", err)
+		zap.S().Errorln("copyFileContent read or write error:", err)
 		return err
 	}
 
@@ -137,7 +137,7 @@ func DownloadConf(confUrl string, confStoreFolder string, confUnzipPwd string) b
 	//从远端下载conf
 	_, err := downloadFile(confUrl)
 	if err != nil {
-		klog.Errorln("Download conf file err: ", err)
+		zap.S().Errorln("Download conf file err: ", err)
 		return false
 	}
 
