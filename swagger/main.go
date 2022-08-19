@@ -5,11 +5,10 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"strings"
 
-	"github.com/neotoolkit/openapi"
+	"github.com/getkin/kin-openapi/openapi3"
 	"k8s.io/klog"
 )
 
@@ -34,8 +33,6 @@ type Args struct {
 }
 
 var apiHubHttpConf ApiHubHttpConf
-var oapi openapi.OpenAPI
-
 var swaggerPath string
 var apiHubConfPath string
 
@@ -67,18 +64,13 @@ func convertSwaggerFiles(path string) {
 				continue
 			}
 			klog.Infoln("######加载Swagger(*.yaml or .json)文件: ", fileName)
-			fileBytes, err := ioutil.ReadFile(fileName)
-			if err != nil {
-				klog.Errorln(err)
-				panic(err)
-			}
-			covertSwaggerToApihubConf(fileBytes)
+			covertSwaggerToApihubConf(fileName)
 		}
 	}
 }
 
-func getServerUrl(api openapi.OpenAPI) {
-
+func getServerUrl(api *openapi3.T) {
+	// api.Servers.Validate
 	for _, s := range api.Servers {
 		if strings.Contains(s.URL, "http:") {
 			apiHubHttpConf.URL = s.URL
@@ -88,14 +80,18 @@ func getServerUrl(api openapi.OpenAPI) {
 	}
 }
 
-func parseParameters(params openapi.Parameters) {
+func parseParameters(params openapi3.Parameters) {
 	for _, param := range params {
-		switch param.In {
+		if param.Value == nil {
+			//param.Ref应该是有值
+			continue
+		}
+		switch param.Value.In {
 		case "query":
-			args := Args{In: "query", Name: param.Name, Value: Value{From: "query", Content: param.Name}}
+			args := Args{In: "query", Name: param.Value.Name, Value: Value{From: "query", Content: param.Value.Name}}
 			apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
 		case "header":
-			args := Args{In: "header", Name: param.Name, Value: Value{From: "header", Content: param.Name}}
+			args := Args{In: "header", Name: param.Value.Name, Value: Value{From: "header", Content: param.Value.Name}}
 			apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
 		case "path":
 			//替换路径，RESTful接口，暂时不支持
@@ -104,26 +100,26 @@ func parseParameters(params openapi.Parameters) {
 }
 
 //Operation-RequestBody
-func parseRequestBody(body *openapi.RequestBody) {
-	if body.IsRef() {
+func parseRequestBody(body *openapi3.RequestBodyRef) {
+	if body.Ref != "" {
 		klog.Infoln("Operation-RequestBody has ref, Not supported!")
 		return
 	}
 
-	for typeStr, media := range body.Content {
-		if media.Schema.Ref != "" {
-			var err error
-			klog.Infoln("Operation-RequestBody.Content.Schema has ref, Start parse!")
-			media.Schema, err = oapi.LookupSchemaByReference(media.Schema.Ref)
-			if err != nil {
-				klog.Infoln("Operation-RequestBody.Content.Schema ref parse error!")
-				return
+	for typeStr, media := range body.Value.Content {
+		if media.Schema == nil || media.Schema.Value == nil {
+			continue
+		}
+		for param, property := range media.Schema.Value.Properties {
+			if property != nil && property.Value.Type == "string" {
+				args := Args{In: "body", Name: param, Value: Value{From: "body", Content: param}}
+				apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
 			}
 		}
 		parseRequestContentType(typeStr)
-		parseSchema(media.Schema)
 	}
 }
+
 func parseRequestContentType(typeStr string) {
 	switch typeStr {
 	case "application/x-www-form-urlencoded":
@@ -134,24 +130,12 @@ func parseRequestContentType(typeStr string) {
 		apiHubHttpConf.Requestcontenttype = typeStr
 	}
 }
-func parseSchema(schema openapi.Schema) {
-	if schema.IsRef() {
-		klog.Infoln("schema has a ref recursively, will NOT parse!")
-		return
-	}
-	for param, property := range schema.Properties {
-		if property != nil && property.Type == "string" {
-			args := Args{In: "body", Name: param, Value: Value{From: "body", Content: param}}
-			apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
-		}
-	}
-}
 
 // func parseResponses(responses openapi.Responses) {
 // }
 
 //Components-RequestBodies
-func parseRequestBodies(bodies openapi.RequestBodies) {
+func parseRequestBodies(bodies openapi3.RequestBodies) {
 	if bodies == nil {
 		klog.Infoln("Components-RequestBodies is nil")
 		return
@@ -161,12 +145,12 @@ func parseRequestBodies(bodies openapi.RequestBodies) {
 	}
 }
 
-func parsePathOperation(oper *openapi.Path) {
+func parsePathOperation(oper *openapi3.PathItem) {
 	if oper.Post != nil {
 		apiHubHttpConf.Method = "post"
 		if oper.Post.Parameters != nil {
 			parseParameters(oper.Post.Parameters)
-			parseRequestBody(&oper.Post.RequestBody)
+			parseRequestBody(oper.Post.RequestBody)
 			// parseResponses(oper.Post.Responses)
 		}
 	}
@@ -174,7 +158,7 @@ func parsePathOperation(oper *openapi.Path) {
 		apiHubHttpConf.Method = "get"
 		if oper.Get.Parameters != nil {
 			parseParameters(oper.Get.Parameters)
-			parseRequestBody(&oper.Get.RequestBody)
+			parseRequestBody(oper.Get.RequestBody)
 		}
 	}
 	if oper.Delete != nil {
@@ -184,11 +168,11 @@ func parsePathOperation(oper *openapi.Path) {
 		apiHubHttpConf.Method = "put"
 		if oper.Put.Parameters != nil {
 			parseParameters(oper.Put.Parameters)
-			parseRequestBody(&oper.Put.RequestBody)
+			parseRequestBody(oper.Put.RequestBody)
 		}
 	}
 }
-func parsePaths(api openapi.OpenAPI) {
+func parsePaths(api *openapi3.T) {
 	for p, oper := range api.Paths {
 		apiHubHttpConf.URL += p
 		klog.Infof("Swagger Paths is %s\n", apiHubHttpConf.URL)
@@ -196,11 +180,17 @@ func parsePaths(api openapi.OpenAPI) {
 	}
 }
 
-func covertSwaggerToApihubConf(fileBytes []byte) {
-	var err error
-	oapi, err = openapi.Parse(fileBytes)
+func covertSwaggerToApihubConf(fileName string) {
+	loader := openapi3.NewLoader()
+	loader.IsExternalRefsAllowed = true
+
+	oapi, err := loader.LoadFromFile(fileName)
 	if err != nil {
-		log.Fatalln(err)
+		klog.Errorln("Parse swagger file ERROR:", err)
+	}
+
+	if err = oapi.Validate(loader.Context); err != nil {
+		klog.Errorln("Parse swagger file ERROR:", err)
 	}
 
 	getServerUrl(oapi)
@@ -210,10 +200,10 @@ func covertSwaggerToApihubConf(fileBytes []byte) {
 	apiHubHttpConf = ApiHubHttpConf{}
 }
 
-func generateApiHubConf(api openapi.OpenAPI) {
+func generateApiHubConf(api *openapi3.T) {
 	apiHubHttpConf.ID = api.Info.Title
 	apiHubHttpConf.Description = api.Info.Description
-	fileName := apiHubConfPath + apiHubHttpConf.ID
+	fileName := apiHubConfPath + apiHubHttpConf.ID + ".json"
 	byteHttpApi, err := json.Marshal(apiHubHttpConf)
 	if err != nil {
 		return
