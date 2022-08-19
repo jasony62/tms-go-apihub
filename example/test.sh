@@ -83,4 +83,4 @@ echo "\r\n对输入内容进行句法分析:\r\n"
 curl -i -X POST -d '{"text":"中国中央电视台是国家电视台"}'  "http://localhost:8080/flow/baidu_nlp_parser"
 
 echo "\r\npostman转json文件,号码归属地查询:\r\n"
-curl -i -H "Content-Type: application/json" "http://localhost:8080/httpapi/testonemobileapi_mobile?tel=18888888888"
+curl -i -H "Content-Type: application/json" "http://localhost:8080/httpapi/手机归属地_mobile?tel=18888888888"
