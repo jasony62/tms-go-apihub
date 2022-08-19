@@ -5,7 +5,7 @@ import (
 
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/jasony62/tms-go-apihub/util"
-	klog "k8s.io/klog/v2"
+	"go.uber.org/zap"
 )
 
 func dump(stack *hub.Stack, params map[string]string) (interface{}, int) {
@@ -13,7 +13,7 @@ func dump(stack *hub.Stack, params map[string]string) (interface{}, int) {
 		str := "dump参数为空"
 		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusInternalServerError
 	}
-	klog.Infoln("\r\n****************DUMP:\r\n", stack.BaseString, " params:", params, "\r\n")
+	zap.S().Infoln("\r\n****************DUMP:\r\n", stack.BaseString, " params:", params, "\r\n")
 
 	return nil, http.StatusOK
 }

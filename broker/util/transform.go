@@ -6,7 +6,7 @@ import (
 	"strings"
 	"text/template"
 
-	klog "k8s.io/klog/v2"
+	"go.uber.org/zap"
 )
 
 func executeTemplate(source interface{}, rules interface{}) (*bytes.Buffer, error) {
@@ -24,13 +24,13 @@ func executeTemplate(source interface{}, rules interface{}) (*bytes.Buffer, erro
 
 	tmpl, err := template.New("json").Funcs(funcMapForTemplate).Parse(strTempl)
 	if err != nil {
-		klog.Infoln("get template result：", strTempl, byteTempl, " error: ", err)
+		zap.S().Infoln("get template result：", strTempl, byteTempl, " error: ", err)
 		return nil, err
 	}
 	buf := new(bytes.Buffer)
 	err = tmpl.Execute(buf, source)
 	if err != nil {
-		klog.Infoln("get template result：", err)
+		zap.S().Infoln("get template result：", err)
 		return nil, err
 	}
 	return buf, err
@@ -56,14 +56,14 @@ func RemoveOutideQuote(s []byte) string {
 func Json2Html(source interface{}, rules string) (string, error) {
 	tmpl, err := template.New("tmpl").Parse(rules)
 	if err != nil {
-		klog.Infoln("get template result：", rules, " error: ", err)
+		zap.S().Infoln("get template result：", rules, " error: ", err)
 		return "", err
 	}
 
 	buf := new(bytes.Buffer)
 	err = tmpl.Execute(buf, source)
 	if err != nil {
-		klog.Infoln("get template result：", err)
+		zap.S().Infoln("get template result：", err)
 		return "", err
 	}
 

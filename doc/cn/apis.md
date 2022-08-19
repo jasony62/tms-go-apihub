@@ -45,7 +45,7 @@ API列表如下：
 | setDefaultAccessRight  | 默认执行权限 |
 | checkRight  | 检查权限 |
 | fillBaseInfo | 添加基本信息 |
-| logToFile | 将日志写入文件，默认目录放在log目录中（不支持Gin框架输出的日志），定义屏幕日志输出级别 |
+| logToFile | 将日志写入文件，默认目录放在log目录中（不支持Gin框架输出的日志） |
 
 表4：普罗米修斯相关API
 | API名称 | 功能简述 |
@@ -941,7 +941,7 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 | 403 | StatusForbidden，获取信息失败 |
 | 500 | StatusInternalServerError，获取信息失败 |
 
-## 9. 将日志写入文件，默认目录放在log目录中（logToFile API）
+## 9. 将日志写入文件，默认目录放在log目录中（logOutput API）
 
 ### 9.1. 功能介绍
 
@@ -950,38 +950,102 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 ### 9.2. 位置
 
 ```
-./broker/apis/log.go
+./broker/apis/file.go
 ```
 
 ### 9.3. API输入介绍
 
 `logToFile API`输入数组`args`参数介绍：
 
-| 输入name | 是否必选 | 获参位置 | value内容                                                    | 描述                                            |
-| -------- | -------- | -------- | ------------------------------------------------------------ | ----------------------------------------------- |
-| filename | 可选     | literal  | 日志文件名称，应用程序会在此名称之后增加时间戳，每次启动生成新的日志文件。 | 默认不写日志，将content字段置位空               |
-| loglevel | 可选     | literal  | 屏幕输出日志的打印级别，一共四个级别，分别填写字符串："INFO","WARNING","ERROR","FATAL" | 默认不填，表示所有日志输出，将content字段置位空 |
+| 输入name       | 是否必选 | 获参位置 | value内容                                                    | 描述                                                         |
+| -------------- | -------- | -------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| filepath       | 可选     | literal  | 日志写入文件的路径                                           | 默认../log/目录                                              |
+| filename       | 可选     | literal  | 日志文件名称                                                 | 默认不写日志，将content字段置位空                            |
+| logformat      | 可选     | literal  | 日志显示类型，“logfmt”和“json”两种格式                       | 默认为logfmt                                                 |
+| loglevel       | 可选     | literal  | 屏幕及日志文件输出打印级别，一共四个级别，分别填写字符串："debug","info","warn","error" | 默认为info，内容区分大小写                                   |
+| fileMaxSize    | 可选     | literal  | 每个日志文件最大值                                           | 默认50M                                                      |
+| fileMaxBackups | 可选     | literal  | 一共最多存储多少个日志文件                                   | 默认100                                                      |
+| maxDays        | 可选     | literal  | 日志文件默认保存多少天                                       | 默认10天                                                     |
+| compress       | 可选     | literal  | 日志文件是否压缩                                             | 默认false                                                    |
+| stdout         | 可选     | literal  | 日志是否输出到屏幕                                           | 默认true                                                     |
+| logwithlevel   | 可选     | literal  | 日志是否分级别打印不同文件                                   | 默认为false，如果为true则，error及以上打印一个文件，全部日志打印一个文件 |
 
 示例：
 
 ```
     {
-      "name": "logToFile",
-      "command": "logToFile",
-      "description": "logToFile",
+      "name": "logOutput",
+      "command": "logOutput",
+      "description": "logOutput",
       "args": [
+        {
+          "name": "filepath",
+          "value": {
+            "from": "literal",
+            "content": "../log/"
+          }
+        },
         {
           "name": "filename",
           "value": {
             "from": "literal",
-            "content": "tms_apihub_log"
+            "content": ""
+          }
+        },
+        {
+          "name": "logformat",
+          "value": {
+            "from": "literal",
+            "content": "logfmt"
           }
         },
         {
           "name": "loglevel",
           "value": {
             "from": "literal",
-            "content": "WARNING"
+            "content": "warn"
+          }
+        },
+        {
+          "name": "fileMaxSize",
+          "value": {
+            "from": "literal",
+            "content": "50"
+          }
+        },
+        {
+          "name": "fileMaxBackups",
+          "value": {
+            "from": "literal",
+            "content": "100"
+          }
+        },        
+        {
+          "name": "maxDays",
+          "value": {
+            "from": "literal",
+            "content": "10"
+          }
+        },
+        {
+          "name": "compress",
+          "value": {
+            "from": "literal",
+            "content": "false"
+          }
+        },
+        {
+          "name": "stdout",
+          "value": {
+            "from": "literal",
+            "content": "true"
+          }
+        },        
+        {
+          "name": "logwithlevel",
+          "value": {
+            "from": "literal",
+            "content": "false"
           }
         }
       ]
