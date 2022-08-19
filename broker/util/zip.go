@@ -10,7 +10,7 @@ import (
 	"os"
 	"path/filepath"
 
-	klog "k8s.io/klog/v2"
+	"go.uber.org/zap"
 )
 
 //压缩算法
@@ -146,11 +146,11 @@ func DeCompressZip(zipFile, dest, passwd string, includes []string, offset int64
 	uz := &unzip{offset: offset, name: zipFile}
 	defer uz.close()
 
-	klog.Infof("DeCompressZip: file:%s, dest:%s, pwd:%s\n", zipFile, dest, passwd)
+	zap.S().Infoln("DeCompressZip: file:%s, dest:%s, pwd:%s\n", zipFile, dest, passwd)
 
 	zr, err := zip.NewReader(uz, uz.Size())
 	if err != nil {
-		klog.Errorln("NewReader error:", err)
+		zap.S().Errorln("NewReader error:", err)
 		return err
 	}
 	//如果有密码，注册接口实现带密码的压缩和解压
@@ -159,14 +159,14 @@ func DeCompressZip(zipFile, dest, passwd string, includes []string, offset int64
 		zr.RegisterDecompressor(zip.Deflate, func(r io.Reader) io.ReadCloser {
 			rs := r.(*io.SectionReader)
 			r, _ = zipCryptoDecryptor(rs, []byte(passwd))
-			klog.Infoln("DeCompressZip: Register Deflate compressor")
+			zap.S().Infoln("DeCompressZip: Register Deflate compressor")
 			return flate.NewReader(r)
 		})
 
 		zr.RegisterDecompressor(zip.Store, func(r io.Reader) io.ReadCloser {
 			rs := r.(*io.SectionReader)
 			r, _ = zipCryptoDecryptor(rs, []byte(passwd))
-			klog.Infoln("DeCompressZip: Register Deflate decompressor")
+			zap.S().Infoln("DeCompressZip: Register Deflate decompressor")
 			return ioutil.NopCloser(r)
 		})
 	}
@@ -179,20 +179,20 @@ func DeCompressZip(zipFile, dest, passwd string, includes []string, offset int64
 		}
 
 		if err = os.MkdirAll(filepath.Dir(fpath), os.ModePerm); err != nil {
-			klog.Errorln("MkdirAll error:", err)
+			zap.S().Errorln("MkdirAll error:", err)
 			return err
 		}
 
 		inFile, err := f.Open()
 		if err != nil {
-			klog.Errorln("f.Open() error:", err)
+			zap.S().Errorln("f.Open() error:", err)
 			return err
 		}
 
 		outFile, err := os.OpenFile(fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
 		if err != nil {
 			inFile.Close()
-			klog.Errorln("os.OpenFile error:", err)
+			zap.S().Errorln("os.OpenFile error:", err)
 			return err
 		}
 
@@ -200,7 +200,7 @@ func DeCompressZip(zipFile, dest, passwd string, includes []string, offset int64
 		inFile.Close()
 		outFile.Close()
 		if err != nil {
-			klog.Errorln("close file error:", err)
+			zap.S().Errorln("close file error:", err)
 			return err
 		}
 	}

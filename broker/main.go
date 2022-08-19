@@ -5,9 +5,9 @@ import (
 	"net/http"
 
 	"github.com/joho/godotenv"
-	klog "k8s.io/klog/v2"
+	"go.uber.org/zap"
 
-	_ "github.com/jasony62/tms-go-apihub/apis"
+	"github.com/jasony62/tms-go-apihub/apis"
 	"github.com/jasony62/tms-go-apihub/core"
 	"github.com/jasony62/tms-go-apihub/hub"
 )
@@ -17,30 +17,29 @@ var envfile string
 var basePath string
 
 func init() {
-	klog.InitFlags(nil)
 
 	flag.StringVar(&envfile, "env", "", "指定环境变量文件")
-	flag.StringVar(&basePath, "base", "./conf/", "指定启动路径")
+	flag.StringVar(&basePath, "base", "../example/", "指定启动路径")
 }
 
 func welcome(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	content, OK := params["content"]
 	if OK {
-		klog.Infoln(content)
+		zap.S().Infoln(content)
 	}
 	return nil, http.StatusOK
 }
 
 func main() {
 	core.RegisterApis(map[string]hub.ApiHandler{"welcome": welcome})
+	apis.ApisInit()
 	flag.Parse()
 	if envfile != "" {
 		err := godotenv.Load(envfile)
 		if err != nil {
-			klog.Fatal(err)
+			zap.S().Errorln(err.Error())
 		}
 	}
 
-	defer klog.Flush()
 	core.ApiHubStartMainFlow(basePath)
 }

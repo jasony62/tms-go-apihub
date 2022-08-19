@@ -10,13 +10,13 @@ import (
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/jasony62/tms-go-apihub/util"
 	"github.com/xeipuuv/gojsonschema"
-	klog "k8s.io/klog/v2"
+	"go.uber.org/zap"
 )
 
 func schemaChecker(path string, schema *gojsonschema.Schema) int {
 	fileInfoList, err := ioutil.ReadDir(path)
 	if err != nil {
-		klog.Errorln(err)
+		zap.S().Errorln(err.Error())
 		return 500
 	}
 
@@ -24,7 +24,7 @@ func schemaChecker(path string, schema *gojsonschema.Schema) int {
 		fileName := fmt.Sprintf("%s/%s", path, fileInfoList[i].Name())
 
 		if fileInfoList[i].IsDir() {
-			//	klog.Infoln("Schema检查Json子目录: ", fileName)
+			//	zap.S().Infoln("Schema检查Json子目录: ", fileName)
 			if schemaChecker(fileName, schema) != 200 {
 				return 500
 			}
@@ -36,23 +36,23 @@ func schemaChecker(path string, schema *gojsonschema.Schema) int {
 
 			if !json.Valid(jsonContent) {
 				str := "Json文件无效：" + fileName
-				klog.Errorln(str)
+				zap.S().Errorln(str)
 				panic(str)
 			}
 
 			documentLoader := gojsonschema.NewStringLoader(string(jsonContent))
 			result, err := schema.Validate(documentLoader)
 			if err != nil {
-				klog.Errorln(err)
+				zap.S().Errorln(err.Error())
 				return 500
 			}
 
 			if !result.Valid() {
 				fmt.Printf("%s is not valid. see errors :		\r\n", fileName)
 				for _, desc := range result.Errors() {
-					klog.Errorln("- %s		", desc)
+					zap.S().Errorln("- %s		", desc)
 				}
-				klog.Errorln("")
+				zap.S().Errorln("")
 				return 500
 			}
 
@@ -79,11 +79,11 @@ func confValidator(stack *hub.Stack, params map[string]string) (interface{}, int
 func loadSchemaDefData(path string) (interface{}, int) {
 	fileInfoList, err := ioutil.ReadDir(path)
 	if err != nil {
-		klog.Errorln(err)
+		zap.S().Errorln(err.Error())
 		return util.CreateTmsError(hub.TmsErrorApisId, err.Error(), nil), http.StatusInternalServerError
 	}
 
-	klog.Infoln("校验Schema文件...")
+	zap.S().Infoln("校验Schema文件...")
 	for i := range fileInfoList {
 		fileName := fmt.Sprintf("%s/%s", path, fileInfoList[i].Name())
 
@@ -107,7 +107,7 @@ func loadSchemaDefData(path string) (interface{}, int) {
 			}
 			if !json.Valid(schemaContent) {
 				str := "Schema文件无效：" + fileName
-				klog.Errorln(str)
+				zap.S().Errorln(str)
 				panic(str)
 			}
 

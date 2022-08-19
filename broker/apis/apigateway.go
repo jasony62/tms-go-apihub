@@ -9,10 +9,11 @@ import (
 
 	"github.com/jasony62/tms-go-apihub/core"
 	"github.com/jasony62/tms-go-apihub/hub"
+	"github.com/jasony62/tms-go-apihub/tool"
 	"github.com/jasony62/tms-go-apihub/util"
+	"go.uber.org/zap"
 
 	"github.com/gin-gonic/gin"
-	klog "k8s.io/klog/v2"
 )
 
 // 应用的基本信息
@@ -69,7 +70,7 @@ func newStack(c *gin.Context, level string) (*hub.Stack, string) {
 	return &hub.Stack{
 		GinContext: c,
 		Heap:       map[string]interface{}{hub.HeapOriginName: value, hub.HeapBaseName: base},
-		BaseString: util.CreateBaseString(base),
+		BaseString: tool.CreateBaseString(base),
 		StartTime:  now,
 	}, name
 }
@@ -88,12 +89,12 @@ func callCommon(stack *hub.Stack, command string, content string) {
 				params[0].Value.Content = defaultApp.postNOK
 				result1, status1 := core.ApiRun(stack, &hub.ApiDef{Name: "main_pre_post_nok", Command: "flowApi", Args: &params}, "", true)
 				if status1 != http.StatusOK {
-					klog.Errorln("PRE - post NOK: ", stack.BaseString, " status:", status1, " result:", result1)
+					zap.S().Errorln("PRE - post NOK: ", stack.BaseString, " status:", status1, " result:", result1)
 				}
 			} else {
 				//成功时的回复应该定义在flow的step中
 				stack.GinContext.IndentedJSON(status, result)
-				klog.Errorln("PRE: ", stack.BaseString, " status:", status, " result:", result)
+				zap.S().Errorln("PRE: ", stack.BaseString, " status:", status, " result:", result)
 			}
 			return
 		}
@@ -108,20 +109,20 @@ func callCommon(stack *hub.Stack, command string, content string) {
 			params[0].Value.Content = defaultApp.postNOK
 			result1, status1 := core.ApiRun(stack, &hub.ApiDef{Name: "main_post_nok", Command: "flowApi", Args: &params}, "", true)
 			if status1 != http.StatusOK {
-				klog.Errorln("common - post NOK:", stack.BaseString, " status:", status1, " result:", result1)
+				zap.S().Errorln("common - post NOK:", stack.BaseString, " status:", status1, " result:", result1)
 			}
 		} else {
 			//成功时的回复应该定义在flow的step中
 			stack.GinContext.IndentedJSON(status, result)
-			klog.Errorln("common: ", stack.BaseString, " status:", status, " result:", result)
+			zap.S().Errorln("common: ", stack.BaseString, " status:", status, " result:", result)
 		}
 	} else if len(defaultApp.postOK) != 0 {
 		params[0].Value.Content = defaultApp.postOK
 		result1, status1 := core.ApiRun(stack, &hub.ApiDef{Name: "main_post_ok", Command: "flowApi", Args: &params}, "", true)
 		if status1 != http.StatusOK {
-			klog.Errorln("common - post NOK: ", stack.BaseString, " status:", status1, " result:", result1)
+			zap.S().Errorln("common - post NOK: ", stack.BaseString, " status:", status1, " result:", result1)
 		} else {
-			klog.Infoln("用户请求执行成功! 状态码: ", status1, " 请求详情:", stack.BaseString)
+			zap.S().Infoln("用户请求执行成功! 状态码: ", status1, " 请求详情:", stack.BaseString)
 		}
 	}
 }
@@ -153,18 +154,18 @@ func apiGatewayRun(host string, portString string, bucketEnable string,
 		host = "0.0.0.0"
 	}
 
-	klog.Infoln("host: ", host)
+	zap.S().Infoln("host: ", host)
 
 	if len(portString) > 0 {
 		port, _ = strconv.Atoi(portString)
 	}
-	klog.Infoln("port ", port)
+	zap.S().Infoln("port ", port)
 
 	if len(bucketEnable) > 0 {
 		re := regexp.MustCompile(`(?i)yes|true`)
 		defaultApp.bucketEnable = re.MatchString(bucketEnable)
 	}
-	klog.Infoln("bucket enable ", defaultApp.bucketEnable)
+	zap.S().Infoln("bucket enable ", defaultApp.bucketEnable)
 
 	if len(pre) != 0 {
 		if pre == "none" {
@@ -193,7 +194,7 @@ func apiGatewayRun(host string, portString string, bucketEnable string,
 	if len(httpApi) != 0 {
 		if postNOK == "none" {
 			errStr := "无效httpapi脚本名称"
-			klog.Errorln(errStr)
+			zap.S().Errorln(errStr)
 			panic(errStr)
 		} else {
 			defaultApp.httpApi = httpApi
@@ -217,7 +218,7 @@ func apiGatewayRun(host string, portString string, bucketEnable string,
 		router.Any("/schedule/:Id/:version", callSchedule)
 	}
 	basePath := util.GetBasePath() + "templates"
-	if needLoad, _ := util.PathExists(basePath); needLoad {
+	if needLoad, _ := tool.PathExists(basePath); needLoad {
 		router.LoadHTMLGlob(basePath + "/*.tmpl")
 	}
 

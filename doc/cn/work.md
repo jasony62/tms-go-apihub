@@ -8,6 +8,120 @@
 * error code转错误码+错误信息
 * 防止fasthttp出错
   Use this brilliant tool - race detector - for detecting and eliminating data races in your program. If you detected data race related to fasthttp in your program, then there is high probability you forgot calling TimeoutError before returning from RequestHandler.
+## 需求  
+| 一级 | 二级 | 三级 | 描述 |  开发 | 测试 |   
+| -- | -- | -- | -- | -- | -- | -- | -- |
+| httpapi| 设置HTTP基础参数 |静态url|  |Y |  |
+| |  |动态url|  |Y |  |
+| |  |method|  |Y |  |
+| |  |requestContentType|  |Y |  |
+||| 设置query | from literal  |Y |  |
+|||  | from private  |Y |  |
+|||  | from query,header，origin  |Y |  |
+|||  | from header  |Y |  |
+|||  | from origin  |Y |  |
+|||  | from func  |Y |  |
+|||  | from literal  |Y |  |
+||| 设置header | from literal  |Y |  |
+|||  | from private  |Y |  |
+|||  | from query  |Y |  |
+|||  | from header  |Y |  |
+|||  | from origin  |Y |  |
+|||  | from func  |Y |  |
+||| 设置body | json from lietral  |Y |  |
+|||  | json from private  |Y |  |
+|||  | json from query,header，origin  |Y |  |
+|||  | json from header  |Y |  |
+|||  | json from origin  |Y |  |
+|||  | json func  |Y |  |
+|||  | form from literal  |Y |  |
+|||  | form from private  |Y |  |
+|||  | form from query,header，origin  |Y |  |
+|||  | form from header  |Y |  |
+|||  | form from origin  |Y |  |
+|||  | from func  |Y |  |
+||cache| token类 | 过期时间从body中获取  |Y |  |
+||| 热点数据 | 过期时间根据规则获取  |N |  |
+||func|md5  |   |Y |  |
+|||utc  |   |Y |  |
+|||外部注册  |   |Y |  |
+||重试|  |  |N |  |
+||健康检查|  |  |N |  |
+|flow|基础编排|token类前后无关联  |   |Y |  |
+|||多个无关调用后，通过create json合并记过  |   |Y |  |
+|||前后相关调用，后续调用需要用到前序的结果  |   |Y |  |
+||多租户异步回调|调用结束后，存储索引到本地存储  |   |Y |  |
+|||异步返回后，从本地存储读取索引，发到对应用户  |   |Y |  |
+|schedule|逻辑| switch |   |Y |  |
+||| loop |   |Y |  |
+||并发运行模式| concurrent |   |Y |  |
+||| loop内concurrent |   |Y |  |
+||| concurrent + loop内concurrent |   |Y |  |
+||| background |   |Y |  |
+|多租户|权限控制| 默认全局权限 |   |Y |  |
+||| public |   |Y |  |
+||| internal |   |Y |  |
+||| 黑名单 |   |Y |  |
+||| 白名单 |   |Y |  |
+||证书管理|  |   |N |  |
+||认证| 简单秘钥 |   |N |  |
+||| OAUTH2 |   |N |  |
+||| JWT |   |N |  |
+||| LDAP |   |N |  |
+|协议支持|接入| http |   |Y |  |
+||| https |   |Y |  |
+||| websocket |   |N |  |
+||| CloundEvent |   |N |  |
+||调用| http |   |Y |  |
+||| https |   |Y |  |
+||| websocket |   |N |  |
+||| QUIC |   |N |  |
+||| gRPC |   |N |  |
+||| Dubbo |   |N |  |
+||| MQTT |   |N |  |
+||| 5G消息 |   |N |  |
+|json schema|httpai|required |   |Y |  |
+||| additionalProperties false |   |Y |  |
+||flow|required |   |Y |  |
+||| additionalProperties false |   |Y |  |
+||schedule|required |   |Y |  |
+||| additionalProperties false |   |Y |  |
+||right|required |   |Y |  |
+||| additionalProperties false |   |Y |  |
+|API|Etcd|  |   |N |  |
+||Nacos|  |   |N |  |
+||Redis|  |   |N |  |
+||Kafka|  |   |N |  |
+||Mysql|  |   |N |  |
+||Mongodb|  |   |N |  |
+||json动态更新|  |   |N |  |
+||BFF| html |   |Y |  |
+||| 5G消息 |   |Y |  |
+||动态注册API|  |   |Y |  |
+|导入导出|导入httpapi| swagger |   |N |  |
+||| openapi |   |Y |  |
+||| postman |   |Y |  |
+||| curl |   |N |  |
+||导出promthus|  |   |N |  |
+|路由|路由规则|host  |   |N |  |
+||| path|   |N |  |
+||| header|   |N |  |
+||| method|   |N |  |
+||负载均衡|  |   |N |  |
+||蓝绿发布|  |   |N |  |
+||蓝绿发布|  |   |灰度发布 |  |
+|自我保护|限速| 限流 |   |N |  |
+||| 熔断 |  |N |  |
+||| 降级 |  |N |  |
+||防攻击| IP黑白名单 |  |N |  |
+||| 防XSS |  |N |  |
+||| 防CSRF |  |N |  |
+|可观测性|prometheus| http-in |  |Y |  |
+||| http-out |  |Y |  |
+||日志|  |  |N |  |
+||OpenTelemetry|  |   |N |  |
+|云原生|水平扩展|  |  |N |  |
+||serverless|  |  |N |  |
 
 
 ## 中期
@@ -25,7 +139,6 @@ Defines a security scheme that can be used by the operations. Supported schemes 
 * 支持switch default case
 * 支持load API时候，检验private信息，load FLOW时候，检验API信息，load schedule时候，检验FLOW和API
 * 在JSON，HTTP处理错误时能够返回HTTP错误给调用方
-* 增加plugin框架，并支持Prometheus，本地log，本地file log，基于kafka的JSON输出
 * 控制流
 https://yaoapps.com/doc/d.%E5%A4%84%E7%90%86%E5%99%A8/g.%E6%B5%81%E7%A8%8B%E6%8E%A7%E5%88%B6
 xiang.flow.IF	IF 流程控制	查看
@@ -67,13 +180,13 @@ https://goframe.org/pages/viewpage.action?pageId=1114270
 * 重构，将api降级为httpapi，api将泛指一起
 * 支持从远端http下载压缩包，解压作为conf，支持压缩包密码
 * json文件load一次，反复使用
-* json文件合法性检查
 * 支持flow覆盖api中的private
 * 多租户异步回调：本地kv存储
 * 增加plugin框架，并支持Prometheus
-* json schema
+* json schema，支持json文件合法性检查
 * 支持导入openapi 3.0（swagger 2.0不需要）
 * 支持导入postman脚本到httpapi
+* 增加plugin框架，并支持Prometheus，企业微信报警
 
 ###schedule
 * schedule支持SWITCH/loop循环命令

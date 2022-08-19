@@ -7,7 +7,7 @@ import (
 
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/jasony62/tms-go-apihub/util"
-	klog "k8s.io/klog/v2"
+	"go.uber.org/zap"
 )
 
 var mapLock sync.Mutex
@@ -21,7 +21,7 @@ func RegisterApis(list map[string]hub.ApiHandler) {
 		_, OK := apiMap[k]
 		if OK {
 			str := "main : task重名:" + k
-			klog.Errorln(str)
+			zap.S().Errorln(str)
 			panic(str)
 		} else {
 			apiMap[k] = list[k]
@@ -30,7 +30,7 @@ func RegisterApis(list map[string]hub.ApiHandler) {
 }
 
 func preApis(stack *hub.Stack, apiDef *hub.ApiDef) {
-	//	klog.Infoln("___pre API,", stack.BaseString, "command:", apiDef.Command, "name:"+apiDef.Name)
+	//	zap.S().Infoln("___pre API,", stack.BaseString, "command:", apiDef.Command, "name:"+apiDef.Name)
 }
 
 func postApis(stack *hub.Stack, apiDef *hub.ApiDef, result interface{}, code int, duration float64) {
@@ -39,9 +39,9 @@ func postApis(stack *hub.Stack, apiDef *hub.ApiDef, result interface{}, code int
 	}
 
 	if code == http.StatusOK {
-		klog.Infoln("___post API OK:", stack.BaseString, "command:"+apiDef.Command, " name："+apiDef.Name, " result:", result, " duration(s):", duration)
+		zap.S().Infoln("___post API OK: ", stack.BaseString, "command:"+apiDef.Command, " name："+apiDef.Name, " result:", result, " duration(s):", duration)
 	} else {
-		klog.Errorln("!!!post API NOK:", stack.BaseString, "command :"+apiDef.Command, " name："+apiDef.Name, " result:", result, " duration(s):", duration)
+		zap.S().Errorln("!!!post API NOK:", stack.BaseString, "command :"+apiDef.Command, " name："+apiDef.Name, " result:", result, " duration(s):", duration)
 	}
 }
 
@@ -55,7 +55,7 @@ func ApiRun(stack *hub.Stack, api *hub.ApiDef, private string, internal bool) (r
 	var err error
 	if function == nil {
 		str := "不能执行" + api.Command
-		klog.Errorln(stack.BaseString, str)
+		zap.S().Errorln(stack.BaseString, str)
 		return util.CreateTmsError(hub.TmsErrorCoreId, str, nil), http.StatusForbidden
 	}
 
@@ -68,7 +68,7 @@ func ApiRun(stack *hub.Stack, api *hub.ApiDef, private string, internal bool) (r
 		privateDef, ok = util.FindPrivateDef(api.Private)
 		if !ok || err != nil {
 			str := "获得private定义失败：" + api.Private
-			klog.Errorln(stack.BaseString, str)
+			zap.S().Errorln(stack.BaseString, str)
 			return util.CreateTmsError(hub.TmsErrorCoreId, str, nil), http.StatusForbidden
 		}
 	}
@@ -79,7 +79,7 @@ func ApiRun(stack *hub.Stack, api *hub.ApiDef, private string, internal bool) (r
 			args[item.Name], err = util.GetParameterStringValue(stack, privateDef, &item.Value)
 			if err != nil {
 				str := "获得value失败：" + err.Error()
-				klog.Errorln(stack.BaseString, str)
+				zap.S().Errorln(stack.BaseString, str)
 				return util.CreateTmsError(hub.TmsErrorCoreId, str, nil), http.StatusInternalServerError
 			}
 		}
@@ -92,7 +92,7 @@ func ApiRun(stack *hub.Stack, api *hub.ApiDef, private string, internal bool) (r
 			origin[item.Name], err = util.GetParameterRawValue(stack, privateDef, &item.Value)
 			if err != nil {
 				str := "获得origin失败：" + err.Error()
-				klog.Errorln(stack.BaseString, str)
+				zap.S().Errorln(stack.BaseString, str)
 				return util.CreateTmsError(hub.TmsErrorCoreId, str, nil), http.StatusInternalServerError
 			}
 		}

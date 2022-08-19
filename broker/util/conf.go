@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/jasony62/tms-go-apihub/hub"
-	klog "k8s.io/klog/v2"
+	"go.uber.org/zap"
 )
 
 // 应用的基本信息
@@ -39,15 +39,15 @@ var DefaultConfMap = confMap{
 }
 
 func loadConfigJsonData(paths []string) {
-	klog.Infoln("加载API def文件...")
+	zap.S().Infoln("加载API def文件...")
 	loadJsonDefData(JSON_TYPE_API, paths[JSON_TYPE_API], "", true)
-	klog.Infoln("加载Flow def文件...")
+	zap.S().Infoln("加载Flow def文件...")
 	loadJsonDefData(JSON_TYPE_FLOW, paths[JSON_TYPE_FLOW], "", true)
-	klog.Infoln("加载Schedule def文件...")
+	zap.S().Infoln("加载Schedule def文件...")
 	loadJsonDefData(JSON_TYPE_SCHEDULE, paths[JSON_TYPE_SCHEDULE], "", true)
-	klog.Infoln("加载Private def文件...")
+	zap.S().Infoln("加载Private def文件...")
 	loadJsonDefData(JSON_TYPE_PRIVATE, paths[JSON_TYPE_PRIVATE], "", true)
-	klog.Infoln("加载Rights文件...")
+	zap.S().Infoln("加载Rights文件...")
 	loadJsonDefData(JSON_TYPE_API_RIGHT, paths[JSON_TYPE_API_RIGHT], "", false)
 	loadJsonDefData(JSON_TYPE_FLOW_RIGHT, paths[JSON_TYPE_FLOW_RIGHT], "", false)
 	loadJsonDefData(JSON_TYPE_SCHEDULE_RIGHT, paths[JSON_TYPE_SCHEDULE_RIGHT], "", false)
@@ -56,7 +56,7 @@ func loadConfigJsonData(paths []string) {
 func loadJsonDefData(jsonType int, path string, prefix string, includeDir bool) {
 	fileInfoList, err := ioutil.ReadDir(path)
 	if err != nil {
-		klog.Errorln(err)
+		zap.S().Errorln(err.Error())
 		return
 	}
 
@@ -77,13 +77,13 @@ func loadJsonDefData(jsonType int, path string, prefix string, includeDir bool) 
 			byteFile, err := ioutil.ReadFile(fileName)
 			if err != nil {
 				str := "获得Json定义失败：" + err.Error()
-				klog.Errorln(str)
+				zap.S().Errorln(str)
 				panic(str)
 			}
 
 			if !json.Valid(byteFile) {
 				str := "Json文件无效：" + fileName
-				klog.Errorln(str)
+				zap.S().Errorln(str)
 				panic(str)
 			}
 
@@ -135,7 +135,7 @@ func loadJsonDefData(jsonType int, path string, prefix string, includeDir bool) 
 func loadConfigPluginData(path string) {
 	fileInfoList, err := ioutil.ReadDir(path)
 	if err != nil {
-		klog.Errorln(err)
+		zap.S().Errorln(err.Error())
 		return
 	}
 	var prefix string
@@ -143,29 +143,29 @@ func loadConfigPluginData(path string) {
 		fileName := fmt.Sprintf("%s/%s", path, fileInfoList[i].Name())
 
 		if fileInfoList[i].IsDir() {
-			klog.Infoln("Plugin子目录: ", fileName)
+			zap.S().Infoln("Plugin子目录: ", fileName)
 			prefix = fileInfoList[i].Name()
 			loadConfigPluginData(path + "/" + prefix)
 		} else {
 			if !strings.HasSuffix(fileName, ".so") {
 				continue
 			}
-			klog.Infoln("加载Plugin(*.so)文件: ", fileName)
+			zap.S().Infoln("加载Plugin(*.so)文件: ", fileName)
 			p, err := plugin.Open(fileName)
 			if err != nil {
-				klog.Errorln(err)
+				zap.S().Errorln(err.Error())
 				panic(err)
 			}
 
 			// 导入动态库，注册函数到funcMap
 			registerFunc, err := p.Lookup("Register")
 			if err != nil {
-				klog.Errorln(err)
+				zap.S().Errorln(err.Error())
 				panic(err)
 			}
 			mapFunc, mapFuncForTemplate := registerFunc.(func() (map[string]interface{}, map[string]interface{}))()
 			loadPluginFuncs(mapFunc, mapFuncForTemplate)
-			klog.Infof("加载Json文件完成！\r\n")
+			zap.S().Infoln("加载Json文件完成！\r\n")
 		}
 	}
 }
@@ -173,7 +173,7 @@ func loadConfigPluginData(path string) {
 func loadPluginFuncs(mapFunc map[string]interface{}, mapFuncForTemplate map[string]interface{}) {
 	for k, v := range mapFunc {
 		if _, ok := funcMap[k]; ok {
-			klog.Errorf("加载(%s)失败,FuncMap存在重名函数！\r\n", k)
+			zap.S().Errorln("加载(%s)失败,FuncMap存在重名函数！\r\n", k)
 		} else {
 			funcMap[k] = v.(hub.FuncHandler)
 		}
@@ -181,7 +181,7 @@ func loadPluginFuncs(mapFunc map[string]interface{}, mapFuncForTemplate map[stri
 
 	for k, v := range mapFuncForTemplate {
 		if _, ok := funcMapForTemplate[k]; ok {
-			klog.Errorf("加载(%s)失败,FuncMapForTemplate存在重名函数！\r\n", k)
+			zap.S().Errorln("加载(%s)失败,FuncMapForTemplate存在重名函数！\r\n", k)
 		} else {
 			funcMapForTemplate[k] = v
 		}
@@ -189,11 +189,11 @@ func loadPluginFuncs(mapFunc map[string]interface{}, mapFuncForTemplate map[stri
 }
 
 func loadTemplateData(path string, prefix string) {
-	klog.Infoln("加载Template文件...")
+	zap.S().Infoln("加载Template文件...")
 	fileInfoList, err := ioutil.ReadDir(path)
 	if err != nil {
 		str := "invalid path " + path
-		klog.Errorln(str)
+		zap.S().Errorln(str)
 		return
 	}
 
@@ -210,7 +210,7 @@ func loadTemplateData(path string, prefix string) {
 			byteFile, err := ioutil.ReadFile(fileName)
 			if err != nil {
 				str := "获得tmpl定义失败：" + err.Error()
-				klog.Errorln(str)
+				zap.S().Errorln(str)
 				panic(str)
 			}
 
@@ -255,7 +255,7 @@ func FindResourceDef(id string) (value string, ok bool) {
 
 func FindRightDef(user string, name string, callType string) *hub.RightArray {
 	// check是否有权限
-	klog.Infoln("CheckRight user:", user, " callType:", callType, " name:", name)
+	zap.S().Infoln("CheckRight user:", user, " callType:", callType, " name:", name)
 	//map
 	switch callType {
 	case "httpapi":
@@ -288,7 +288,7 @@ func LoadMainFlow(path string) (interface{}, int) {
 	if len(path) > 0 {
 		DefaultConfMap.BasePath = path
 	}
-	klog.Infof("Load main flow from %s\n", DefaultConfMap.BasePath)
+	zap.S().Infoln("Load main flow from %s\n", DefaultConfMap.BasePath)
 	loadJsonDefData(JSON_TYPE_FLOW, DefaultConfMap.BasePath, "", false)
 	return nil, http.StatusOK
 }
