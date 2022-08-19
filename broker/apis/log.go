@@ -1,55 +1,44 @@
 package apis
 
 import (
-	"flag"
+	"fmt"
 	"net/http"
-	"os"
-	"time"
+	"strconv"
 
 	"github.com/jasony62/tms-go-apihub/hub"
-
-	klog "k8s.io/klog/v2"
+	"github.com/jasony62/tms-go-apihub/logger"
+	"github.com/jasony62/tms-go-apihub/util"
 )
 
-func logToFile(stack *hub.Stack, params map[string]string) (interface{}, int) {
-	filename := params["filename"]
+var LogConf logger.LogConfigs
+var LogWithLevel bool
 
-	klog.Infoln("logToFile ", filename)
-	if len(filename) == 0 {
-		return nil, http.StatusOK
+func logOutput(stack *hub.Stack, params map[string]string) (interface{}, int) {
+	// 1. 配置log参数
+	LogConf.LogPath = getLogConf(params["filepath"], "../log/")
+	LogConf.LogFileName = getLogConf(params["filename"], "")
+	LogConf.LogFormat = getLogConf(params["logformat"], "logfmt")
+	LogConf.LogLevel = getLogConf(params["loglevel"], "info")
+	LogConf.LogFileMaxSize, _ = strconv.Atoi(getLogConf(params["fileMaxSize"], "50"))
+	LogConf.LogFileMaxBackups, _ = strconv.Atoi(getLogConf(params["fileMaxBackups"], "100"))
+	LogConf.LogMaxAge, _ = strconv.Atoi(getLogConf(params["maxDays"], "10"))
+	LogConf.LogCompress, _ = strconv.ParseBool(getLogConf(params["compress"], "false"))
+	LogConf.LogStdout, _ = strconv.ParseBool(getLogConf(params["stdout"], "true"))
+	LogWithLevel, _ = strconv.ParseBool(getLogConf(params["logwithlevel"], "false"))
+
+	// 2. 初始化log
+	if err := logger.InitLogger(LogConf, LogWithLevel); err != nil {
+		str := "初始化日志系统失败" + err.Error()
+		fmt.Println(str)
+		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusInternalServerError
 	}
-
-	folder := "../log/"
-	exist, _ := pathExists(folder)
-	if !exist {
-		os.Mkdir(folder, os.ModePerm)
-	}
-
-	//获取当前时间，命名log文件
-	timeStr := time.Now().Format("20060102150405")
-	flag.Set("logtostderr", "false") // By default klog logs to stderr, switch that off
-
-	level := params["loglevel"]
-	if len(level) > 0 {
-		//klog写日志到文件不支持分级别输出，打印到屏幕支持，如果按级别打印到屏幕需要关闭alsologtostderr
-		flag.Set("stderrthreshold", level) //InfoLog:"INFO",WarningLog:"WARNING",ErrorLog:"ERROR",FatalLog:"FATAL",
-	} else {
-		flag.Set("alsologtostderr", "true") // false is default, but this is informative
-	}
-
-	logName := folder + filename + "_" + timeStr + ".log"
-	flag.Set("log_file", logName)
-	flag.Parse()
 	return nil, http.StatusOK
 }
 
-func pathExists(path string) (bool, error) {
-	_, err := os.Stat(path)
-	if err == nil {
-		return true, nil
+func getLogConf(inputStr string, defaultStr string) string {
+	if len(inputStr) == 0 {
+		return defaultStr
+	} else {
+		return inputStr
 	}
-	if os.IsNotExist(err) {
-		return false, nil
-	}
-	return false, err
 }

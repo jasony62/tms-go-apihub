@@ -3,22 +3,78 @@
   "description": "main for apigateway",
   "steps": [
     {
-      "name": "logToFile",
-      "command": "logToFile",
-      "description": "logToFile",
+      "name": "logOutput",
+      "command": "logOutput",
+      "description": "logOutput",
       "args": [
+        {
+          "name": "filepath",
+          "value": {
+            "from": "literal",
+            "content": "../log/"
+          }
+        },
         {
           "name": "filename",
           "value": {
             "from": "literal",
-            "content": ""
+            "content": "apihub.log"
+          }
+        },
+        {
+          "name": "logformat",
+          "value": {
+            "from": "literal",
+            "content": "logfmt"
           }
         },
         {
           "name": "loglevel",
           "value": {
             "from": "literal",
-            "content": ""
+            "content": "debug"
+          }
+        },
+        {
+          "name": "fileMaxSize",
+          "value": {
+            "from": "literal",
+            "content": "50"
+          }
+        },
+        {
+          "name": "fileMaxBackups",
+          "value": {
+            "from": "literal",
+            "content": "100"
+          }
+        },        
+        {
+          "name": "maxDays",
+          "value": {
+            "from": "literal",
+            "content": "10"
+          }
+        },
+        {
+          "name": "compress",
+          "value": {
+            "from": "literal",
+            "content": "false"
+          }
+        },
+        {
+          "name": "stdout",
+          "value": {
+            "from": "literal",
+            "content": "true"
+          }
+        },
+        {
+          "name": "logwithlevel",
+          "value": {
+            "from": "literal",
+            "content": "true"
           }
         }
       ]
