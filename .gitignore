@@ -27,3 +27,4 @@ postman/postman_collections/浙江信产.postman_collection.json
 
 test/http-server/http-server
 postman/test.sh
+broker/tms-go-apihub
