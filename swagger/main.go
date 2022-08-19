@@ -33,7 +33,6 @@ type Args struct {
 }
 
 var apiHubHttpConf ApiHubHttpConf
-
 var swaggerPath string
 var apiHubConfPath string
 
@@ -184,9 +183,6 @@ func parsePaths(api *openapi3.T) {
 func covertSwaggerToApihubConf(fileName string) {
 	loader := openapi3.NewLoader()
 	loader.IsExternalRefsAllowed = true
-	// loader.ReadFromURIFunc = func(loader *openapi3.Loader, uri *url.URL) ([]byte, error) {
-	// 	return fs.ReadFile(uri.Path)
-	// }
 
 	oapi, err := loader.LoadFromFile(fileName)
 	if err != nil {
