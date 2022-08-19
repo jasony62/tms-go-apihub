@@ -244,7 +244,6 @@ func getPostmanURL(postmanUrl *postman.URL) string {
 			} else {
 				httpapiUrl = httpapiUrl + postmanUrl.Path[i]
 			}
-
 		}
 	}
 	return httpapiUrl
@@ -308,51 +307,56 @@ func parseRequestBody(postmanRequestBody *postman.Body) {
 		if requestBody.Raw != "" {
 			klog.Infoln("__httpapirequestBody.Raw is : ", requestBody.Raw)
 			nameString := ""
-			contentString := ""
 			backNameIndex := 0
+			contentString := ""
 			backContentIndex := 0
+			contentStringFunc := ""
+			backContentIndexFunc := 0
 			tempbodyjson := make(map[string]string)
+			nameList := ""
 			for i := 0; i < len(requestBody.Raw); i++ {
 				nameString, backNameIndex = getStringBetweenDoubleQuotationMarks(requestBody.Raw[i:])
 				// klog.Infoln("test request raw is :", requestBody.Raw[backNameIndex+i+3:backNameIndex+i+4])
 				if backNameIndex != -1 {
-					tempstring1, tempstringflag1 := getStringBetweenDoubleQuotationMarks(requestBody.Raw[backNameIndex+i:])
-					tempstring2, tempstringflag2 := getStringBetweenSpecifySymbols(requestBody.Raw[backNameIndex+i:], "\"", "{{")
-					tempstring1 = strings.TrimSpace(tempstring1)
-					tempstring2 = strings.TrimSpace(tempstring2)
-
-					if (tempstringflag1 != -1) && (tempstring1 == ":") {
-						contentString, backContentIndex = getStringBetweenDoubleQuotationMarks(requestBody.Raw[backNameIndex+i+tempstringflag1:])
+					_, tempstringflag := getStringBetweenSpecifySymbols(requestBody.Raw[backNameIndex+i:], "\"", ":")
+					_, tempstringflag2 := getStringBetweenSpecifySymbols(requestBody.Raw[backNameIndex+i:], "\"", ",")
+					if tempstringflag != -1 {
+						// 考虑到字符串最后一组没有 ， 增加判断
+						if tempstringflag2 != -1 {
+							contentString, backContentIndex = getStringBetweenDoubleQuotationMarks(requestBody.Raw[backNameIndex+i+tempstringflag : backNameIndex+i+tempstringflag2])
+						} else {
+							contentString, backContentIndex = getStringBetweenDoubleQuotationMarks(requestBody.Raw[backNameIndex+i+tempstringflag:])
+						}
+						contentStringFunc, backContentIndexFunc = getStringBetweenDoubleBrackets(requestBody.Raw[backNameIndex+i+tempstringflag:])
+						// "":""
 						if backContentIndex != -1 {
 							tempbodyjson[nameString] = contentString
-							// vars bad Code
-							// args := Args{In: "vars", Name: nameString, Value: Value{From: "private", Content: nameString}}
-							// apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
-							// tempbodyjson[nameString] = "{{" + ".var." + nameString + "}}"
-							// privates := Privates{Name: nameString, Value: contentString}
-							// apiHubHttpPrivates.Privates = append(apiHubHttpPrivates.Privates, privates)
+							/* vars bad Code
+							args := Args{In: "vars", Name: nameString, Value: Value{From: "private", Content: nameString}}
+							apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+							tempbodyjson[nameString] = "{{" + ".var." + nameString + "}}"
+							privates := Privates{Name: nameString, Value: contentString}
+							apiHubHttpPrivates.Privates = append(apiHubHttpPrivates.Privates, privates)*/
+							i = backNameIndex + backContentIndex + i + tempstringflag
+						} else if backContentIndexFunc != -1 { // "":{{}} 全局变量或函数
+							tempbodyjson[nameString] = "{{" + ".vars." + contentStringFunc + "}}"
+							if coversionFuncMap[contentStringFunc] == "md5" {
+								nameList = strings.TrimSpace(nameList)
+								args := Args{In: "vars", Name: nameString, Value: Value{From: "func", Content: coversionFuncMap[contentStringFunc], Args: nameList}}
+								apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+							} else {
+								args := Args{In: "vars", Name: nameString, Value: Value{From: "func", Content: coversionFuncMap[contentStringFunc]}}
+								apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+								nameList = nameList + " " + nameString
+							}
+							// _ = contentString
+							i = backNameIndex + backContentIndex + i + tempstringflag
+						} else {
+							nameString = ""
+							contentString = ""
+							klog.Infoln("__parseRequestBodyRawError:Format error")
+							break
 						}
-						i = backNameIndex + backContentIndex + i + tempstringflag1
-					} else if (tempstringflag2 != -1) && (tempstring2 == ":") {
-						contentString, backContentIndex = getStringBetweenDoubleBrackets(requestBody.Raw[backNameIndex+i+tempstringflag2:])
-						if backContentIndex != -1 {
-							// if coversionFuncMap[contentString] == "md5" {
-							// 	nameList = strings.TrimSpace(nameList)
-							// 	args := Args{In: "header", Name: nameString, Value: Value{From: "func", Content: coversionFuncMap[contentString], Args: nameList}}
-							// 	apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
-							// } else {
-							// 	args := Args{In: "vars", Name: nameString, Value: Value{From: "func", Content: coversionFuncMap[contentString]}}
-							// 	apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
-							// 	nameList = nameList + " " + nameString
-							// }
-							_ = contentString
-							i = backNameIndex + backContentIndex + i + tempstringflag2
-						}
-					} else {
-						nameString = ""
-						contentString = ""
-						klog.Infoln("__parseRequestBodyRawError:Format error")
-						break
 					}
 				}
 			}
@@ -373,8 +377,7 @@ func getPostmanEventFunc(postmanItem *postman.Items, preFuncKeyWord []string) {
 		if postmanItem.Events[i].Script.Type == "text/javascript" {
 			for j := range postmanItem.Events[i].Script.Exec { // Exec中js命令一行是一个数组元素
 				for k := range preFuncKeyWord { // 查找js命令行中有无js常见命令的关键字
-					keyWordIndex := strings.Index(postmanItem.Events[i].Script.Exec[j], preFuncKeyWord[k])
-					if keyWordIndex != -1 {
+					if (strings.Index(postmanItem.Events[i].Script.Exec[j], preFuncKeyWord[k])) != -1 {
 						switch preFuncKeyWord[k] {
 						case "getTime":
 							keyWordString, index := getStringBetweenDoubleQuotationMarks(postmanItem.Events[i].Script.Exec[j])

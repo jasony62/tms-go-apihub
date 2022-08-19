@@ -19,4 +19,11 @@ broker/tms-go-apihub
 broker/vendor/
 .vscode
 
-postman/postman_collections/.postman/
+postman/privates/
+postman/httpapis/
+postman/postman_collections/云信-三网短信.json
+postman/postman_collections/5G新增手机终端画像.postman_collection.json
+postman/postman_collections/浙江信产.postman_collection.json
+
+test/http-server/http-server
+postman/test.sh
