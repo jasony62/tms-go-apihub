@@ -9,7 +9,6 @@ import (
 
 	"github.com/jasony62/tms-go-apihub/core"
 	"github.com/jasony62/tms-go-apihub/hub"
-	"github.com/jasony62/tms-go-apihub/tool"
 	"github.com/jasony62/tms-go-apihub/util"
 	"go.uber.org/zap"
 
@@ -70,7 +69,7 @@ func newStack(c *gin.Context, level string) (*hub.Stack, string) {
 	return &hub.Stack{
 		GinContext: c,
 		Heap:       map[string]interface{}{hub.HeapOriginName: value, hub.HeapBaseName: base},
-		BaseString: tool.CreateBaseString(base),
+		BaseString: util.CreateBaseString(base),
 		StartTime:  now,
 	}, name
 }
@@ -218,7 +217,7 @@ func apiGatewayRun(host string, portString string, bucketEnable string,
 		router.Any("/schedule/:Id/:version", callSchedule)
 	}
 	basePath := util.GetBasePath() + "templates"
-	if needLoad, _ := tool.PathExists(basePath); needLoad {
+	if needLoad, _ := util.PathExists(basePath); needLoad {
 		router.LoadHTMLGlob(basePath + "/*.tmpl")
 	}
 

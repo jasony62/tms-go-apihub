@@ -1,12 +1,31 @@
 package apis
 
 import (
+	"bytes"
+	"html/template"
 	"net/http"
 
 	"github.com/jasony62/tms-go-apihub/hub"
 	"github.com/jasony62/tms-go-apihub/util"
 	"go.uber.org/zap"
 )
+
+func json2Html(source interface{}, rules string) (string, error) {
+	tmpl, err := template.New("tmpl").Parse(rules)
+	if err != nil {
+		zap.S().Infoln("get template result：", rules, " error: ", err)
+		return "", err
+	}
+
+	buf := new(bytes.Buffer)
+	err = tmpl.Execute(buf, source)
+	if err != nil {
+		zap.S().Infoln("get template result：", err)
+		return "", err
+	}
+
+	return buf.String(), err
+}
 
 func createHtml(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	if len(params) == 0 {
@@ -38,7 +57,7 @@ func createHtml(stack *hub.Stack, params map[string]string) (interface{}, int) {
 		}
 	}
 
-	result, err := util.Json2Html(stack.Heap, content)
+	result, err := json2Html(stack.Heap, content)
 	if err != nil {
 		return util.CreateTmsError(hub.TmsErrorApisId, err.Error(), nil), http.StatusInternalServerError
 	}

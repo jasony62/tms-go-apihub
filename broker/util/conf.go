@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"plugin"
 	"strings"
 
 	"github.com/jasony62/tms-go-apihub/hub"
@@ -40,17 +39,15 @@ var DefaultConfMap = confMap{
 
 func loadConfigJsonData(paths []string) {
 	zap.S().Infoln("加载API def文件...")
-	loadJsonDefData(JSON_TYPE_API, paths[JSON_TYPE_API], "", true)
-	zap.S().Infoln("加载Flow def文件...")
-	loadJsonDefData(JSON_TYPE_FLOW, paths[JSON_TYPE_FLOW], "", true)
-	zap.S().Infoln("加载Schedule def文件...")
-	loadJsonDefData(JSON_TYPE_SCHEDULE, paths[JSON_TYPE_SCHEDULE], "", true)
-	zap.S().Infoln("加载Private def文件...")
-	loadJsonDefData(JSON_TYPE_PRIVATE, paths[JSON_TYPE_PRIVATE], "", true)
-	zap.S().Infoln("加载Rights文件...")
-	loadJsonDefData(JSON_TYPE_API_RIGHT, paths[JSON_TYPE_API_RIGHT], "", false)
-	loadJsonDefData(JSON_TYPE_FLOW_RIGHT, paths[JSON_TYPE_FLOW_RIGHT], "", false)
-	loadJsonDefData(JSON_TYPE_SCHEDULE_RIGHT, paths[JSON_TYPE_SCHEDULE_RIGHT], "", false)
+	for i := hub.JSON_TYPE_PRIVATE; i <= hub.JSON_TYPE_SCHEDULE; i++ {
+		/*TODO add error return and panic if failure*/
+		loadJsonDefData(i, paths[i], "", true)
+	}
+
+	for i := hub.JSON_TYPE_API_RIGHT; i <= hub.JSON_TYPE_SCHEDULE_RIGHT; i++ {
+		/*TODO add error return and panic if failure*/
+		loadJsonDefData(i, paths[i], "", true)
+	}
 }
 
 func loadJsonDefData(jsonType int, path string, prefix string, includeDir bool) {
@@ -98,92 +95,36 @@ func loadJsonDefData(jsonType int, path string, prefix string, includeDir bool) 
 
 			decoder := json.NewDecoder(bytes.NewReader(byteFile))
 			switch jsonType {
-			case JSON_TYPE_API:
+			case hub.JSON_TYPE_API:
 				def := new(hub.HttpApiDef)
 				decoder.Decode(&def)
 				DefaultConfMap.ApiMap[key] = def
-			case JSON_TYPE_FLOW:
+			case hub.JSON_TYPE_FLOW:
 				def := new(hub.FlowDef)
 				decoder.Decode(&def)
 				DefaultConfMap.FlowMap[key] = def
-			case JSON_TYPE_SCHEDULE:
+			case hub.JSON_TYPE_SCHEDULE:
 				def := new(hub.ScheduleDef)
 				decoder.Decode(&def)
 				DefaultConfMap.ScheduleMap[key] = def
-			case JSON_TYPE_PRIVATE:
+			case hub.JSON_TYPE_PRIVATE:
 				def := new(hub.PrivateArray)
 				decoder.Decode(&def)
 				DefaultConfMap.PrivateMap[key] = def
-			case JSON_TYPE_API_RIGHT:
+			case hub.JSON_TYPE_API_RIGHT:
 				def := new(hub.RightArray)
 				decoder.Decode(&def)
 				DefaultConfMap.ApiRightMap[key] = def
-			case JSON_TYPE_FLOW_RIGHT:
+			case hub.JSON_TYPE_FLOW_RIGHT:
 				def := new(hub.RightArray)
 				decoder.Decode(&def)
 				DefaultConfMap.FlowRightMap[key] = def
-			case JSON_TYPE_SCHEDULE_RIGHT:
+			case hub.JSON_TYPE_SCHEDULE_RIGHT:
 				def := new(hub.RightArray)
 				decoder.Decode(&def)
 				DefaultConfMap.ScheduleRightMap[key] = def
 			default:
 			}
-		}
-	}
-}
-
-func loadConfigPluginData(path string) {
-	fileInfoList, err := ioutil.ReadDir(path)
-	if err != nil {
-		zap.S().Errorln(err.Error())
-		return
-	}
-	var prefix string
-	for i := range fileInfoList {
-		fileName := fmt.Sprintf("%s/%s", path, fileInfoList[i].Name())
-
-		if fileInfoList[i].IsDir() {
-			zap.S().Infoln("Plugin子目录: ", fileName)
-			prefix = fileInfoList[i].Name()
-			loadConfigPluginData(path + "/" + prefix)
-		} else {
-			if !strings.HasSuffix(fileName, ".so") {
-				continue
-			}
-			zap.S().Infoln("加载Plugin(*.so)文件: ", fileName)
-			p, err := plugin.Open(fileName)
-			if err != nil {
-				zap.S().Errorln(err.Error())
-				panic(err)
-			}
-
-			// 导入动态库，注册函数到funcMap
-			registerFunc, err := p.Lookup("Register")
-			if err != nil {
-				zap.S().Errorln(err.Error())
-				panic(err)
-			}
-			mapFunc, mapFuncForTemplate := registerFunc.(func() (map[string]interface{}, map[string]interface{}))()
-			loadPluginFuncs(mapFunc, mapFuncForTemplate)
-			zap.S().Infoln("加载Json文件完成！\r\n")
-		}
-	}
-}
-
-func loadPluginFuncs(mapFunc map[string]interface{}, mapFuncForTemplate map[string]interface{}) {
-	for k, v := range mapFunc {
-		if _, ok := funcMap[k]; ok {
-			zap.S().Errorln("加载(%s)失败,FuncMap存在重名函数！\r\n", k)
-		} else {
-			funcMap[k] = v.(hub.FuncHandler)
-		}
-	}
-
-	for k, v := range mapFuncForTemplate {
-		if _, ok := funcMapForTemplate[k]; ok {
-			zap.S().Errorln("加载(%s)失败,FuncMapForTemplate存在重名函数！\r\n", k)
-		} else {
-			funcMapForTemplate[k] = v
 		}
 	}
 }
@@ -289,6 +230,6 @@ func LoadMainFlow(path string) (interface{}, int) {
 		DefaultConfMap.BasePath = path
 	}
 	zap.S().Infoln("Load main flow from %s\n", DefaultConfMap.BasePath)
-	loadJsonDefData(JSON_TYPE_FLOW, DefaultConfMap.BasePath, "", false)
+	loadJsonDefData(hub.JSON_TYPE_FLOW, DefaultConfMap.BasePath, "", false)
 	return nil, http.StatusOK
 }
