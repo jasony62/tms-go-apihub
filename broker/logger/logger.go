@@ -4,7 +4,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/jasony62/tms-go-apihub/tool"
+	"github.com/jasony62/tms-go-apihub/util"
 	"github.com/natefinch/lumberjack"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -98,7 +98,7 @@ func getEncoder(conf LogConfigs) zapcore.Encoder {
 func getLogWriter(level string, conf LogConfigs) (zapcore.WriteSyncer, error) {
 
 	// 判断日志路径是否存在，如果不存在就创建
-	if exist, _ := tool.PathExists(conf.LogPath); !exist {
+	if exist, _ := util.PathExists(conf.LogPath); !exist {
 		if conf.LogPath == "" {
 			conf.LogPath = DefaultLogPath
 		}
@@ -118,7 +118,7 @@ func getLogWriter(level string, conf LogConfigs) (zapcore.WriteSyncer, error) {
 		logfile = conf.LogPath + conf.LogFileName
 	}
 
-	if exist, _ := tool.PathExists(logfile); exist {
+	if exist, _ := util.PathExists(logfile); exist {
 		os.Remove(logfile)
 	}
 

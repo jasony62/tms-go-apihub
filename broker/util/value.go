@@ -11,15 +11,49 @@ import (
 	"go.uber.org/zap"
 )
 
-const (
-	JSON_TYPE_PRIVATE = iota
-	JSON_TYPE_API
-	JSON_TYPE_FLOW
-	JSON_TYPE_SCHEDULE
-	JSON_TYPE_API_RIGHT
-	JSON_TYPE_FLOW_RIGHT
-	JSON_TYPE_SCHEDULE_RIGHT
-)
+func executeTemplate(source interface{}, rules interface{}) (*bytes.Buffer, error) {
+	byteTempl, err := json.Marshal(rules)
+	if err != nil {
+		return nil, err
+	}
+
+	strTempl := string(byteTempl)
+
+	// 处理数组
+	strTempl = strings.ReplaceAll(strTempl, "\"{{range", "{{range")
+	strTempl = strings.ReplaceAll(strTempl, "end}}\"", "end}}")
+	strTempl = strings.ReplaceAll(strTempl, "\\\"", "\"")
+
+	tmpl, err := template.New("json").Funcs(funcMapForTemplate).Parse(strTempl)
+	if err != nil {
+		zap.S().Infoln("get template result：", strTempl, byteTempl, " error: ", err)
+		return nil, err
+	}
+	buf := new(bytes.Buffer)
+	err = tmpl.Execute(buf, source)
+	if err != nil {
+		zap.S().Infoln("get template result：", err)
+		return nil, err
+	}
+	return buf, err
+}
+
+func json2Json(source interface{}, rules interface{}) (interface{}, error) {
+	var target interface{}
+	buf, err := executeTemplate(source, rules)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(buf.Bytes(), &target)
+	return target, err
+}
+
+func rvemoveOutideQuote(s []byte) string {
+	if len(s) > 0 && s[0] == '"' && s[len(s)-1] == '"' {
+		s = s[1:(len(s) - 1)]
+	}
+	return string(s)
+}
 
 // 从执行结果中获取查询参数
 func queryFromHeap(stack *hub.Stack, name string) (string, error) {
@@ -77,7 +111,7 @@ func GetParameterRawValue(stack *hub.Stack, private *hub.PrivateArray, from *hub
 	case "heap":
 		value, err = queryFromHeap(stack, "{{."+from.Content+"}}")
 	case "json":
-		jsonOutBody, err := Json2Json(stack.Heap, from.Json)
+		jsonOutBody, err := json2Json(stack.Heap, from.Json)
 		if err != nil {
 			return "", err
 		}
@@ -85,9 +119,9 @@ func GetParameterRawValue(stack *hub.Stack, private *hub.PrivateArray, from *hub
 		if err != nil {
 			return "", err
 		}
-		value = RemoveOutideQuote(byteJson)
+		value = rvemoveOutideQuote(byteJson)
 	case "jsonRaw":
-		value, err = Json2Json(stack.Heap, from.Json)
+		value, err = json2Json(stack.Heap, from.Json)
 	case "env":
 		value = os.Getenv(from.Content)
 	case "func":
