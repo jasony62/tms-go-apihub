@@ -8,15 +8,15 @@ import (
 	"strings"
 
 	"github.com/jasony62/tms-go-apihub/hub"
+	"github.com/jasony62/tms-go-apihub/logger"
 	"github.com/jasony62/tms-go-apihub/util"
 	"github.com/xeipuuv/gojsonschema"
-	"go.uber.org/zap"
 )
 
 func schemaChecker(path string, schema *gojsonschema.Schema) int {
 	fileInfoList, err := ioutil.ReadDir(path)
 	if err != nil {
-		zap.S().Errorln(err.Error())
+		logger.LogS().Errorln(err.Error())
 		return 500
 	}
 
@@ -24,7 +24,7 @@ func schemaChecker(path string, schema *gojsonschema.Schema) int {
 		fileName := fmt.Sprintf("%s/%s", path, fileInfoList[i].Name())
 
 		if fileInfoList[i].IsDir() {
-			//	zap.S().Infoln("Schema检查Json子目录: ", fileName)
+			//	logger.LogS().Infoln("Schema检查Json子目录: ", fileName)
 			if schemaChecker(fileName, schema) != 200 {
 				return 500
 			}
@@ -36,23 +36,23 @@ func schemaChecker(path string, schema *gojsonschema.Schema) int {
 
 			if !json.Valid(jsonContent) {
 				str := "Json文件无效：" + fileName
-				zap.S().Errorln(str)
+				logger.LogS().Errorln(str)
 				panic(str)
 			}
 
 			documentLoader := gojsonschema.NewStringLoader(string(jsonContent))
 			result, err := schema.Validate(documentLoader)
 			if err != nil {
-				zap.S().Errorln(err.Error())
+				logger.LogS().Errorln(err.Error())
 				return 500
 			}
 
 			if !result.Valid() {
 				fmt.Printf("%s is not valid. see errors :		\r\n", fileName)
 				for _, desc := range result.Errors() {
-					zap.S().Errorln("- %s		", desc)
+					logger.LogS().Errorln("- %s		", desc)
 				}
-				zap.S().Errorln("")
+				logger.LogS().Errorln("")
 				return 500
 			}
 
@@ -79,11 +79,11 @@ func confValidator(stack *hub.Stack, params map[string]string) (interface{}, int
 func loadSchemaDefData(path string) (interface{}, int) {
 	fileInfoList, err := ioutil.ReadDir(path)
 	if err != nil {
-		zap.S().Errorln(err.Error())
+		logger.LogS().Errorln(err.Error())
 		return util.CreateTmsError(hub.TmsErrorApisId, err.Error(), nil), http.StatusInternalServerError
 	}
 
-	zap.S().Infoln("校验Schema文件...")
+	logger.LogS().Infoln("校验Schema文件...")
 	for i := range fileInfoList {
 		fileName := fmt.Sprintf("%s/%s", path, fileInfoList[i].Name())
 
@@ -107,7 +107,7 @@ func loadSchemaDefData(path string) (interface{}, int) {
 			}
 			if !json.Valid(schemaContent) {
 				str := "Schema文件无效：" + fileName
-				zap.S().Errorln(str)
+				logger.LogS().Errorln(str)
 				panic(str)
 			}
 

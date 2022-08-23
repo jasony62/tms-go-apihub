@@ -8,7 +8,7 @@ import (
 	"text/template"
 
 	"github.com/jasony62/tms-go-apihub/hub"
-	"go.uber.org/zap"
+	"github.com/jasony62/tms-go-apihub/logger"
 )
 
 func executeTemplate(source interface{}, rules interface{}) (*bytes.Buffer, error) {
@@ -26,13 +26,13 @@ func executeTemplate(source interface{}, rules interface{}) (*bytes.Buffer, erro
 
 	tmpl, err := template.New("json").Funcs(funcMapForTemplate).Parse(strTempl)
 	if err != nil {
-		zap.S().Infoln("get template result：", strTempl, byteTempl, " error: ", err)
+		logger.LogS().Infoln("get template result：", strTempl, byteTempl, " error: ", err)
 		return nil, err
 	}
 	buf := new(bytes.Buffer)
 	err = tmpl.Execute(buf, source)
 	if err != nil {
-		zap.S().Infoln("get template result：", err)
+		logger.LogS().Infoln("get template result：", err)
 		return nil, err
 	}
 	return buf, err
@@ -59,13 +59,13 @@ func rvemoveOutideQuote(s []byte) string {
 func queryFromHeap(stack *hub.Stack, name string) (string, error) {
 	tmpl, err := template.New("key").Funcs(funcMapForTemplate).Parse(name)
 	if err != nil {
-		zap.S().Errorln("NOK 创建并解析template失败:", err)
+		logger.LogS().Errorln("NOK 创建并解析template失败:", err)
 		return "", err
 	}
 	buf := new(bytes.Buffer)
 	err = tmpl.Execute(buf, stack.Heap)
 	if err != nil {
-		zap.S().Errorln("NOK execute template:", err, " name:", name, "heap:", stack.Heap)
+		logger.LogS().Errorln("NOK execute template:", err, " name:", name, "heap:", stack.Heap)
 		return "", err
 	}
 	return buf.String(), err
@@ -128,7 +128,7 @@ func GetParameterRawValue(stack *hub.Stack, private *hub.PrivateArray, from *hub
 		function := funcMap[from.Content]
 		if function == nil {
 			str := "获取function定义失败："
-			zap.S().Errorln(str)
+			logger.LogS().Errorln(str)
 			panic(str)
 		}
 		var params []string
@@ -139,7 +139,7 @@ func GetParameterRawValue(stack *hub.Stack, private *hub.PrivateArray, from *hub
 		value = function(params)
 	default:
 		str := "不支持的type " + from.From
-		zap.S().Errorln(str)
+		logger.LogS().Errorln(str)
 		panic(str)
 	}
 	return

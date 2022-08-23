@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/jasony62/tms-go-apihub/hub"
-	"go.uber.org/zap"
+	"github.com/jasony62/tms-go-apihub/logger"
 )
 
 // 应用的基本信息
@@ -38,7 +38,7 @@ var DefaultConfMap = confMap{
 }
 
 func loadConfigJsonData(paths []string) {
-	zap.S().Infoln("加载API def文件...")
+	logger.LogS().Infoln("加载API def文件...")
 	for i := hub.JSON_TYPE_PRIVATE; i <= hub.JSON_TYPE_SCHEDULE; i++ {
 		/*TODO add error return and panic if failure*/
 		loadJsonDefData(i, paths[i], "", true)
@@ -53,7 +53,7 @@ func loadConfigJsonData(paths []string) {
 func loadJsonDefData(jsonType int, path string, prefix string, includeDir bool) {
 	fileInfoList, err := ioutil.ReadDir(path)
 	if err != nil {
-		zap.S().Errorln(err.Error())
+		logger.LogS().Errorln(err.Error())
 		return
 	}
 
@@ -74,13 +74,13 @@ func loadJsonDefData(jsonType int, path string, prefix string, includeDir bool) 
 			byteFile, err := ioutil.ReadFile(fileName)
 			if err != nil {
 				str := "获得Json定义失败：" + err.Error()
-				zap.S().Errorln(str)
+				logger.LogS().Errorln(str)
 				panic(str)
 			}
 
 			if !json.Valid(byteFile) {
 				str := "Json文件无效：" + fileName
-				zap.S().Errorln(str)
+				logger.LogS().Errorln(str)
 				panic(str)
 			}
 
@@ -130,11 +130,11 @@ func loadJsonDefData(jsonType int, path string, prefix string, includeDir bool) 
 }
 
 func loadTemplateData(path string, prefix string) {
-	zap.S().Infoln("加载Template文件...")
+	logger.LogS().Infoln("加载Template文件...")
 	fileInfoList, err := ioutil.ReadDir(path)
 	if err != nil {
 		str := "invalid path " + path
-		zap.S().Errorln(str)
+		logger.LogS().Errorln(str)
 		return
 	}
 
@@ -151,7 +151,7 @@ func loadTemplateData(path string, prefix string) {
 			byteFile, err := ioutil.ReadFile(fileName)
 			if err != nil {
 				str := "获得tmpl定义失败：" + err.Error()
-				zap.S().Errorln(str)
+				logger.LogS().Errorln(str)
 				panic(str)
 			}
 
@@ -196,7 +196,7 @@ func FindResourceDef(id string) (value string, ok bool) {
 
 func FindRightDef(user string, name string, callType string) *hub.RightArray {
 	// check是否有权限
-	zap.S().Infoln("CheckRight user:", user, " callType:", callType, " name:", name)
+	logger.LogS().Infoln("CheckRight user:", user, " callType:", callType, " name:", name)
 	//map
 	switch callType {
 	case "httpapi":
@@ -229,7 +229,7 @@ func LoadMainFlow(path string) (interface{}, int) {
 	if len(path) > 0 {
 		DefaultConfMap.BasePath = path
 	}
-	zap.S().Infoln("Load main flow from %s\n", DefaultConfMap.BasePath)
+	logger.LogS().Infoln("Load main flow from %s\n", DefaultConfMap.BasePath)
 	loadJsonDefData(hub.JSON_TYPE_FLOW, DefaultConfMap.BasePath, "", false)
 	return nil, http.StatusOK
 }
