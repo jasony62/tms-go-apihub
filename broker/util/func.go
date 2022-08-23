@@ -18,6 +18,10 @@ func utcFunc(params []string) string {
 	return strconv.FormatInt(time.Now().Unix(), 10)
 }
 
+func utcmsFunc(params []string) string {
+	return strconv.FormatInt(time.Now().UnixNano()/int64(time.Millisecond), 10)
+}
+
 func utcTemplate(args ...interface{}) string {
 	return strconv.FormatInt(time.Now().Unix(), 10)
 }
@@ -48,8 +52,9 @@ func md5Func(params []string) string {
 }
 
 var funcMap map[string]hub.FuncHandler = map[string]hub.FuncHandler{
-	"utc": utcFunc,
-	"md5": md5Func,
+	"utc":    utcFunc,
+	"utc_ms": utcmsFunc,
+	"md5":    md5Func,
 }
 
 var funcMapForTemplate map[string](interface{}) = map[string](interface{}){
