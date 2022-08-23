@@ -5,8 +5,8 @@ import (
 	"strconv"
 
 	"github.com/jasony62/tms-go-apihub/hub"
+	"github.com/jasony62/tms-go-apihub/logger"
 	"github.com/jasony62/tms-go-apihub/util"
-	"go.uber.org/zap"
 )
 
 type concurrentLoopIn struct {
@@ -78,7 +78,7 @@ func handleSwitchTask(stack *hub.Stack, task *hub.ScheduleApiDef) (interface{}, 
 
 	if len(key) == 0 {
 		err := "invalid switch key"
-		zap.S().Errorln(stack.BaseString, err)
+		logger.LogS().Errorln(stack.BaseString, err)
 		return util.CreateTmsError(hub.TmsErrorCoreId, err, nil), http.StatusInternalServerError
 	}
 
@@ -132,7 +132,7 @@ func triggerConcurrentLoop(stack *hub.Stack, task *hub.ScheduleApiDef, loopLengt
 	for result := range out {
 		loopResult[result.index] = result.result
 		counter--
-		zap.S().Infoln(stack.BaseString, "loop并行处理结束：", counter, " result:", result)
+		logger.LogS().Infoln(stack.BaseString, "loop并行处理结束：", counter, " result:", result)
 		if i < loopLength {
 			loop[task.Control.ResultKey] = i
 			tmpStack := copyScheduleStack(stack, task)
@@ -150,7 +150,7 @@ func handleLoopTask(stack *hub.Stack, task *hub.ScheduleApiDef) (interface{}, in
 
 	if len(keyStr) == 0 {
 		err := "invalid loop key"
-		zap.S().Errorln(stack.BaseString, err)
+		logger.LogS().Errorln(stack.BaseString, err)
 		return util.CreateTmsError(hub.TmsErrorCoreId, err, nil), http.StatusInternalServerError
 	}
 	loopLength, _ := strconv.Atoi(keyStr)
@@ -186,23 +186,23 @@ func handleOneScheduleApi(stack *hub.Stack, task *hub.ScheduleApiDef) (result in
 	if len(task.Type) > 0 {
 		switch task.Type {
 		case "switch":
-			zap.S().Infoln(stack.BaseString, "运行 switch name：", task.Control.Name)
+			logger.LogS().Infoln(stack.BaseString, "运行 switch name：", task.Control.Name)
 			if task.Control.Cases != nil {
 				return handleSwitchTask(stack, task)
 			} else {
 				err := "No switch cases"
-				zap.S().Errorln(stack.BaseString, err)
+				logger.LogS().Errorln(stack.BaseString, err)
 				return util.CreateTmsError(hub.TmsErrorCoreId, err, nil), http.StatusInternalServerError
 			}
 		case hub.HeapLoopName:
-			zap.S().Infoln(stack.BaseString, "运行 loop name", task.Control.Name)
+			logger.LogS().Infoln(stack.BaseString, "运行 loop name", task.Control.Name)
 			return handleLoopTask(stack, task)
 		case "api":
-			zap.S().Infoln(stack.BaseString, "运行 api name", task.Api.Name)
+			logger.LogS().Infoln(stack.BaseString, "运行 api name", task.Api.Name)
 			result, status = handleApiTask(stack, task)
 		default:
 			err := "don't support type " + task.Type
-			zap.S().Errorln(stack.BaseString, err)
+			logger.LogS().Errorln(stack.BaseString, err)
 			return util.CreateTmsError(hub.TmsErrorCoreId, err, nil), http.StatusInternalServerError
 		}
 	}
@@ -211,7 +211,7 @@ func handleOneScheduleApi(stack *hub.Stack, task *hub.ScheduleApiDef) (result in
 
 func concurrentScheWorker(stack *hub.Stack, apis chan concurrentScheIn, out chan concurrentScheOut) {
 	for task := range apis {
-		zap.S().Infoln(stack.BaseString, "并行运行 type：", task.task.Type)
+		logger.LogS().Infoln(stack.BaseString, "并行运行 type：", task.task.Type)
 		result, _ := handleOneScheduleApi(stack, task.task)
 		out <- concurrentScheOut{task: task.task, result: result}
 	}
@@ -230,7 +230,7 @@ func waitConcurrentScheResult(stack *hub.Stack, out chan concurrentScheOut, coun
 		default:
 			key = result.task.Control.ResultKey
 		}
-		zap.S().Infoln(stack.BaseString, "并行处理结束：", counter, " result:", result)
+		logger.LogS().Infoln(stack.BaseString, "并行处理结束：", counter, " result:", result)
 		if len(key) > 0 {
 			results[key] = result.result
 			lastKey = key
@@ -262,15 +262,15 @@ func handleTasks(stack *hub.Stack, apis *[]hub.ScheduleApiDef, concurrentNum int
 	}
 	if apis == nil {
 		str := "apis nil"
-		zap.S().Errorln(stack.BaseString, str)
+		logger.LogS().Errorln(stack.BaseString, str)
 		return util.CreateTmsError(hub.TmsErrorCoreId, str, nil), http.StatusInternalServerError
 	}
-	zap.S().Infoln(stack.BaseString, "apis lens：", len(*apis))
+	logger.LogS().Infoln(stack.BaseString, "apis lens：", len(*apis))
 	for index := range *apis {
 		task := &(*apis)[index]
 		if concurrentNum > 1 {
 			if task.Mode == "concurrent" {
-				zap.S().Infoln(stack.BaseString, "准备并行运行 type：", task.Type, ",concurrentNum:", concurrentNum)
+				logger.LogS().Infoln(stack.BaseString, "准备并行运行 type：", task.Type, ",concurrentNum:", concurrentNum)
 				in <- concurrentScheIn{task: task}
 				counter++
 				continue
@@ -283,10 +283,10 @@ func handleTasks(stack *hub.Stack, apis *[]hub.ScheduleApiDef, concurrentNum int
 			}
 		}
 		if task.Mode == "background" {
-			zap.S().Infoln(stack.BaseString, "后台 type：", task.Type)
+			logger.LogS().Infoln(stack.BaseString, "后台 type：", task.Type)
 			go handleOneScheduleApi(stack, task)
 		} else {
-			zap.S().Infoln(stack.BaseString, "串行 type：", task.Type, ", concurrentNum:", concurrentNum)
+			logger.LogS().Infoln(stack.BaseString, "串行 type：", task.Type, ", concurrentNum:", concurrentNum)
 			result, status = handleOneScheduleApi(stack, task)
 		}
 	}
@@ -302,7 +302,7 @@ func runSchedule(stack *hub.Stack, name string, private string) (interface{}, in
 	scheduleDef, ok := util.FindScheduleDef(name)
 	if !ok || scheduleDef == nil || scheduleDef.Steps == nil {
 		str := "获得Schedule定义失败：" + name
-		zap.S().Errorln(stack.BaseString, str)
+		logger.LogS().Errorln(stack.BaseString, str)
 		return util.CreateTmsError(hub.TmsErrorCoreId, str, nil), http.StatusInternalServerError
 	}
 	stack.Heap[hub.HeapLoopName] = make(map[string]int)
@@ -314,7 +314,7 @@ func runScheduleApi(stack *hub.Stack, params map[string]string) (interface{}, in
 	name, OK := params["name"]
 	if !OK {
 		str := "缺少flow名称"
-		zap.S().Errorln(stack.BaseString, str)
+		logger.LogS().Errorln(stack.BaseString, str)
 		return util.CreateTmsError(hub.TmsErrorCoreId, str, nil), http.StatusInternalServerError
 	}
 	private := params["private"]

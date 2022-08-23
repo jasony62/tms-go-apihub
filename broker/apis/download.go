@@ -1,4 +1,4 @@
-package util
+package apis
 
 import (
 	"bufio"
@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"time"
 
-	"go.uber.org/zap"
+	"github.com/jasony62/tms-go-apihub/logger"
 )
 
 const (
@@ -20,27 +20,27 @@ const (
 )
 
 func downloadFile(fileUrl string) (string, error) {
-	zap.S().Infoln("downloadFile url: ", fileUrl)
+	logger.LogS().Infoln("downloadFile url: ", fileUrl)
 	url, err := url.ParseRequestURI(fileUrl)
 	if err != nil {
-		zap.S().Errorln("downloadFile url invalid: ", err)
+		logger.LogS().Errorln("downloadFile url invalid: ", err)
 		return "", err
 	}
 
 	filename := path.Base(url.Path)
-	zap.S().Infoln("downloadFile name: ", filename)
+	logger.LogS().Infoln("downloadFile name: ", filename)
 
 	client := http.DefaultClient
 	client.Timeout = time.Second * 600
 
 	resp, err := client.Get(fileUrl)
 	if err != nil {
-		zap.S().Errorln(err.Error())
+		logger.LogS().Errorln(err.Error())
 		return "", err
 	}
 
 	if resp.ContentLength <= 0 {
-		zap.S().Errorln("downloadFile: server response length error")
+		logger.LogS().Errorln("downloadFile: server response length error")
 		return "", errors.New("downloadFile: server response length error")
 	}
 
@@ -59,7 +59,7 @@ func downloadFile(fileUrl string) (string, error) {
 		select {
 		case <-ticker.C:
 			speed := written - lastWtn
-			zap.S().Infoln("[downloadFile] Speed %s / %s \n", bytesToSize(speed), spaceTime.String())
+			logger.LogS().Infoln("[downloadFile] Speed %s / %s \n", bytesToSize(speed), spaceTime.String())
 			if written-lastWtn == 0 {
 				ticker.Stop()
 				stop = true
@@ -72,18 +72,18 @@ func downloadFile(fileUrl string) (string, error) {
 		}
 	}
 
-	zap.S().Infoln("downloadFile OK: ", filename)
+	logger.LogS().Infoln("downloadFile OK: ", filename)
 	return filename, nil
 }
 
 //下载远端url文件
 func copyFileContent(raw io.ReadCloser, filename string, written *int) error {
-	zap.S().Infoln("Download url file starting!")
+	logger.LogS().Infoln("Download url file starting!")
 	reader := bufio.NewReaderSize(raw, FILE_READ_MAX_SIZE)
 
 	file, err := os.Create(filename)
 	if err != nil {
-		zap.S().Errorln("copyFileContent create file error:", err)
+		logger.LogS().Errorln("copyFileContent create file error:", err)
 		return err
 	}
 	writer := bufio.NewWriter(file)
@@ -115,7 +115,7 @@ func copyFileContent(raw io.ReadCloser, filename string, written *int) error {
 	}
 
 	if err != nil {
-		zap.S().Errorln("copyFileContent read or write error:", err)
+		logger.LogS().Errorln("copyFileContent read or write error:", err)
 		return err
 	}
 
@@ -137,7 +137,7 @@ func DownloadConf(confUrl string, confStoreFolder string, confUnzipPwd string) b
 	//从远端下载conf
 	_, err := downloadFile(confUrl)
 	if err != nil {
-		zap.S().Errorln("Download conf file err: ", err)
+		logger.LogS().Errorln("Download conf file err: ", err)
 		return false
 	}
 

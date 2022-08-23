@@ -11,9 +11,9 @@ import (
 
 	"github.com/jasony62/tms-go-apihub/core"
 	"github.com/jasony62/tms-go-apihub/hub"
+	"github.com/jasony62/tms-go-apihub/logger"
 	"github.com/jasony62/tms-go-apihub/util"
 	"github.com/valyala/fasthttp"
-	"go.uber.org/zap"
 
 	jsoniter "github.com/json-iterator/go"
 )
@@ -24,7 +24,7 @@ var jsonEx = jsoniter.Config{
 }.Froze()
 
 func preHttpapis(stack *hub.Stack, name string) {
-	//	zap.S().Infoln("___pre HTTPAPI:", stack.BaseString, " Name:", name)
+	//	logger.LogS().Infoln("___pre HTTPAPI:", stack.BaseString, " Name:", name)
 }
 
 func postHttpapis(stack *hub.Stack, name string, result string, code int, duration float64) {
@@ -46,14 +46,14 @@ func postHttpapis(stack *hub.Stack, name string, result string, code int, durati
 	if code == http.StatusOK {
 		stats["id"] = "0"
 		stats["msg"] = "ok"
-		zap.S().Infoln("___post HTTPAPI OK:", stack.BaseString, " name：", name, ", result:", result, " code:", code, " stats:", stats)
+		logger.LogS().Infoln("___post HTTPAPI OK:", stack.BaseString, " name：", name, ", result:", result, " code:", code, " stats:", stats)
 		params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "_HTTPOK"}}}
 		core.ApiRun(stack, &hub.ApiDef{Name: "HTTPAPI_POST_OK", Command: "flowApi", Args: &params}, "", true)
 	} else {
 		/*TODO real value*/
 		stats["id"] = strconv.FormatInt(int64(code), 10)
 		stats["msg"] = result
-		zap.S().Errorln("!!!!post HTTPAPI NOK:", stack.BaseString, " name：", name, ", result:", result, " code:", code, " stats:", stats)
+		logger.LogS().Errorln("!!!!post HTTPAPI NOK:", stack.BaseString, " name：", name, ", result:", result, " code:", code, " stats:", stats)
 		params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "_HTTPNOK"}}}
 		core.ApiRun(stack, &hub.ApiDef{Name: "HTTPAPI_POST_NOK", Command: "flowApi", Args: &params}, "", true)
 	}
@@ -95,7 +95,7 @@ func createNewRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub
 			}
 		} else {
 			str := "无有效url：" + stack.BaseString
-			zap.S().Errorln(str)
+			logger.LogS().Errorln(str)
 			return nil, http.StatusForbidden, errors.New(str)
 		}
 	} else {
@@ -132,25 +132,25 @@ func createNewRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub
 							} else {
 								if len(outBody) == 0 {
 									if value == "null" {
-										zap.S().Errorln("获得body失败：", stack.BaseString)
+										logger.LogS().Errorln("获得body失败：", stack.BaseString)
 										panic("获得body失败：")
 									} else {
 										outBody = value
-										zap.S().Infoln("Set body :\r\n", outBody, "\r\n", len(outBody))
+										logger.LogS().Infoln("Set body :\r\n", outBody, "\r\n", len(outBody))
 									}
 								} else {
-									zap.S().Infoln("Double content body :\r\n", outBody, "\r\nVS\r\n", value)
+									logger.LogS().Infoln("Double content body :\r\n", outBody, "\r\nVS\r\n", value)
 								}
 							}
 						} else {
-							zap.S().Infoln("Refuse to set body :", HttpApi.RequestContentType, "VS\r\n", value)
+							logger.LogS().Infoln("Refuse to set body :", HttpApi.RequestContentType, "VS\r\n", value)
 						}
 					case hub.HeapVarsName:
 					default:
-						zap.S().Infoln("Invalid in:", param.In, "名字", param.Name, "值", value)
+						logger.LogS().Infoln("Invalid in:", param.In, "名字", param.Name, "值", value)
 					}
 					vars[param.Name] = value
-					//zap.S().Infoln("设置入参，位置", param.In, "名字", param.Name, "值", value)
+					//logger.LogS().Infoln("设置入参，位置", param.In, "名字", param.Name, "值", value)
 				}
 			}
 			outReqURL.RawQuery = q.Encode()
@@ -196,7 +196,7 @@ func sendRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Priv
 		duration = time.Since(t).Seconds()
 	}
 	if err != nil {
-		zap.S().Errorln("ERR Connection error: ", err)
+		logger.LogS().Errorln("ERR Connection error: ", err)
 		if !internal {
 			postHttpapis(stack, HttpApi.Id, err.Error(), 500, duration)
 		}
@@ -207,7 +207,7 @@ func sendRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Priv
 	code = resp.StatusCode()
 	if code != fasthttp.StatusOK {
 		str := "错误JSON: " + string(returnBody)
-		zap.S().Errorln(str)
+		logger.LogS().Errorln(str)
 		if !internal {
 			postHttpapis(stack, HttpApi.Id, string(returnBody), code, duration)
 		}
@@ -226,7 +226,7 @@ func sendRequest(stack *hub.Stack, HttpApi *hub.HttpApiDef, privateDef *hub.Priv
 		defer delete(stack.Heap, hub.HeapResultName)
 		expires, ok := handleExpireTime(stack, HttpApi, resp)
 		if !ok {
-			zap.S().Warnln("没有查询到过期时间")
+			logger.LogS().Warnln("没有查询到过期时间")
 		} else {
 			HttpApi.Cache.Expires = expires
 			HttpApi.Cache.Resp = jsonInRspBody
@@ -267,7 +267,7 @@ func handleHeaderExpireTime(HttpApi *hub.HttpApiDef, resp *fasthttp.Response) (t
 		key = strings.TrimPrefix(key, "Set-Cookie.")
 		//判断Set-Cookie中是否含有Expires 的header
 		cookie := resp.Header.Peek("Set-Cookie")
-		zap.S().Infoln("Header中Set-Cookie: ", cookie)
+		logger.LogS().Infoln("Header中Set-Cookie: ", cookie)
 		if len(cookie) > 0 {
 			expiresIndex := strings.Index(string(cookie), key) //"expires="
 			if expiresIndex >= 0 {
@@ -328,18 +328,18 @@ func parseExpireTime(value string, format string) (time.Time, error) {
 	if strings.EqualFold(format, "second") {
 		seconds, err := strconv.Atoi(value)
 		if err != nil {
-			zap.S().Errorln("解析过期时间失败, err: ", err)
+			logger.LogS().Errorln("解析过期时间失败, err: ", err)
 			return time.Time{}, err
 		}
 		exptime = time.Now().Add(time.Second * time.Duration(seconds))
 	} else {
 		exptime, err = time.Parse(format, value)
 		if err != nil {
-			zap.S().Errorln("解析过期时间失败, err: ", err)
+			logger.LogS().Errorln("解析过期时间失败, err: ", err)
 			return time.Time{}, err
 		}
 	}
-	zap.S().Infoln("解析后过期时间: ", exptime)
+	logger.LogS().Infoln("解析后过期时间: ", exptime)
 	return exptime.Local(), nil
 }
 
@@ -369,7 +369,7 @@ func run(stack *hub.Stack, name string, private string, internal bool) (jsonOutR
 
 	if !ok || HttpApi == nil {
 		str := "获得API定义失败：" + name
-		zap.S().Errorln(stack.BaseString, str)
+		logger.LogS().Errorln(stack.BaseString, str)
 		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusForbidden
 	}
 
@@ -381,7 +381,7 @@ func run(stack *hub.Stack, name string, private string, internal bool) (jsonOutR
 		privateDef, ok = util.FindPrivateDef(private)
 		if !ok || privateDef == nil {
 			str := "获得private定义失败：" + private
-			zap.S().Errorln(stack.BaseString, str)
+			logger.LogS().Errorln(stack.BaseString, str)
 			return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusForbidden
 		}
 	}
@@ -392,14 +392,14 @@ func run(stack *hub.Stack, name string, private string, internal bool) (jsonOutR
 			HttpApi.Cache.Locker.Lock()
 
 			if jsonOutRspBody = getCacheContent(HttpApi); jsonOutRspBody == nil {
-				zap.S().Infoln("获取缓存Cache ... ...")
+				logger.LogS().Infoln("获取缓存Cache ... ...")
 				jsonOutRspBody, code, err = sendRequest(stack, HttpApi, privateDef, internal)
 			} else {
-				zap.S().Infoln("Cache缓存有效，直接回应")
+				logger.LogS().Infoln("Cache缓存有效，直接回应")
 				code = fasthttp.StatusOK
 			}
 		} else {
-			zap.S().Infoln("Cache缓存有效，直接回应")
+			logger.LogS().Infoln("Cache缓存有效，直接回应")
 			code = fasthttp.StatusOK
 		}
 	} else { //不支持缓存，直接请求
@@ -407,10 +407,10 @@ func run(stack *hub.Stack, name string, private string, internal bool) (jsonOutR
 	}
 
 	if code != fasthttp.StatusOK {
-		zap.S().Errorln(stack.BaseString, "处理", HttpApi.Url, "失败.", "code：", code)
+		logger.LogS().Errorln(stack.BaseString, "处理", HttpApi.Url, "失败.", "code：", code)
 		return util.CreateTmsError(hub.TmsErrorApisId, err.Error(), nil), code
 	}
-	zap.S().Infoln(stack.BaseString, "处理", HttpApi.Url, "成功.", "返回结果：", jsonOutRspBody)
+	logger.LogS().Infoln(stack.BaseString, "处理", HttpApi.Url, "成功.")
 	return jsonOutRspBody, fasthttp.StatusOK
 }
 
@@ -418,7 +418,7 @@ func runHttpApi(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	name, OK := params["name"]
 	if !OK {
 		str := "缺少api名称"
-		zap.S().Errorln(stack.BaseString, str)
+		logger.LogS().Errorln(stack.BaseString, str)
 		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusForbidden
 	}
 
@@ -433,14 +433,14 @@ func httpResponse(stack *hub.Stack, params map[string]string) (interface{}, int)
 	name, OK := params["type"]
 	if !OK {
 		str := "缺少api名称"
-		zap.S().Errorln(stack.BaseString, str)
+		logger.LogS().Errorln(stack.BaseString, str)
 		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusBadRequest
 	}
 
 	key, OK := params["key"]
 	if !OK {
 		str := "缺少api名称"
-		zap.S().Errorln(stack.BaseString, str)
+		logger.LogS().Errorln(stack.BaseString, str)
 		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusBadRequest
 	}
 
@@ -452,7 +452,7 @@ func httpResponse(stack *hub.Stack, params map[string]string) (interface{}, int)
 	result := stack.Heap[key]
 	if result == nil {
 		str := "缺少api名称"
-		zap.S().Errorln(stack.BaseString, str)
+		logger.LogS().Errorln(stack.BaseString, str)
 		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusBadRequest
 	} else {
 		switch name {

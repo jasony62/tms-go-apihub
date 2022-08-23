@@ -4,12 +4,12 @@ import (
 	"time"
 
 	"github.com/jasony62/tms-go-apihub/hub"
+	"github.com/jasony62/tms-go-apihub/logger"
 	"github.com/jasony62/tms-go-apihub/util"
-	"go.uber.org/zap"
 )
 
 func init() {
-	zap.S().Infoln("Core register apis\n")
+	logger.LogS().Infoln("Core register apis\n")
 	RegisterApis(map[string]hub.ApiHandler{"flowApi": runFlowApi,
 		"scheduleApi": runScheduleApi,
 	})

@@ -6,10 +6,10 @@ import (
 	"strconv"
 
 	"github.com/jasony62/tms-go-apihub/hub"
+	"github.com/jasony62/tms-go-apihub/logger"
 	"github.com/jasony62/tms-go-apihub/util"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"go.uber.org/zap"
 )
 
 var httpInPromCounter *prometheus.CounterVec
@@ -18,7 +18,7 @@ var httpInDurationPromHistogram *prometheus.HistogramVec
 var httpOutDurationPromHistogram *prometheus.HistogramVec
 
 func promStart(stack *hub.Stack, params map[string]string) (interface{}, int) {
-	zap.S().Infoln("promStart!")
+	logger.LogS().Infoln("promStart!")
 	host := params["host"]
 	port := params["port"]
 
@@ -28,7 +28,7 @@ func promStart(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	if len(port) == 0 {
 		port = "8000"
 	}
-	zap.S().Infoln("promStart: host: ", host, " port:", port)
+	logger.LogS().Infoln("promStart: host: ", host, " port:", port)
 
 	promStartRun(fmt.Sprintf("%s:%s", host, port))
 	return nil, http.StatusOK
@@ -46,9 +46,9 @@ func promStartRun(address string) {
 		},
 	))
 	go func() {
-		zap.S().Infoln("Listen and Serve: ", address)
+		logger.LogS().Infoln("Listen and Serve: ", address)
 		if err := http.ListenAndServe(address, nil); err != nil {
-			zap.S().Errorln("Error in ListenAndServe: %v", err)
+			logger.LogS().Errorln("Error in ListenAndServe: %v", err)
 		}
 	}()
 }
@@ -64,12 +64,12 @@ func getPromLabels(params map[string]string) map[string]string {
 func promHttpCounterInc(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	promLabels := getPromLabels(params)
 
-	zap.S().Infoln("promLabels: ", promLabels)
+	logger.LogS().Infoln("promLabels: ", promLabels)
 	val := params["duration"]
 	duration, err := strconv.ParseFloat(val, 64)
 	if err != nil {
 		str := "解析http out duration失败, err: " + err.Error()
-		zap.S().Errorln(stack.BaseString, str)
+		logger.LogS().Errorln(stack.BaseString, str)
 		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusBadRequest
 	}
 	duration = duration * 10
@@ -81,7 +81,7 @@ func promHttpCounterInc(stack *hub.Stack, params map[string]string) (interface{}
 		httpOutPromCounter.With(promLabels).Inc()
 	} else {
 		str := "httpInOut参数配置错误！"
-		zap.S().Errorln(stack.BaseString, str)
+		logger.LogS().Errorln(stack.BaseString, str)
 		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusBadRequest
 	}
 	return nil, http.StatusOK
