@@ -30,6 +30,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/rbretecher/go-postman-collection"
@@ -73,7 +74,7 @@ type Privates struct {
 // 左：postman js关键字
 // 右：apihub内部函数名称
 var preEventFuncReferenceList = map[string]string{
-	"getTime":      "utc",
+	"getTime":      "utc_ms",
 	"CryptoJS.MD5": "md5",
 }
 
@@ -98,6 +99,9 @@ var apiHubHttpPrivates ApiHubHttpPrivates
 // 导出json路径
 var apiHubJsonPath string
 var apiHubPrivatesJsonPath string
+
+// Event中MD5涉及的变量内容组成的字符串数组
+var setEnvironmentVariableMD5Array []string
 
 // 初始化
 func init() {
@@ -312,7 +316,9 @@ func parseRequestBody(postmanRequestBody *postman.Body) {
 			backContentIndex := 0
 			contentStringFunc := ""
 			backContentIndexFunc := 0
-			tempbodyjson := make(map[string]string)
+			tempbodyjson := make(map[string]string) // 组建body的json对象
+			tempRequestRawArray := *new([]string)   // 暂存MD5需要对比的全部body元素
+			// tempRequestRawArrayMap := make(map[string]string)
 			nameList := ""
 			for i := 0; i < len(requestBody.Raw); i++ {
 				nameString, backNameIndex = getStringBetweenDoubleQuotationMarks(requestBody.Raw[i:])
@@ -331,6 +337,7 @@ func parseRequestBody(postmanRequestBody *postman.Body) {
 						// "":""
 						if backContentIndex != -1 {
 							tempbodyjson[nameString] = contentString
+							tempRequestRawArray = append(tempRequestRawArray, contentString)
 							/* vars bad Code
 							args := Args{In: "vars", Name: nameString, Value: Value{From: "private", Content: nameString}}
 							apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
@@ -340,14 +347,41 @@ func parseRequestBody(postmanRequestBody *postman.Body) {
 							i = backNameIndex + backContentIndex + i + tempstringflag
 						} else if backContentIndexFunc != -1 { // "":{{}} 全局变量或函数
 							tempbodyjson[nameString] = "{{" + ".vars." + contentStringFunc + "}}"
+							tempRequestRawArray = append(tempRequestRawArray, contentStringFunc)
 							if coversionFuncMap[contentStringFunc] == "md5" {
+
+								for a := range setEnvironmentVariableMD5Array {
+									for n, v := range tempbodyjson {
+										tempstring, tempindex := getStringBetweenSpecifySymbols(v, "vars.", "}}")
+										if tempindex != -1 { //如果是func类型
+											if (setEnvironmentVariableMD5Array[a] == tempstring) && (setEnvironmentVariableMD5Array[a] != contentStringFunc) {
+												nameList = nameList + " " + tempstring
+												break
+											}
+										} else {
+											if (setEnvironmentVariableMD5Array[a] == v) && (v != "") {
+												args := Args{In: "vars", Name: n, Value: Value{From: "literal", Content: v}}
+												apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+												nameList = nameList + " " + n
+												break
+											}
+										}
+									}
+								}
+								tempLocalMD5Key, _ := Arrcmp(tempRequestRawArray, setEnvironmentVariableMD5Array)
+								for x := range tempLocalMD5Key {
+									args := Args{In: "vars", Name: ("key" + strconv.Itoa(x)), Value: Value{From: "literal", Content: tempLocalMD5Key[x]}}
+									apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+									nameList = nameList + " " + "key" + strconv.Itoa(x)
+								}
+
 								nameList = strings.TrimSpace(nameList)
 								args := Args{In: "vars", Name: nameString, Value: Value{From: "func", Content: coversionFuncMap[contentStringFunc], Args: nameList}}
 								apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
 							} else {
-								args := Args{In: "vars", Name: nameString, Value: Value{From: "func", Content: coversionFuncMap[contentStringFunc]}}
+								args := Args{In: "vars", Name: contentStringFunc, Value: Value{From: "func", Content: coversionFuncMap[contentStringFunc]}}
 								apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
-								nameList = nameList + " " + nameString
+								// nameList = nameList + " " + coversionFuncMap[contentStringFunc]
 							}
 							// _ = contentString
 							i = backNameIndex + backContentIndex + i + tempstringflag
@@ -392,6 +426,7 @@ func getPostmanEventFunc(postmanItem *postman.Items, preFuncKeyWord []string) {
 							if index != -1 && keyWordString != "" {
 								coversionFuncMap[keyWordString] = preEventFuncReferenceList[preFuncKeyWord[k]]
 							}
+							getSetEnvironmentVariableMD5(postmanItem, postmanItem.Events[i].Script.Exec[j], keyWordString)
 							// klog.Infoln("__postmanItem.Events[i].Script.Exec[j]", keyWordString)
 						default:
 						}
@@ -403,6 +438,70 @@ func getPostmanEventFunc(postmanItem *postman.Items, preFuncKeyWord []string) {
 			return
 		}
 	}
+}
+
+func getSetEnvironmentVariableMD5(postmanItem *postman.Items, postmanEventScriptExec string, keyWordString string) {
+	if postmanItem == nil {
+		return
+	}
+
+	tempEnvironmentVariable, _ := getStringBetweenSpecifySymbols(postmanEventScriptExec, "(", ")")
+	tempEnvironmentVariable = strings.TrimSpace(tempEnvironmentVariable)
+	setEnvironmentVariableMD5 := getStringFromEvent(postmanItem, tempEnvironmentVariable)
+
+	i := 0
+	setEnvironmentVariableMD5Array = *new([]string)
+	if len(setEnvironmentVariableMD5) > 0 {
+		for i = 0; i < len(setEnvironmentVariableMD5); i++ {
+			if i < 3 {
+				tempString, tempIndex := getStringBetweenDoubleQuotationMarks(setEnvironmentVariableMD5[i:])
+				if tempIndex != -1 {
+					setEnvironmentVariableMD5Array = append(setEnvironmentVariableMD5Array, tempString)
+					i = i + tempIndex
+				}
+			} else {
+				tempString, tempIndex := getStringBetweenSpecifySymbols(setEnvironmentVariableMD5[i:], "+", "+")
+				tempString2, tempIndex2 := getStringBetweenSpecifySymbols(setEnvironmentVariableMD5[i:], "\"", "\"")
+				if tempIndex != -1 {
+					tempString1, tempIndex1 := getStringBetweenDoubleQuotationMarks(tempString)
+					if tempIndex1 != -1 {
+						setEnvironmentVariableMD5Array = append(setEnvironmentVariableMD5Array, tempString1)
+						i = i + tempIndex1
+						if tempString1 == "" {
+							i = i + 4
+						}
+					} else {
+						tempString = strings.TrimSpace(tempString)
+						setEnvironmentVariableMD5Array = append(setEnvironmentVariableMD5Array, tempString)
+						i = i + len(tempString)
+					}
+				} else if tempIndex2 != -1 {
+					setEnvironmentVariableMD5Array = append(setEnvironmentVariableMD5Array, tempString2)
+					i = i + tempIndex2
+				}
+			}
+
+		}
+	}
+
+}
+
+func getStringFromEvent(postmanItem *postman.Items, keyWordString string) string {
+	if postmanItem == nil {
+		return ""
+	}
+	for i := range postmanItem.Events { // 通常Events就一个，但是个数组形式，所以使用遍历
+		if postmanItem.Events[i].Script.Type == "text/javascript" {
+			for j := range postmanItem.Events[i].Script.Exec { // Exec中js命令一行是一个数组元素
+				tempIndex := strings.Index(postmanItem.Events[i].Script.Exec[j], keyWordString)
+				if tempIndex != -1 {
+					backString := postmanItem.Events[i].Script.Exec[j][tempIndex+len(keyWordString):]
+					return backString
+				}
+			}
+		}
+	}
+	return ""
 }
 
 func getStringBetweenDoubleQuotationMarks(inputStrings string) (outputString string, outputIndex int) {
@@ -501,3 +600,42 @@ func generateApiHubPrivatesJson(postmanBytes *postman.Collection, privateName st
 // 	}
 // 	return result2InfoName
 // }
+
+func Arrcmp(src []string, dest []string) ([]string, []string) {
+	msrc := make(map[string]byte) //按源数组建索引
+	mall := make(map[string]byte) //源+目所有元素建索引
+
+	var set []string //交集
+
+	//1.源数组建立map
+	for _, v := range src {
+		msrc[v] = 0
+		mall[v] = 0
+	}
+	//2.目数组中，存不进去，即重复元素，所有存不进去的集合就是并集
+	for _, v := range dest {
+		l := len(mall)
+		mall[v] = 1
+		if l != len(mall) { //长度变化，即可以存
+			l = len(mall)
+		} else { //存不了，进并集
+			set = append(set, v)
+		}
+	}
+	//3.遍历交集，在并集中找，找到就从并集中删，删完后就是补集（即并-交=所有变化的元素）
+	for _, v := range set {
+		delete(mall, v)
+	}
+	//4.此时，mall是补集，所有元素去源中找，找到就是删除的，找不到的必定能在目数组中找到，即新加的
+	var added, deleted []string
+	for v, _ := range mall {
+		_, exist := msrc[v]
+		if exist {
+			deleted = append(deleted, v)
+		} else {
+			added = append(added, v)
+		}
+	}
+
+	return added, deleted
+}
