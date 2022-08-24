@@ -581,32 +581,10 @@ func generateApiHubPrivatesJson(postmanBytes *postman.Collection, privateName st
 	}
 }
 
-// // name中文转拼音，解决apihub不识别中文文件名问题。转换仅支持纯中文，若纯英文则默认不修改
-// func converCNtoPinyin(postmanBytesInfoName string) string {
-// 	var infoName []string = []string{}
-// 	infoNameTemp := pinyin.LazyConvert(postmanBytesInfoName, nil)
-// 	for infoNameTemp, v := range infoNameTemp {
-// 		if infoNameTemp == 0 {
-// 			infoName = append(infoName, v)
-// 		} else {
-// 			infoName = append(infoName, ",")
-// 			infoName = append(infoName, v)
-// 		}
-// 	}
-// 	resultInfoName := strings.Trim(fmt.Sprint(infoName), "[]")
-// 	result2InfoName := strings.Replace(resultInfoName, " , ", "", -1)
-// 	if result2InfoName == "" {
-// 		result2InfoName = postmanBytesInfoName
-// 	}
-// 	return result2InfoName
-// }
-
 func Arrcmp(src []string, dest []string) ([]string, []string) {
 	msrc := make(map[string]byte) //按源数组建索引
 	mall := make(map[string]byte) //源+目所有元素建索引
-
-	var set []string //交集
-
+	var set []string              //交集
 	//1.源数组建立map
 	for _, v := range src {
 		msrc[v] = 0
@@ -618,6 +596,7 @@ func Arrcmp(src []string, dest []string) ([]string, []string) {
 		mall[v] = 1
 		if l != len(mall) { //长度变化，即可以存
 			l = len(mall)
+			_ = l
 		} else { //存不了，进并集
 			set = append(set, v)
 		}

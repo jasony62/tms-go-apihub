@@ -29,3 +29,8 @@ postman/postman_collections/浙江信产.postman_collection.json
 test/http-server/http-server
 postman/test.sh
 broker/tms-go-apihub
+example/httpapis/信元_5G新增手机终端画像_首注册模型（数据自注册-Android）接口.json
+example/httpapis/天津_查询余额.json
+example/httpapis/天津_发送接口.json
+
+
