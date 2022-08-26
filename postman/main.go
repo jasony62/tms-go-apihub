@@ -607,7 +607,8 @@ func Arrcmp(src []string, dest []string) ([]string, []string) {
 	}
 	//4.此时，mall是补集，所有元素去源中找，找到就是删除的，找不到的必定能在目数组中找到，即新加的
 	var added, deleted []string
-	for v, _ := range mall {
+	for v, m := range mall {
+		_ = m
 		_, exist := msrc[v]
 		if exist {
 			deleted = append(deleted, v)
