@@ -34,3 +34,5 @@ example/httpapis/天津_查询余额.json
 example/httpapis/天津_发送接口.json
 
 
+postman/postman_collections/测试宠物新建_修改_删除流程.postman_collection.json
+.gitignore

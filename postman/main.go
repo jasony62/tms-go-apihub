@@ -73,21 +73,27 @@ type Privates struct {
 // 创建list,提前预设
 // 左：postman js关键字
 // 右：apihub内部函数名称
-var preEventFuncReferenceList = map[string]string{
+var preEventFuncReferenceMap = map[string]string{
 	"getTime":      "utc_ms",
 	"CryptoJS.MD5": "md5",
 }
 
 // 创建list,提前预设
 // postman js关键字
-var preEventFuncKeyList = []string{
+var preEventFuncKeyMap = []string{
 	"getTime",
 	"CryptoJS.MD5",
 }
 
 // 相当于postman脚本中全局变量转换的一个中间量，映射postman脚本requset中全局变量值到apihub内部函数名称
-// coversionFuncMap[time] = preEventFuncReferenceList["getTime"] = "utc"
+// coversionFuncMap[time] = preEventFuncReferenceMap["getTime"] = "utc"
 var coversionFuncMap map[string]string
+
+// pr部分的全部全局变量Key Map
+var preGlobalKeyMap map[string]string
+
+// pr部分的全部全局变量Value Map
+var preGlobalValueMap map[string]string
 
 // postman文件路径
 var postmanPath string
@@ -184,10 +190,13 @@ func converOneRequest(postmanItem *postman.Items) {
 	delHttpapiConfArgs(httpapiArgsLen)
 	httpapiPrivatesLen := len(apiHubHttpPrivates.Privates)
 	delHttpapiPrivates(httpapiPrivatesLen)
+	coversionFuncMap = make(map[string]string)
+	preGlobalKeyMap = make(map[string]string)
+	preGlobalValueMap = make(map[string]string)
+	keyWordGlobal := "postman.setEnvironmentVariable"
 
 	getHttpapiInfo(postmanItem)
-	coversionFuncMap = make(map[string]string)
-	getPostmanEventFunc(postmanItem, preEventFuncKeyList)
+	getPostmanEventFunc(postmanItem, preEventFuncKeyMap, keyWordGlobal)
 	getHttpapiArgs(postmanItem.Request)
 
 }
@@ -227,13 +236,18 @@ func getPostmanURL(postmanUrl *postman.URL) string {
 
 	httpapiUrl := postmanUrl.Protocol + "://"
 	// Host IP
-	for i := range postmanUrl.Host {
-		if i > 0 {
-			httpapiUrl = httpapiUrl + "." + postmanUrl.Host[i]
-		} else {
-			httpapiUrl = httpapiUrl + postmanUrl.Host[i]
+	if postmanUrl.Host != nil {
+		for i := range postmanUrl.Host {
+			if i > 0 {
+				httpapiUrl = httpapiUrl + "." + postmanUrl.Host[i]
+			} else {
+				httpapiUrl = httpapiUrl + postmanUrl.Host[i]
+			}
 		}
+	} else {
+		klog.Infoln("__getPostmanURL Error, url不符合规范")
 	}
+
 	// Port number
 	if postmanUrl.Port != "" {
 		httpapiUrl = httpapiUrl + ":" + postmanUrl.Port + "/"
@@ -282,10 +296,15 @@ func getHttpapiArgs(postmanRequest *postman.Request) {
 	case "POST":
 		// 解析body
 		if postmanRequest.Body != nil {
-			parseRequestBody(postmanRequest.Body)
+			switch postmanRequest.Body.Mode {
+			case "urlencoded":
+				parseRequestBodyUrlencoded(postmanRequest.Body)
+			case "raw":
+				parseRequestBodyRaw(postmanRequest.Body)
+			default:
+			}
 		}
 	}
-
 }
 
 // 解析query
@@ -304,12 +323,52 @@ func parseRequestUrlQuery(postmanRequestURLQuery interface{}) {
 	}
 }
 
-// 解析body
-func parseRequestBody(postmanRequestBody *postman.Body) {
+type RequestBodyUrlencoded struct {
+	Enable bool   `json:"enable"`
+	Key    string `json:"key"`
+	Value  string `json:"value"`
+}
+
+type RequestBodyUrlencodedStruct struct {
+	Urlencoded []RequestBodyUrlencoded `json:"urlencoded"`
+}
+
+func parseRequestBodyUrlencoded(postmanRequestBody *postman.Body) {
+	if postmanRequestBody != nil {
+		tempbodyjson := make(map[string]string) // 组建body的json对象
+		requestBody := postmanRequestBody
+		requestBodyURLEncoded := requestBody.URLEncoded.([]interface{})
+		var requestBodyUrlencodedStruct RequestBodyUrlencodedStruct
+		// 因为是[]interface{}接口类型，所以先转换成byteArr
+		byteArr, err := json.Marshal(requestBodyURLEncoded)
+		if err != nil {
+			klog.Infoln("json.marshal failed, err:", err)
+			return
+		}
+		bytestring := string(byteArr)
+		// 构建成一个完整的json
+		bytestring = "{\"urlencoded\": " + bytestring + "}"
+		// 重新解析[]byte(bytestring)到结构体
+		err = json.Unmarshal([]byte(bytestring), &requestBodyUrlencodedStruct)
+		if err != nil {
+			panic(err)
+		}
+		for i := range requestBodyUrlencodedStruct.Urlencoded {
+			if requestBodyUrlencodedStruct.Urlencoded[i].Enable {
+				tempbodyjson[requestBodyUrlencodedStruct.Urlencoded[i].Key] = requestBodyUrlencodedStruct.Urlencoded[i].Value
+			}
+		}
+		bodyArgs := Args{In: "body", Name: "body", Value: Value{From: "json", Json: tempbodyjson}}
+		apiHubHttpConf.Args = append(apiHubHttpConf.Args, bodyArgs)
+	}
+}
+
+// 解析body Raw
+func parseRequestBodyRaw(postmanRequestBody *postman.Body) {
 	if postmanRequestBody != nil {
 		requestBody := postmanRequestBody
 		if requestBody.Raw != "" {
-			klog.Infoln("__httpapirequestBody.Raw is : ", requestBody.Raw)
+			// klog.Infoln("__httpapirequestBody.Raw is : ", requestBody.Raw)
 			nameString := ""
 			backNameIndex := 0
 			contentString := ""
@@ -348,8 +407,10 @@ func parseRequestBody(postmanRequestBody *postman.Body) {
 						} else if backContentIndexFunc != -1 { // "":{{}} 全局变量或函数
 							tempbodyjson[nameString] = "{{" + ".vars." + contentStringFunc + "}}"
 							tempRequestRawArray = append(tempRequestRawArray, contentStringFunc)
-							if coversionFuncMap[contentStringFunc] == "md5" {
 
+							// MD5 特殊，单独处理
+							if coversionFuncMap[contentStringFunc] == "md5" {
+								// 遍历MD5涉及变量
 								for a := range setEnvironmentVariableMD5Array {
 									for n, v := range tempbodyjson {
 										tempstring, tempindex := getStringBetweenSpecifySymbols(v, "vars.", "}}")
@@ -402,8 +463,8 @@ func parseRequestBody(postmanRequestBody *postman.Body) {
 	}
 }
 
-// 获取postman Event中的全局变量和js函数
-func getPostmanEventFunc(postmanItem *postman.Items, preFuncKeyWord []string) {
+// 获取postman Event中的全局变量和js函数对应的变量
+func getPostmanEventFunc(postmanItem *postman.Items, preFuncKeyWord []string, keyWordGlobal string) {
 	if (postmanItem == nil) || (preFuncKeyWord == nil) {
 		return
 	}
@@ -411,24 +472,34 @@ func getPostmanEventFunc(postmanItem *postman.Items, preFuncKeyWord []string) {
 		if postmanItem.Events[i].Script.Type == "text/javascript" {
 			for j := range postmanItem.Events[i].Script.Exec { // Exec中js命令一行是一个数组元素
 				for k := range preFuncKeyWord { // 查找js命令行中有无js常见命令的关键字
-					if (strings.Index(postmanItem.Events[i].Script.Exec[j], preFuncKeyWord[k])) != -1 {
+					if ((strings.Index(postmanItem.Events[i].Script.Exec[j], preFuncKeyWord[k])) != -1) && ((strings.Index(postmanItem.Events[i].Script.Exec[j], "//")) == -1) {
 						switch preFuncKeyWord[k] {
 						case "getTime":
 							keyWordString, index := getStringBetweenDoubleQuotationMarks(postmanItem.Events[i].Script.Exec[j])
 							// 解析js代码中EnvironmentVariable，查找到getTime代码，确定本行生成time变量名称，赋值到coversionFuncMap
 							keyWordString = strings.TrimSpace(keyWordString)
 							if index != -1 && keyWordString != "" {
-								coversionFuncMap[keyWordString] = preEventFuncReferenceList[preFuncKeyWord[k]]
+								coversionFuncMap[keyWordString] = preEventFuncReferenceMap[preFuncKeyWord[k]]
 							}
 						case "CryptoJS.MD5":
 							keyWordString, index := getStringBetweenSpecifySymbols(postmanItem.Events[i].Script.Exec[j], "var", "=")
 							keyWordString = strings.TrimSpace(keyWordString)
 							if index != -1 && keyWordString != "" {
-								coversionFuncMap[keyWordString] = preEventFuncReferenceList[preFuncKeyWord[k]]
+								coversionFuncMap[keyWordString] = preEventFuncReferenceMap[preFuncKeyWord[k]]
 							}
 							getSetEnvironmentVariableMD5(postmanItem, postmanItem.Events[i].Script.Exec[j], keyWordString)
 							// klog.Infoln("__postmanItem.Events[i].Script.Exec[j]", keyWordString)
 						default:
+						}
+					}
+					if ((strings.Index(postmanItem.Events[i].Script.Exec[j], keyWordGlobal)) != -1) && ((strings.Index(postmanItem.Events[i].Script.Exec[j], "//")) == -1) {
+						keyWordStringKey, indexKey := getStringBetweenDoubleQuotationMarks(postmanItem.Events[i].Script.Exec[j])
+						keyWordStringValue, indexValue := getStringBetweenSpecifySymbols(postmanItem.Events[i].Script.Exec[j], ",", ")")
+						if indexKey != -1 {
+							preGlobalKeyMap[keyWordStringKey] = keyWordStringKey
+						}
+						if indexValue != -1 {
+							preGlobalValueMap[keyWordStringKey] = keyWordStringValue
 						}
 					}
 				}
@@ -438,6 +509,7 @@ func getPostmanEventFunc(postmanItem *postman.Items, preFuncKeyWord []string) {
 			return
 		}
 	}
+
 }
 
 func getSetEnvironmentVariableMD5(postmanItem *postman.Items, postmanEventScriptExec string, keyWordString string) {
@@ -483,7 +555,6 @@ func getSetEnvironmentVariableMD5(postmanItem *postman.Items, postmanEventScript
 
 		}
 	}
-
 }
 
 func getStringFromEvent(postmanItem *postman.Items, keyWordString string) string {
@@ -536,6 +607,8 @@ func generateApiHubJson(postmanBytes *postman.Collection, multipleName string) {
 		return
 	}
 	fileName := ""
+	postmanBytes.Info.Name = strings.Replace(postmanBytes.Info.Name, "/", "_", -1)
+	apiHubHttpConf.ID = strings.Replace(apiHubHttpConf.ID, "/", "_", -1)
 	if multipleName == "" {
 		fileName = apiHubJsonPath + postmanBytes.Info.Name + "_" + apiHubHttpConf.ID + ".json"
 	} else {
