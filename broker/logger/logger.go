@@ -36,12 +36,22 @@ func InitLogger(conf LogConfigs, logwithlevel bool) error {
 	encoder := getEncoder(conf) // 获取日志输出编码
 
 	var coreArr []zapcore.Core
+	var level zapcore.Level
+	if conf.LogLevel == "info" {
+		level = zap.InfoLevel
+	} else if conf.LogLevel == "warn" {
+		level = zap.WarnLevel
+	} else if conf.LogLevel == "error" {
+		level = zap.ErrorLevel
+	} else {
+		level = zap.DebugLevel
+	}
 	if logwithlevel {
 		errorLog := zap.LevelEnablerFunc(func(lev zapcore.Level) bool { //error级别及以上
 			return lev >= zap.ErrorLevel
 		})
 		allLog := zap.LevelEnablerFunc(func(lev zapcore.Level) bool { //所有级别同时输出
-			return lev <= zap.FatalLevel && lev >= zap.DebugLevel
+			return lev <= zap.FatalLevel && lev >= level
 		})
 
 		allFileWriteSyncer, err := getLogWriter("all", conf) // 日志文件配置 文件位置和切割
@@ -63,7 +73,7 @@ func InitLogger(conf LogConfigs, logwithlevel bool) error {
 		coreArr = append(coreArr, errorFileCore)
 	} else {
 		allLog := zap.LevelEnablerFunc(func(lev zapcore.Level) bool { //所有级别日志
-			return lev <= zap.FatalLevel && lev >= zap.DebugLevel
+			return lev <= zap.FatalLevel && lev >= level
 		})
 
 		allFileWriteSyncer, err := getLogWriter("", conf) // 日志文件配置 文件位置和切割

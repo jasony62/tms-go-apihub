@@ -92,8 +92,8 @@ func handleSwitchTask(stack *hub.Stack, task *hub.ScheduleApiDef) (interface{}, 
 
 func concurrentLoopWorker(apis chan concurrentLoopIn, out chan concurrentLoopOut) {
 	for task := range apis {
-		result, _ := handleTasks(task.stack, task.task, 0)
-		out <- concurrentLoopOut{index: task.index, result: result}
+		handleTasks(task.stack, task.task, 0)
+		out <- concurrentLoopOut{index: task.index, result: ""}
 	}
 }
 
