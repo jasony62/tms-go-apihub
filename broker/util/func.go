@@ -25,6 +25,9 @@ func utcmsFunc(params []string) string {
 func utcTemplate(args ...interface{}) string {
 	return strconv.FormatInt(time.Now().Unix(), 10)
 }
+func utcmsTemplate(args ...interface{}) string {
+	return strconv.FormatInt(time.Now().UnixNano()/int64(time.Millisecond), 10)
+}
 
 func md5Template(args ...interface{}) string {
 	if len(args) == 0 {
@@ -58,8 +61,9 @@ var funcMap map[string]hub.FuncHandler = map[string]hub.FuncHandler{
 }
 
 var funcMapForTemplate map[string](interface{}) = map[string](interface{}){
-	"utc": utcTemplate,
-	"md5": md5Template,
+	"utc":    utcTemplate,
+	"utc_ms": utcmsTemplate,
+	"md5":    md5Template,
 }
 
 func loadConfigPluginData(path string) {
