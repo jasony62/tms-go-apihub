@@ -10,7 +10,7 @@ import (
 )
 
 // Postman文件转换函数
-func ConvertPostmanFiles(path string) {
+func convertPostmanFiles(path string) {
 	// 读取指定目录下文件信息list
 	fileInfoList, err := os.ReadDir(path)
 	if err != nil {
@@ -26,7 +26,7 @@ func ConvertPostmanFiles(path string) {
 		if fileInfoList[i].IsDir() {
 			klog.Infoln("__postman_collections子目录名: ", fileName)
 			prefix = fileInfoList[i].Name()
-			ConvertPostmanFiles(path + "/" + prefix)
+			convertPostmanFiles(path + "/" + prefix)
 		} else {
 			// 判断文件是否postman_collection类型
 			if !strings.HasSuffix(fileName, ".postman_collection") && !strings.HasSuffix(fileName, ".json") {

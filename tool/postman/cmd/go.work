@@ -5,4 +5,4 @@ use (
 	../internal
 )
 
-// replace ../internal/ => github.com/Sheng-ZM/tms-go-apihub/tree/shengzm-local/tool/postman/internal
+// replace github.com/Sheng-ZM/tms-go-apihub/tree/shengzm-local/tool/postman/internal => ../internal/

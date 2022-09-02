@@ -26,19 +26,10 @@
 package main
 
 import (
-	"flag"
-
 	postmaninternal "postmaninternal"
 )
 
-// 初始化
-func init() {
-	flag.StringVar(&postmaninternal.PostmanPath, "from", "./postman_collections/", "指定postman_collections文件路径")
-	flag.StringVar(&postmaninternal.ApiHubJsonPath, "to", "./httpapis/", "指定转换后的apiHub json文件路径")
-	flag.StringVar(&postmaninternal.ApiHubPrivatesJsonPath, "private", "./privates/", "指定转换后的apiHub privates json文件路径")
-}
-
 /*********************main主程序*****************************/
 func main() {
-	postmaninternal.ConvertPostmanFiles(postmaninternal.PostmanPath)
+	postmaninternal.ConvertPostman()
 }

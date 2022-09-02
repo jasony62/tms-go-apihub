@@ -59,11 +59,11 @@ var preGlobalKeyMap map[string]string
 var preGlobalValueMap map[string]string
 
 // postman文件路径
-var PostmanPath string
+var postmanPath string
 
 // 导出json路径
-var ApiHubJsonPath string
-var ApiHubPrivatesJsonPath string
+var apiHubJsonPath string
+var apiHubPrivatesJsonPath string
 
 // json结构体
 var apiHubHttpConf ApiHubHttpConf
