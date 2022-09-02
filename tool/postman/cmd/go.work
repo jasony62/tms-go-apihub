@@ -1,3 +1,8 @@
 go 1.19
 
-use github.com/Sheng-ZM/tms-go-apihub/tree/shengzm-local/tool/postman/internal
+use (
+	.
+	../internal
+)
+
+// replace ../internal/ => github.com/Sheng-ZM/tms-go-apihub/tree/shengzm-local/tool/postman/internal
