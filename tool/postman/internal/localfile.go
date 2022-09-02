@@ -1,4 +1,4 @@
-package main
+package internal
 
 import (
 	"encoding/json"
@@ -18,9 +18,9 @@ func generateApiHubJson(postmanBytes *postman.Collection, multipleName string) {
 	postmanBytes.Info.Name = strings.Replace(postmanBytes.Info.Name, "/", "_", -1)
 	apiHubHttpConf.ID = strings.Replace(apiHubHttpConf.ID, "/", "_", -1)
 	if multipleName == "" {
-		fileName = apiHubJsonPath + postmanBytes.Info.Name + "_" + apiHubHttpConf.ID + ".json"
+		fileName = ApiHubJsonPath + postmanBytes.Info.Name + "_" + apiHubHttpConf.ID + ".json"
 	} else {
-		fileName = apiHubJsonPath + postmanBytes.Info.Name + "_" + multipleName + "_" + apiHubHttpConf.ID + ".json"
+		fileName = ApiHubJsonPath + postmanBytes.Info.Name + "_" + multipleName + "_" + apiHubHttpConf.ID + ".json"
 	}
 	byteHttpApi, err := json.Marshal(apiHubHttpConf)
 	if err != nil {
@@ -42,7 +42,7 @@ func generateApiHubJson(postmanBytes *postman.Collection, multipleName string) {
 
 func generateApiHubPrivatesJson(postmanBytes *postman.Collection, privateName string) {
 
-	fileName := apiHubPrivatesJsonPath + privateName + ".json"
+	fileName := ApiHubPrivatesJsonPath + privateName + ".json"
 
 	byteHttpApi, err := json.Marshal(apiHubHttpPrivates)
 	if err != nil {

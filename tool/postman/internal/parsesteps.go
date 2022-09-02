@@ -1,4 +1,4 @@
-package postmaninternal
+package internal
 
 import (
 	"fmt"
