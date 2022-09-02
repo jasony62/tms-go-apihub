@@ -1,4 +1,4 @@
-package internal
+package postmaninternal
 
 type ApiHubHttpConf struct {
 	ID                 string `json:"id"`

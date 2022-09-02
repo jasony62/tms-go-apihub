@@ -1,4 +1,4 @@
-package internal
+package postmaninternal
 
 import (
 	"github.com/rbretecher/go-postman-collection"
