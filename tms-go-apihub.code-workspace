@@ -10,16 +10,13 @@
             "path": "example"
         },
         {
-            "path": "postman"
-        },
-        {
             "path": "schema"
         },
         {
-            "path": "swagger"
+            "path": "tool/postman/cmd"
         },
         {
-            "path": "test\\http-server"
+            "path": "tool/postman/internal"
         }
     ],
     "launch": {
