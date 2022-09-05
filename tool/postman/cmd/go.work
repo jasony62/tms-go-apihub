@@ -1,0 +1,8 @@
+go 1.19
+
+use (
+	.
+	../internal
+)
+
+// replace github.com/Sheng-ZM/tms-go-apihub/tree/shengzm-local/tool/postman/internal => ../internal/
