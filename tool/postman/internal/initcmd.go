@@ -11,5 +11,7 @@ func init() {
 	flag.StringVar(&apiHubPrivatesJsonPath, "private", "./privates/", "指定转换后的apiHub privates json文件路径")
 }
 func ConvertPostman() {
+
+	privatesExport = true
 	convertPostmanFiles(postmanPath)
 }

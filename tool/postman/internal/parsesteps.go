@@ -1,72 +1,31 @@
 package postmaninternal
 
 import (
-	"fmt"
-	"os"
 	"strings"
 
 	"github.com/rbretecher/go-postman-collection"
-	"k8s.io/klog/v2"
 )
-
-// Postman文件转换函数
-func convertPostmanFiles(path string) {
-	// 读取指定目录下文件信息list
-	fileInfoList, err := os.ReadDir(path)
-	if err != nil {
-		klog.Errorln(err)
-		return
-	}
-
-	var prefix string
-	// 遍历postman_collection文件
-	for i := range fileInfoList {
-		fileName := fmt.Sprintf("%s/%s", path, fileInfoList[i].Name())
-		// 是否是一个子目录 若是子目录，进入进入子目录遍历postman文件
-		if fileInfoList[i].IsDir() {
-			klog.Infoln("__postman_collections子目录名: ", fileName)
-			prefix = fileInfoList[i].Name()
-			convertPostmanFiles(path + "/" + prefix)
-		} else {
-			// 判断文件是否postman_collection类型
-			if !strings.HasSuffix(fileName, ".postman_collection") && !strings.HasSuffix(fileName, ".json") {
-				continue
-			}
-			klog.Infoln("__Load postman_collection文件: ", fileName)
-			// 读取文件内容到fileBytes
-			file, err := os.Open(fileName)
-			if err != nil {
-				klog.Errorln(err)
-				panic(err)
-			}
-			defer file.Close()
-			// Parse the contents
-			postmanfileBytes, err := postman.ParseCollection(file)
-			if err != nil {
-				klog.Errorln(err)
-				panic(err)
-			}
-			getPostmanFilesBytes(postmanfileBytes)
-		}
-	}
-}
 
 func getPostmanFilesBytes(postmanfileBytes *postman.Collection) {
 	if postmanfileBytes != nil {
 		for i := range postmanfileBytes.Items {
 			if postmanfileBytes.Items[i].Items == nil {
 				converOneRequest(postmanfileBytes.Items[i])
-				if len(apiHubHttpPrivates.Privates) != 0 {
-					apiHubHttpConf.Private = postmanfileBytes.Info.Name + "_" + postmanfileBytes.Items[i].Name + "_key"
-					generateApiHubPrivatesJson(postmanfileBytes, apiHubHttpConf.Private)
+				if privatesExport {
+					if len(apiHubHttpPrivates.Privates) != 0 {
+						apiHubHttpConf.Private = postmanfileBytes.Info.Name + "_" + postmanfileBytes.Items[i].Name + "_key"
+						generateApiHubPrivatesJson(postmanfileBytes, apiHubHttpConf.Private)
+					}
 				}
 				generateApiHubJson(postmanfileBytes, "")
 			} else {
 				for j := range postmanfileBytes.Items[i].Items {
 					converOneRequest(postmanfileBytes.Items[i].Items[j])
-					if len(apiHubHttpPrivates.Privates) != 0 {
-						apiHubHttpConf.Private = postmanfileBytes.Info.Name + "_" + postmanfileBytes.Items[i].Name + "_" + postmanfileBytes.Items[i].Items[j].Name + "_key"
-						generateApiHubPrivatesJson(postmanfileBytes, apiHubHttpConf.Private)
+					if privatesExport {
+						if len(apiHubHttpPrivates.Privates) != 0 {
+							apiHubHttpConf.Private = postmanfileBytes.Info.Name + "_" + postmanfileBytes.Items[i].Name + "_" + postmanfileBytes.Items[i].Items[j].Name + "_key"
+							generateApiHubPrivatesJson(postmanfileBytes, apiHubHttpConf.Private)
+						}
 					}
 					generateApiHubJson(postmanfileBytes, postmanfileBytes.Items[i].Name)
 				}
@@ -104,10 +63,15 @@ func getHttpapiArgs(postmanRequest *postman.Request) {
 	if postmanRequest.Header != nil {
 		for i := range postmanRequest.Header {
 			if postmanRequest.Header[i].Key != "Content-Type" {
-				args := Args{In: "header", Name: postmanRequest.Header[i].Key, Value: Value{From: "private", Content: postmanRequest.Header[i].Key}}
-				apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
-				privates := Privates{Name: postmanRequest.Header[i].Key, Value: postmanRequest.Header[i].Value}
-				apiHubHttpPrivates.Privates = append(apiHubHttpPrivates.Privates, privates)
+				if privatesExport {
+					args := Args{In: "header", Name: postmanRequest.Header[i].Key, Value: Value{From: "private", Content: postmanRequest.Header[i].Key}}
+					apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+					privates := Privates{Name: postmanRequest.Header[i].Key, Value: postmanRequest.Header[i].Value}
+					apiHubHttpPrivates.Privates = append(apiHubHttpPrivates.Privates, privates)
+				} else {
+					args := Args{In: "header", Name: postmanRequest.Header[i].Key, Value: Value{From: "literal", Content: postmanRequest.Header[i].Value}}
+					apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+				}
 			} else if postmanRequest.Header[i].Key == "Content-Type" {
 				headerindex := strings.Index(postmanRequest.Header[i].Value, "/")
 				apiHubHttpConf.Requestcontenttype = postmanRequest.Header[i].Value[headerindex+1:]

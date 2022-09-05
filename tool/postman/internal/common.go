@@ -48,6 +48,8 @@ var preEventFuncKeyMap = []string{
 	"CryptoJS.MD5",
 }
 
+var privatesExport bool
+
 // 相当于postman脚本中全局变量转换的一个中间量，映射postman脚本requset中全局变量值到apihub内部函数名称
 // coversionFuncMap[time] = preEventFuncReferenceMap["getTime"] = "utc"
 var coversionFuncMap map[string]string
