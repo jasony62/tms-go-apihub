@@ -7,10 +7,10 @@
 # 统计参数
 | 字段 | 类型 |解释  |
 | -- | -- | -- |
-|http_in|counter|apigateway进入的请求数目|
-|http_in_duration_sec|histogram|apigateway进入的请求处理时间，0-10秒，每100ms一个桶|
-|http_out|counter|httpapi发出的请求数目|
-|http_out_duration_sec|histogram|httpapi发出的请求处理时间，0-10秒，每100ms一个桶|
+|http_in_total|counter|apigateway进入的请求数目|
+|http_in_duration_second|histogram|apigateway进入的请求处理时间，0-10秒，每100ms一个桶|
+|http_out|counter_total|httpapi发出的请求数目|
+|http_out_duration_second|histogram|httpapi发出的请求处理时间，0-10秒，每100ms一个桶|
 # label
 | 名称 | 解释  |
 | -- | -- |

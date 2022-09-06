@@ -92,22 +92,22 @@ func promInitData() {
 	httpInPromCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "http_in_total",
-			Help: "api hub http in counters",
+			Help: "api hub http in counter",
 		},
 		[]string{"code", "child", "root", "type"},
 	)
 	httpOutPromCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "http_out_total",
-			Help: "api hub http out counters",
+			Help: "api hub http out counter",
 		},
 		[]string{"code", "child", "root", "type"},
 	)
 	httpInDurationPromHistogram = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Name:    "http_in_duration_second",
-			Help:    "apihub http in latency distributions.",
-			Buckets: prometheus.ExponentialBuckets(1, 2, 8), // bucket从0开始,间隔是100ms,一共101个
+			Help:    "apihub http in latency distributionsin second.",
+			Buckets: prometheus.ExponentialBuckets(1, 2, 8),
 		},
 		[]string{"code", "child", "root", "type"},
 	)
