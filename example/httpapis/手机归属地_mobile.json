@@ -1,1 +1,17 @@
-{"id":"mobile","description":"mobile","url":"https://tenapi.cn/tel/","method":"GET","requestContentType":"json","args":[{"in":"query","name":"tel","value":{"from":"query","content":"tel"}}]}
+{
+    "id": "mobile",
+    "description": "mobile",
+    "url": "https://tenapi.cn/tel/",
+    "method": "GET",
+    "requestContentType": "json",
+    "args": [
+        {
+            "in": "query",
+            "name": "tel",
+            "value": {
+                "from": "literal",
+                "content": "18888888888"
+            }
+        }
+    ]
+}
