@@ -72,7 +72,7 @@ func promHttpCounterInc(stack *hub.Stack, params map[string]string) (interface{}
 		logger.LogS().Errorln(stack.BaseString, str)
 		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusBadRequest
 	}
-	duration = duration * 10
+
 	if params["httpInOut"] == "httpIn" {
 		httpInDurationPromHistogram.With(promLabels).Observe(duration)
 		httpInPromCounter.With(promLabels).Inc()
@@ -91,31 +91,31 @@ func promInitData() {
 	//Init total counter and histogram
 	httpInPromCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "http_in",
+			Name: "http_in_total",
 			Help: "api hub http in counters",
 		},
 		[]string{"code", "child", "root", "type"},
 	)
 	httpOutPromCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "http_out",
+			Name: "http_out_total",
 			Help: "api hub http out counters",
 		},
 		[]string{"code", "child", "root", "type"},
 	)
 	httpInDurationPromHistogram = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name:    "http_in_duration_100ms",
+			Name:    "http_in_duration_second",
 			Help:    "apihub http in latency distributions.",
-			Buckets: prometheus.LinearBuckets(0, 1, 101), // bucket从0开始,间隔是100ms,一共101个
+			Buckets: prometheus.ExponentialBuckets(1, 2, 8), // bucket从0开始,间隔是100ms,一共101个
 		},
 		[]string{"code", "child", "root", "type"},
 	)
 	httpOutDurationPromHistogram = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name:    "http_out_duration_100ms",
-			Help:    "apihub http out latency distributions.",
-			Buckets: prometheus.LinearBuckets(0, 1, 101),
+			Name:    "http_out_duration_second",
+			Help:    "apihub http out latency distributions in second.",
+			Buckets: prometheus.ExponentialBuckets(1, 2, 8),
 		},
 		[]string{"code", "child", "root", "type"},
 	)
