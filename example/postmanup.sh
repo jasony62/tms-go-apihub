@@ -7,8 +7,8 @@
 # 
 # ############################################################
 
-postman_collection_app="./APIHUB_0623.postman_collection"
-postman_environment_app="./34test_0623.postman_environment"
+postman_collection_app="./postman/APIHUB_0623.postman_collection"
+postman_environment_app="./postman/34test_0623.postman_environment"
 
 # ############################################################
 
