@@ -8,7 +8,7 @@ import (
 	"k8s.io/klog/v2"
 )
 
-func readWasmPostman(stringflows string) (string, error) {
+func readWasmPostman(stringflows string) ([]string, error) {
 
 	// tempString, _ := ioutil.ReadFile("./postman_collections//5G新增手机终端画像.postman_collection.json")
 	// postmanString := string(stringflows)
@@ -20,26 +20,35 @@ func readWasmPostman(stringflows string) (string, error) {
 	if err != nil {
 		klog.Errorln(err)
 		// panic(err)
-		return "", err
+		return nil, err
 	}
 	return getPostmanFilesBytesWasm(postmanfileBytes)
 }
 
-func getPostmanFilesBytesWasm(postmanfileBytes *postman.Collection) (string, error) {
+func getPostmanFilesBytesWasm(postmanfileBytes *postman.Collection) ([]string, error) {
+	var outputJsonArray []string
 	if postmanfileBytes != nil {
 		for i := range postmanfileBytes.Items {
 			if postmanfileBytes.Items[i].Items == nil {
 				converOneRequest(postmanfileBytes.Items[i])
-				return outputJsonString()
+				tempString, err := outputJsonString()
+				if err != nil {
+					klog.Errorln("outputJsonString failed:", err)
+				}
+				outputJsonArray = append(outputJsonArray, tempString)
 			} else {
 				for j := range postmanfileBytes.Items[i].Items {
 					converOneRequest(postmanfileBytes.Items[i].Items[j])
-					return outputJsonString()
+					tempString, err := outputJsonString()
+					if err != nil {
+						klog.Errorln("outputJsonString failed:", err)
+					}
+					outputJsonArray = append(outputJsonArray, tempString)
 				}
 			}
 		}
 	}
-	return "", nil
+	return outputJsonArray, nil
 }
 
 func outputJsonString() (string, error) {
