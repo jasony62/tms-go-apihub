@@ -1,10 +1,14 @@
 ## 函数列表
 | 调用方式     | 名称           | 入参  | 返回类型 | 用途     |
 | -------------  | ----- | --------  | -------- | -------- |
-| FuncMap | utc | 空 | string | 返回UTC时间,十进制秒数的字符串(UTC时间：距离1970.1.1的秒数)
-| FuncMap | md5 | 任意个字符串 | string | 将输入的多个入参，按顺序连成一个新的字符串，返回其md5哈希后的字符串
-| FuncMapForTemplate | utc | 空 | string | 返回UTC时间,十进制秒数的字符串(UTC时间：距离1970.1.1的秒数)
-| FuncMapForTemplate | md5 | 任意个字符串 | string | 将输入的多个入参，按顺序连成一个新的字符串，返回其md5哈希后的字符串
+| FuncMap | utc | 空 | string | 返回UTC时间,十进制秒数的字符串(UTC时间：距离1970.1.1的秒数)|
+| FuncMap | utcms | 空 | string | 返回UTC时间,十进制毫秒数的字符串(UTC时间：距离1970.1.1的毫秒数) |
+| FuncMap | md5 | 任意个字符串 | string | 将输入的多个入参，按顺序连成一个新的字符串，返回其md5哈希后的字符串|
+| FuncMap | timestamp | 空 | string | 返回UTC时间戳字符串，格式为（"2006-01-02 15:04:05"） |
+| FuncMapForTemplate | utc | 空 | string | 返回UTC时间,十进制秒数的字符串(UTC时间：距离1970.1.1的秒数)|
+| FuncMapForTemplate | utcms | 空 | string | 返回UTC时间,十进制毫秒数的字符串(UTC时间：距离1970.1.1的毫秒数) |
+| FuncMapForTemplate | md5 | 任意个字符串 | string | 将输入的多个入参，按顺序连成一个新的字符串，返回其md5哈希后的字符串|
+| FuncMapForTemplate | timestamp | 空 | string | 返回UTC时间戳字符串，格式为（"2006-01-02 15:04:05"） |
 
 ## 函数的调用
 函数都需要存入FuncMap或FuncMapForTemplate中，二者使用方法不同
@@ -32,6 +36,7 @@ value.from为"funcs",value.content填入函数名字;
       }
     },
 ]
+
 ##### utc函数调用
 //如下是调用utc函数
     {
@@ -42,6 +47,31 @@ value.from为"funcs",value.content填入函数名字;
         "content": "utc"
       }
     },
+
+##### utcms函数调用
+
+//如下是调用utcms函数
+    {
+      "in": "header",
+      "name": "X-CurTime",
+      "value": {
+        "from": "func",
+        "content": "utcms"
+      }
+    },
+
+##### timestamp函数调用
+
+//如下是调用timestamp函数
+    {
+      "in": "header",
+      "name": "X-CurTime-Timestamp",
+      "value": {
+        "from": "func",
+        "content": "timestamp"
+      }
+    },
+
 ### FuncMapForTemplate说明
 关于Template用法详细说明见[Template语法说明](https://github.com/jasony62/tms-go-apihub/blob/main/doc/cn/template.md)
 #### 定义
@@ -52,6 +82,7 @@ var FuncMapForTemplate map\[string](interface{})
 #### 注意
 FuncMapForTemplate中的函数，入参个数不限，入参和返回值必须为string类型。
 当调用FuncMapForTemplate中函数时，入参不能含有'-'字符，若含有，可以利用.vars域转换一下，见下面例子。
+
 #### 举例
 ##### md5函数调用
 // apis/kdxf_mlp_ke.json文件
