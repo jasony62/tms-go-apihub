@@ -21,33 +21,15 @@ log/
 .vscode
 
 test/http-server/http-server
-postman/test.sh
-broker/tms-go-apihub
-example/httpapis/信元_5G新增手机终端画像_首注册模型（数据自注册-Android）接口.json
-example/httpapis/天津_查询余额.json
-example/httpapis/天津_发送接口.json
 
-example/schedules/postmanPressure.json
-example/schedules/postmanPressureaGet.json
-example/httpapis/天津_查询报告.json
-example/httpapis/天津_查询mo.json
-example/httpapis/信元_5G新增手机终端画像_5G开关实时变化模型（数据自注册-Android）接口.json
-example/httpapis/信元_5G新增手机终端画像_卡槽实时变化模型（数据自注册-Android）接口.json
-example/httpapis/信元_5G新增手机终端画像_全量用户标签（数据自注册-Android）接口.json
-example/httpapis/信元_5G新增手机终端画像_首注册模型（ES自注册-苹果）接口.json
-example/httpapis/信元_5G新增手机终端画像_首注册模型（IMS自注册）接口.json
-example/httpapis/信元_5G新增手机终端画像_异网全量用户标签（数据自注册-Android）接口.json
-example/httpapis/信元_5G新增手机终端画像_主流量卡切换模型（数据自注册-Android）接口.json
-example/httpapis/浙江_可信通信业务提醒.json
-example/httpapis/浙江_深度触达呼叫.json
-example/httpapis/浙江信产_集团aWiFi漫游能力.json
-example/httpapis/浙江信产_集团aWiFi投屏能力.json
+example/httpapis/__INTERNAL/
+example/schedules/__INTERNAL
 
+tool/postman/cmd/test.sh
 tool/postman/cmd/httpapis/
-tool/swagger/from/
-tool/postman/cmd/postman_collections/5G新增手机终端画像.postman_collection.json
-tool/postman/cmd/postman_collections/云信-三网短信.json
-tool/postman/cmd/postman_collections/浙江_可信通信业务提醒_深度触达呼叫.postman_collection.json
-tool/postman/cmd/postman_collections/浙江信产.postman_collection.json
 tool/postman/cmd/privates/
-example/schedules/postmanPressureGet.json
+tool/postman/cmd/postman_collections/__INTERNAL
+
+tool/swagger/from/
+
+

@@ -90,10 +90,15 @@ func handleSwitchTask(stack *hub.Stack, task *hub.ScheduleApiDef) (interface{}, 
 	return util.CreateTmsError(hub.TmsErrorCoreId, "No task control", nil), http.StatusInternalServerError
 }
 
-func concurrentLoopWorker(apis chan concurrentLoopIn, out chan concurrentLoopOut) {
+func concurrentLoopWorker(apis chan concurrentLoopIn, out chan concurrentLoopOut, needResult bool) {
 	for task := range apis {
 		result, _ := handleTasks(task.stack, task.task, 0)
-		out <- concurrentLoopOut{index: task.index, result: result}
+		// 增加对task.Control.ResultKey的判断，若ResultKey == ""，则不输出result
+		if needResult {
+			out <- concurrentLoopOut{index: task.index, result: result}
+		} else {
+			out <- concurrentLoopOut{index: task.index, result: ""}
+		}
 	}
 }
 
@@ -125,7 +130,7 @@ func triggerConcurrentLoop(stack *hub.Stack, task *hub.ScheduleApiDef, loopLengt
 	}
 
 	for i = 0; i < taskCount; i++ {
-		go concurrentLoopWorker(in, out)
+		go concurrentLoopWorker(in, out, (len(task.Control.ResultKey) > 0))
 	}
 
 	i = msgCount
@@ -166,7 +171,10 @@ func handleLoopTask(stack *hub.Stack, task *hub.ScheduleApiDef) (interface{}, in
 		for i := 0; i < loopLength; i++ {
 			loop[task.Control.Name] = i
 			result, _ = handleTasks(stack, task.Control.Steps, task.Control.ConcurrentNum)
-			loopResult[i] = result
+			// 增加对task.Control.ResultKey的判断，若ResultKey == ""，则不添加到loopResult
+			if len(task.Control.ResultKey) > 0 {
+				loopResult[i] = result
+			}
 		}
 	}
 	return loopResult, 200
@@ -269,7 +277,7 @@ func handleTasks(stack *hub.Stack, apis *[]hub.ScheduleApiDef, concurrentNum int
 	for index := range *apis {
 		task := &(*apis)[index]
 		if concurrentNum > 1 {
-			if task.Mode == "concurrent" {
+			if task.Mode == "concurrent" { //多个不同任务
 				logger.LogS().Infoln(stack.BaseString, "准备并行运行 type：", task.Type, ",concurrentNum:", concurrentNum)
 				in <- concurrentScheIn{task: task}
 				counter++
@@ -285,7 +293,7 @@ func handleTasks(stack *hub.Stack, apis *[]hub.ScheduleApiDef, concurrentNum int
 		if task.Mode == "background" {
 			logger.LogS().Infoln(stack.BaseString, "后台 type：", task.Type)
 			go handleOneScheduleApi(stack, task)
-		} else {
+		} else { //串行steps
 			logger.LogS().Infoln(stack.BaseString, "串行 type：", task.Type, ", concurrentNum:", concurrentNum)
 			result, status = handleOneScheduleApi(stack, task)
 		}
