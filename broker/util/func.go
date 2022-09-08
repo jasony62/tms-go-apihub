@@ -54,16 +54,26 @@ func md5Func(params []string) string {
 	return checksum
 }
 
+func timestampFunc(params []string) string {
+	return time.Now().Format("2006-01-02 15:04:05")
+}
+
+func timestampTemplate(args ...interface{}) string {
+	return time.Now().Format("2006-01-02 15:04:05.000")
+}
+
 var funcMap map[string]hub.FuncHandler = map[string]hub.FuncHandler{
-	"utc":    utcFunc,
-	"utc_ms": utcmsFunc,
-	"md5":    md5Func,
+	"utc":       utcFunc,
+	"utc_ms":    utcmsFunc,
+	"md5":       md5Func,
+	"timestamp": timestampFunc,
 }
 
 var funcMapForTemplate map[string](interface{}) = map[string](interface{}){
-	"utc":    utcTemplate,
-	"utc_ms": utcmsTemplate,
-	"md5":    md5Template,
+	"utc":       utcTemplate,
+	"utc_ms":    utcmsTemplate,
+	"md5":       md5Template,
+	"timestamp": timestampTemplate,
 }
 
 func loadConfigPluginData(path string) {
