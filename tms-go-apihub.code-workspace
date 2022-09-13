@@ -1,25 +1,22 @@
 {
     "folders": [
         {
-            "path": ".\\broker"
+            "path": "broker"
         },
         {
-            "path": ".\\doc"
+            "path": "doc"
         },
         {
-            "path": ".\\example"
+            "path": "example"
         },
         {
-            "path": ".\\postman"
+            "path": "schema"
         },
         {
-            "path": ".\\schema"
+            "path": "tool/postman/cmd"
         },
         {
-            "path": "..\\swagger"
-        },
-        {
-            "path": "..\\test"
+            "path": "tool/postman/internal"
         }
     ],
     "launch": {
@@ -49,7 +46,7 @@
                 "program": "${fileDirname}",
             },
             {
-                "name": "Go postmanCollection Launch",
+                "name": "Go postman Launch",
                 "type": "go",
                 "request": "launch",
                 "mode": "auto",

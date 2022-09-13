@@ -1,0 +1,377 @@
+{
+	"info": {
+		"_postman_id": "af014e6a-c43c-41be-9347-52a89c8e1b07",
+		"name": "信元",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "5G新增手机终端画像",
+			"item": [
+				{
+					"name": "首注册模型（数据自注册-Android）接口",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-APP-ID",
+								"value": "bb2dd12bcfc371d5d17b737cbc9d45b5",
+								"type": "default"
+							},
+							{
+								"key": "X-APP-KEY",
+								"value": "da53a557a7344cc1efc82ec81e88416c",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"startDate\":\"2022-07-18 12:00:00\",\"endDate\":\"2022-07-18 17:00:00\",\"province\":\"甘肃\",\"userName\":\"gansu_zzc\",\"passWord\":\"gansu_zzc445862\"}"
+						},
+						"url": {
+							"raw": "http://10.128.86.64:8000/serviceAgent/rest/report/report/getDmNew5gEsn",
+							"protocol": "http",
+							"host": [
+								"10",
+								"128",
+								"86",
+								"64"
+							],
+							"port": "8000",
+							"path": [
+								"serviceAgent",
+								"rest",
+								"report",
+								"report",
+								"getDmNew5gEsn"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "首注册模型（ES自注册-苹果）接口",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-APP-ID",
+								"value": "bb2dd12bcfc371d5d17b737cbc9d45b5",
+								"type": "default"
+							},
+							{
+								"key": "X-APP-KEY",
+								"value": "da53a557a7344cc1efc82ec81e88416c",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"startDate\":\"2022-07-18 12:00:00\",\"endDate\":\"2022-07-18 17:00:00\",\"province\":\"甘肃\",\"userName\":\"gansu_zzc\",\"passWord\":\"gansu_zzc445862\"}"
+						},
+						"url": {
+							"raw": "http://10.128.86.64:8000/serviceAgent/rest/report/report/getUaNew5gEsn",
+							"protocol": "http",
+							"host": [
+								"10",
+								"128",
+								"86",
+								"64"
+							],
+							"port": "8000",
+							"path": [
+								"serviceAgent",
+								"rest",
+								"report",
+								"report",
+								"getUaNew5gEsn"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "首注册模型（IMS自注册）接口",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-APP-ID",
+								"value": "bb2dd12bcfc371d5d17b737cbc9d45b5",
+								"type": "default"
+							},
+							{
+								"key": "X-APP-KEY",
+								"value": "da53a557a7344cc1efc82ec81e88416c",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"startDate\":\"2022-07-18 12:00:00\",\"endDate\":\"2022-07-18 17:00:00\",\"province\":\"甘肃\",\"userName\":\"gansu_zzc\",\"passWord\":\"gansu_zzc445862\"}"
+						},
+						"url": {
+							"raw": "http://10.128.86.64:8000/serviceAgent/rest/report/report/getImsNew5gEsn",
+							"protocol": "http",
+							"host": [
+								"10",
+								"128",
+								"86",
+								"64"
+							],
+							"port": "8000",
+							"path": [
+								"serviceAgent",
+								"rest",
+								"report",
+								"report",
+								"getImsNew5gEsn"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "卡槽实时变化模型（数据自注册-Android）接口",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-APP-ID",
+								"value": "bb2dd12bcfc371d5d17b737cbc9d45b5",
+								"type": "default"
+							},
+							{
+								"key": "X-APP-KEY",
+								"value": "da53a557a7344cc1efc82ec81e88416c",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"startDate\":\"2022-07-18 12:00:00\",\"endDate\":\"2022-07-18 17:00:00\",\"province\":\"甘肃\",\"userName\":\"gansu_zzc\",\"passWord\":\"gansu_zzc445862\"}"
+						},
+						"url": {
+							"raw": "http://10.128.86.64:8000/serviceAgent/rest/report/dataCardSlotInfo",
+							"protocol": "http",
+							"host": [
+								"10",
+								"128",
+								"86",
+								"64"
+							],
+							"port": "8000",
+							"path": [
+								"serviceAgent",
+								"rest",
+								"report",
+								"dataCardSlotInfo"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "主流量卡切换模型（数据自注册-Android）接口",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-APP-ID",
+								"value": "bb2dd12bcfc371d5d17b737cbc9d45b5",
+								"type": "default"
+							},
+							{
+								"key": "X-APP-KEY",
+								"value": "da53a557a7344cc1efc82ec81e88416c",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"startDate\":\"2022-06-06 12:00:00\",\"endDate\":\"2022-06-06 18:00:00\",\"province\":\"甘肃\",\"userName\":\"gansu_zzc\",\"passWord\":\"gansu_zzc445862\"}"
+						},
+						"url": {
+							"raw": "http://10.128.86.64:8000/serviceAgent/rest/report/dataSimCgInfo",
+							"protocol": "http",
+							"host": [
+								"10",
+								"128",
+								"86",
+								"64"
+							],
+							"port": "8000",
+							"path": [
+								"serviceAgent",
+								"rest",
+								"report",
+								"dataSimCgInfo"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5G开关实时变化模型（数据自注册-Android）接口",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-APP-ID",
+								"value": "bb2dd12bcfc371d5d17b737cbc9d45b5",
+								"type": "default"
+							},
+							{
+								"key": "X-APP-KEY",
+								"value": "da53a557a7344cc1efc82ec81e88416c",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"startDate\":\"2022-07-18 18:00:00\",\"endDate\":\"2022-07-18 19:00:00\",\"province\":\"甘肃\",\"userName\":\"gansu_zzc\",\"passWord\":\"gansu_zzc445862\"}"
+						},
+						"url": {
+							"raw": "http://10.128.86.64:8000/serviceAgent/rest/report/data5gswCgInfo",
+							"protocol": "http",
+							"host": [
+								"10",
+								"128",
+								"86",
+								"64"
+							],
+							"port": "8000",
+							"path": [
+								"serviceAgent",
+								"rest",
+								"report",
+								"data5gswCgInfo"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "全量用户标签（数据自注册-Android）接口",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-APP-ID",
+								"value": "bb2dd12bcfc371d5d17b737cbc9d45b5",
+								"type": "default"
+							},
+							{
+								"key": "X-APP-KEY",
+								"value": "da53a557a7344cc1efc82ec81e88416c",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"dataType\":\"T1\",\"dataDate\":\"2022-07-18\",\"province\":\"甘肃\",\"userName\":\"gansu_zzc\",\"passWord\":\"gansu_zzc445862\",\"pageNumber\":\"1\"}"
+						},
+						"url": {
+							"raw": "http://10.128.86.64:8000/serviceAgent/rest/report/dmAddOrTotalData",
+							"protocol": "http",
+							"host": [
+								"10",
+								"128",
+								"86",
+								"64"
+							],
+							"port": "8000",
+							"path": [
+								"serviceAgent",
+								"rest",
+								"report",
+								"dmAddOrTotalData"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "异网全量用户标签（数据自注册-Android）接口",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-APP-ID",
+								"value": "bb2dd12bcfc371d5d17b737cbc9d45b5",
+								"type": "default"
+							},
+							{
+								"key": "X-APP-KEY",
+								"value": "da53a557a7344cc1efc82ec81e88416c",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"province\":\"甘肃\",\"userName\":\"gansu_zzc\",\"passWord\":\"gansu_zzc445862\",\"pageNumber\":\"1\"}"
+						},
+						"url": {
+							"raw": "http://10.128.86.64:8000/serviceAgent/rest/report/unknowntel",
+							"protocol": "http",
+							"host": [
+								"10",
+								"128",
+								"86",
+								"64"
+							],
+							"port": "8000",
+							"path": [
+								"serviceAgent",
+								"rest",
+								"report",
+								"unknowntel"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

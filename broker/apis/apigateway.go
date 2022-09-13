@@ -9,9 +9,8 @@ import (
 
 	"github.com/jasony62/tms-go-apihub/core"
 	"github.com/jasony62/tms-go-apihub/hub"
-	"github.com/jasony62/tms-go-apihub/tool"
+	"github.com/jasony62/tms-go-apihub/logger"
 	"github.com/jasony62/tms-go-apihub/util"
-	"go.uber.org/zap"
 
 	"github.com/gin-gonic/gin"
 )
@@ -70,7 +69,7 @@ func newStack(c *gin.Context, level string) (*hub.Stack, string) {
 	return &hub.Stack{
 		GinContext: c,
 		Heap:       map[string]interface{}{hub.HeapOriginName: value, hub.HeapBaseName: base},
-		BaseString: tool.CreateBaseString(base),
+		BaseString: util.CreateBaseString(base),
 		StartTime:  now,
 	}, name
 }
@@ -89,12 +88,12 @@ func callCommon(stack *hub.Stack, command string, content string) {
 				params[0].Value.Content = defaultApp.postNOK
 				result1, status1 := core.ApiRun(stack, &hub.ApiDef{Name: "main_pre_post_nok", Command: "flowApi", Args: &params}, "", true)
 				if status1 != http.StatusOK {
-					zap.S().Errorln("PRE - post NOK: ", stack.BaseString, " status:", status1, " result:", result1)
+					logger.LogS().Errorln("PRE - post NOK: ", stack.BaseString, " status:", status1, " result:", result1)
 				}
 			} else {
 				//成功时的回复应该定义在flow的step中
 				stack.GinContext.IndentedJSON(status, result)
-				zap.S().Errorln("PRE: ", stack.BaseString, " status:", status, " result:", result)
+				logger.LogS().Errorln("PRE: ", stack.BaseString, " status:", status, " result:", result)
 			}
 			return
 		}
@@ -109,20 +108,20 @@ func callCommon(stack *hub.Stack, command string, content string) {
 			params[0].Value.Content = defaultApp.postNOK
 			result1, status1 := core.ApiRun(stack, &hub.ApiDef{Name: "main_post_nok", Command: "flowApi", Args: &params}, "", true)
 			if status1 != http.StatusOK {
-				zap.S().Errorln("common - post NOK:", stack.BaseString, " status:", status1, " result:", result1)
+				logger.LogS().Errorln("common - post NOK:", stack.BaseString, " status:", status1, " result:", result1)
 			}
 		} else {
 			//成功时的回复应该定义在flow的step中
 			stack.GinContext.IndentedJSON(status, result)
-			zap.S().Errorln("common: ", stack.BaseString, " status:", status, " result:", result)
+			logger.LogS().Errorln("common: ", stack.BaseString, " status:", status, " result:", result)
 		}
 	} else if len(defaultApp.postOK) != 0 {
 		params[0].Value.Content = defaultApp.postOK
 		result1, status1 := core.ApiRun(stack, &hub.ApiDef{Name: "main_post_ok", Command: "flowApi", Args: &params}, "", true)
 		if status1 != http.StatusOK {
-			zap.S().Errorln("common - post NOK: ", stack.BaseString, " status:", status1, " result:", result1)
+			logger.LogS().Errorln("common - post NOK: ", stack.BaseString, " status:", status1, " result:", result1)
 		} else {
-			zap.S().Infoln("用户请求执行成功! 状态码: ", status1, " 请求详情:", stack.BaseString)
+			logger.LogS().Infoln("用户请求执行成功! 状态码: ", status1, " 请求详情:", stack.BaseString)
 		}
 	}
 }
@@ -154,18 +153,18 @@ func apiGatewayRun(host string, portString string, bucketEnable string,
 		host = "0.0.0.0"
 	}
 
-	zap.S().Infoln("host: ", host)
+	logger.LogS().Infoln("host: ", host)
 
 	if len(portString) > 0 {
 		port, _ = strconv.Atoi(portString)
 	}
-	zap.S().Infoln("port ", port)
+	logger.LogS().Infoln("port ", port)
 
 	if len(bucketEnable) > 0 {
 		re := regexp.MustCompile(`(?i)yes|true`)
 		defaultApp.bucketEnable = re.MatchString(bucketEnable)
 	}
-	zap.S().Infoln("bucket enable ", defaultApp.bucketEnable)
+	logger.LogS().Infoln("bucket enable ", defaultApp.bucketEnable)
 
 	if len(pre) != 0 {
 		if pre == "none" {
@@ -194,14 +193,17 @@ func apiGatewayRun(host string, portString string, bucketEnable string,
 	if len(httpApi) != 0 {
 		if postNOK == "none" {
 			errStr := "无效httpapi脚本名称"
-			zap.S().Errorln(errStr)
+			logger.LogS().Errorln(errStr)
 			panic(errStr)
 		} else {
 			defaultApp.httpApi = httpApi
 		}
 	}
 
-	router := gin.Default()
+	router := gin.New()
+	// 注册zap中间件,使用zap日志处理Gin日志
+	router.Use(logger.GinLogger(), logger.GinRecovery(true))
+
 	if defaultApp.bucketEnable {
 		router.Any("/httpapi/:bucket/:Id", callHttpApi)
 		router.Any("/httpapi/:bucket/:Id/:version", callHttpApi)
@@ -218,7 +220,7 @@ func apiGatewayRun(host string, portString string, bucketEnable string,
 		router.Any("/schedule/:Id/:version", callSchedule)
 	}
 	basePath := util.GetBasePath() + "templates"
-	if needLoad, _ := tool.PathExists(basePath); needLoad {
+	if needLoad, _ := util.PathExists(basePath); needLoad {
 		router.LoadHTMLGlob(basePath + "/*.tmpl")
 	}
 

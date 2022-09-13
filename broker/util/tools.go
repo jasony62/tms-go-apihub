@@ -1,6 +1,20 @@
-package tool
+package util
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"os"
+)
+
+func PathExists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
+}
 
 func CreateBaseString(param map[string]interface{}) string {
 	//json转map

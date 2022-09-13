@@ -20,4 +20,16 @@ broker/vendor/
 log/
 .vscode
 
-postman/postman_collections/.postman/
+test/http-server/http-server
+
+example/httpapis/__INTERNAL/
+example/schedules/__INTERNAL
+
+tool/postman/cmd/test.sh
+tool/postman/cmd/httpapis/
+tool/postman/cmd/privates/
+tool/postman/cmd/postman_collections/__INTERNAL
+
+tool/swagger/from/
+
+

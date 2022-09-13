@@ -30,3 +30,13 @@ const Right_Pulbic = "public"
 const Right_Internal = "internal"
 const Right_Whitelist = "whitelist"
 const Right_Blacklist = "blacklist"
+
+const (
+	JSON_TYPE_PRIVATE = iota
+	JSON_TYPE_API
+	JSON_TYPE_FLOW
+	JSON_TYPE_SCHEDULE
+	JSON_TYPE_API_RIGHT
+	JSON_TYPE_FLOW_RIGHT
+	JSON_TYPE_SCHEDULE_RIGHT
+)

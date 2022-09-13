@@ -63,7 +63,7 @@ fi
 # 启动tms-go-apihub服务程序
 echo "--------------auto run tms-go-apihub--------------"
 if [ -f "$apihub_app" ];then
-    $apihub_app --base $conf_path &
+    $apihub_app --base $conf_path 
     echo "success: tms-go-apihub后台运行成功!"
 else
     echo "error: ./tms-go-apihub 可执行文件不存在"
@@ -71,7 +71,7 @@ else
     go get
     go build -o tms-go-apihub
     if [ -f "$apihub_app" ];then
-        $apihub_app --base $conf_path &
+        $apihub_app --base $conf_path 
         echo "success: tms-go-apihub重新编译且后台运行成功!"
     else
         echo "error: tms-go-apihub重新编译源码失败, 请检查 ./ 源码是否正确"
