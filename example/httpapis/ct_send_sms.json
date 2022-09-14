@@ -1,0 +1,33 @@
+{
+  "id": "ct_send_sms",
+  "description": "中国电信三网消息平台三网短信发送接口",
+  "url": "http://api.189.cn/v2/emp/templateSms/sendSms",
+  "method": "POST",
+  "requestContentType": "text",
+  "args": [
+     {
+      "in": "query",
+      "name": "phone",
+      "value": {
+        "from": "origin",
+        "content": "phone"
+      }
+    },
+     {
+      "in": "query",
+      "name": "template_id",
+      "value": {
+        "from": "origin",
+        "content": "template_id"
+      }
+    },
+  	{
+      "in": "body",
+      "name": "app_id",
+      "value": {
+        "from": "template",
+        "content": "acceptor_tel={{.origin.phone}}&timestamp={{timestamp}}&app_id=865976680000279630&access_token=Af5Tsqy7GO9yD5djSvxgFZnej7h5eC3zv0ViAVnzPDG1l&template_id={{.origin.template_id}}&template_param={}"
+      }
+    }
+  ]
+}
