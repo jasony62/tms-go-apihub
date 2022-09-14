@@ -85,5 +85,7 @@ curl -i -X POST -d '{"text":"中国中央电视台是国家电视台"}'  "http:/
 echo "\r\npostman转json文件,号码归属地查询:\r\n"
 curl -i -H "Content-Type: application/json" "http://localhost:8080/httpapi/手机归属地_mobile?tel=18888888888"
 
-#中国电信三网消息平台三网短信接口，短信发送
-curl -i -X POST -d '{"phone": "13327166342", "template_id":"558407"}' "http://localhost:8089/httpapi/ct_send_sms"
+#中国电信三网消息平台三网短信接口，短信发送。phone填写接收短信手机号；template_id填写需要下发的短信模板ID。558407或者558408
+#558407：您好，您发起的报账单处理状态有更新，请及时登录报销系统处理。
+#558408：您好，您发起的报账单{param1}尚未收到对应的纸质票据，请您尽快递送。如果在48小时内仍未收到纸质票据，将会退回您的报账申请。
+curl -i -X POST -d '{"phone": "1xxxxxxxxxx", "template_id":"558407"}' "http://localhost:8089/httpapi/ct_send_sms"
