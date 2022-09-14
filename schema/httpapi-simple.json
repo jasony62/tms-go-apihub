@@ -81,8 +81,10 @@
 			"enum": [
 				"json",
 				"form",
-				"orgin",
-				"none"
+				"origin",
+				"none",
+				"text"
+
 			]
 		},
 		"args": {
