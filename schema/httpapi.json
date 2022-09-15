@@ -28,7 +28,7 @@
     },
     "requestContentType": {
       "type": "string",
-      "enum": ["json", "form", "orgin", "none"]
+      "enum": ["json", "form", "origin", "none", "text"]
     },
     "args": {
       "type": "array",
