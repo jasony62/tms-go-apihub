@@ -1,0 +1,486 @@
+{
+    "name": "postmanpressure",
+    "description": "Postman_Pressure",
+    "steps": [
+        {
+            "type": "loop",
+            "mode": "normal",
+            "control": {
+                "name": "天津_查询mo",
+                "concurrentLoopNum": 100,
+                "key": {
+                    "from": "literal",
+                    "content": "100"
+                },
+                "steps": [
+                    {
+                        "type": "api",
+                        "api": {
+                            "name": "天津_查询mo",
+                            "command": "httpApi",
+                            "args": [
+                                {
+                                    "name": "name",
+                                    "value": {
+                                        "from": "literal",
+                                        "content": "天津_查询mo"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "loop",
+            "mode": "normal",
+            "control": {
+                "name": "天津_查询报告",
+                "concurrentLoopNum": 100,
+                "key": {
+                    "from": "literal",
+                    "content": "100"
+                },
+                "steps": [
+                    {
+                        "type": "api",
+                        "api": {
+                            "name": "天津_查询报告",
+                            "command": "httpApi",
+                            "args": [
+                                {
+                                    "name": "name",
+                                    "value": {
+                                        "from": "literal",
+                                        "content": "天津_查询报告"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "loop",
+            "mode": "normal",
+            "control": {
+                "name": "天津_查询余额",
+                "concurrentLoopNum": 100,
+                "key": {
+                    "from": "literal",
+                    "content": "100"
+                },
+                "steps": [
+                    {
+                        "type": "api",
+                        "api": {
+                            "name": "天津_查询余额",
+                            "command": "httpApi",
+                            "args": [
+                                {
+                                    "name": "name",
+                                    "value": {
+                                        "from": "literal",
+                                        "content": "天津_查询余额"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "loop",
+            "mode": "normal",
+            "control": {
+                "name": "天津_发送接口",
+                "concurrentLoopNum": 100,
+                "key": {
+                    "from": "literal",
+                    "content": "100"
+                },
+                "steps": [
+                    {
+                        "type": "api",
+                        "api": {
+                            "name": "天津_发送接口",
+                            "command": "httpApi",
+                            "args": [
+                                {
+                                    "name": "name",
+                                    "value": {
+                                        "from": "literal",
+                                        "content": "天津_发送接口"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "loop",
+            "mode": "normal",
+            "control": {
+                "name": "信元_5G新增手机终端画像_5G开关实时变化模型（数据自注册-Android）接口",
+                "concurrentLoopNum": 100,
+                "key": {
+                    "from": "literal",
+                    "content": "100"
+                },
+                "steps": [
+                    {
+                        "type": "api",
+                        "api": {
+                            "name": "信元_5G新增手机终端画像_5G开关实时变化模型（数据自注册-Android）接口",
+                            "command": "httpApi",
+                            "args": [
+                                {
+                                    "name": "name",
+                                    "value": {
+                                        "from": "literal",
+                                        "content": "信元_5G新增手机终端画像_5G开关实时变化模型（数据自注册-Android）接口"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "loop",
+            "mode": "normal",
+            "control": {
+                "name": "信元_5G新增手机终端画像_卡槽实时变化模型（数据自注册-Android）接口",
+                "concurrentLoopNum": 100,
+                "key": {
+                    "from": "literal",
+                    "content": "100"
+                },
+                "steps": [
+                    {
+                        "type": "api",
+                        "api": {
+                            "name": "信元_5G新增手机终端画像_卡槽实时变化模型（数据自注册-Android）接口",
+                            "command": "httpApi",
+                            "args": [
+                                {
+                                    "name": "name",
+                                    "value": {
+                                        "from": "literal",
+                                        "content": "信元_5G新增手机终端画像_卡槽实时变化模型（数据自注册-Android）接口"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "loop",
+            "mode": "normal",
+            "control": {
+                "name": "信元_5G新增手机终端画像_全量用户标签（数据自注册-Android）接口",
+                "concurrentLoopNum": 100,
+                "key": {
+                    "from": "literal",
+                    "content": "100"
+                },
+                "steps": [
+                    {
+                        "type": "api",
+                        "api": {
+                            "name": "信元_5G新增手机终端画像_全量用户标签（数据自注册-Android）接口",
+                            "command": "httpApi",
+                            "args": [
+                                {
+                                    "name": "name",
+                                    "value": {
+                                        "from": "literal",
+                                        "content": "信元_5G新增手机终端画像_全量用户标签（数据自注册-Android）接口"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "loop",
+            "mode": "normal",
+            "control": {
+                "name": "信元_5G新增手机终端画像_首注册模型（ES自注册-苹果）接口",
+                "concurrentLoopNum": 100,
+                "key": {
+                    "from": "literal",
+                    "content": "100"
+                },
+                "steps": [
+                    {
+                        "type": "api",
+                        "api": {
+                            "name": "信元_5G新增手机终端画像_首注册模型（ES自注册-苹果）接口",
+                            "command": "httpApi",
+                            "args": [
+                                {
+                                    "name": "name",
+                                    "value": {
+                                        "from": "literal",
+                                        "content": "信元_5G新增手机终端画像_首注册模型（ES自注册-苹果）接口"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "loop",
+            "mode": "normal",
+            "control": {
+                "name": "信元_5G新增手机终端画像_首注册模型（IMS自注册）接口",
+                "concurrentLoopNum": 100,
+                "key": {
+                    "from": "literal",
+                    "content": "100"
+                },
+                "steps": [
+                    {
+                        "type": "api",
+                        "api": {
+                            "name": "信元_5G新增手机终端画像_首注册模型（IMS自注册）接口",
+                            "command": "httpApi",
+                            "args": [
+                                {
+                                    "name": "name",
+                                    "value": {
+                                        "from": "literal",
+                                        "content": "信元_5G新增手机终端画像_首注册模型（IMS自注册）接口"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "loop",
+            "mode": "normal",
+            "control": {
+                "name": "信元_5G新增手机终端画像_首注册模型（数据自注册-Android）接口",
+                "concurrentLoopNum": 100,
+                "key": {
+                    "from": "literal",
+                    "content": "100"
+                },
+                "steps": [
+                    {
+                        "type": "api",
+                        "api": {
+                            "name": "信元_5G新增手机终端画像_首注册模型（数据自注册-Android）接口",
+                            "command": "httpApi",
+                            "args": [
+                                {
+                                    "name": "name",
+                                    "value": {
+                                        "from": "literal",
+                                        "content": "信元_5G新增手机终端画像_首注册模型（数据自注册-Android）接口"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "loop",
+            "mode": "normal",
+            "control": {
+                "name": "信元_5G新增手机终端画像_异网全量用户标签（数据自注册-Android）接口",
+                "concurrentLoopNum": 100,
+                "key": {
+                    "from": "literal",
+                    "content": "100"
+                },
+                "steps": [
+                    {
+                        "type": "api",
+                        "api": {
+                            "name": "信元_5G新增手机终端画像_异网全量用户标签（数据自注册-Android）接口",
+                            "command": "httpApi",
+                            "args": [
+                                {
+                                    "name": "name",
+                                    "value": {
+                                        "from": "literal",
+                                        "content": "信元_5G新增手机终端画像_异网全量用户标签（数据自注册-Android）接口"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "loop",
+            "mode": "normal",
+            "control": {
+                "name": "信元_5G新增手机终端画像_主流量卡切换模型（数据自注册-Android）接口",
+                "concurrentLoopNum": 100,
+                "key": {
+                    "from": "literal",
+                    "content": "100"
+                },
+                "steps": [
+                    {
+                        "type": "api",
+                        "api": {
+                            "name": "信元_5G新增手机终端画像_主流量卡切换模型（数据自注册-Android）接口",
+                            "command": "httpApi",
+                            "args": [
+                                {
+                                    "name": "name",
+                                    "value": {
+                                        "from": "literal",
+                                        "content": "信元_5G新增手机终端画像_主流量卡切换模型（数据自注册-Android）接口"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "loop",
+            "mode": "normal",
+            "control": {
+                "name": "浙江信产_集团aWiFi漫游能力",
+                "concurrentLoopNum": 100,
+                "key": {
+                    "from": "literal",
+                    "content": "100"
+                },
+                "steps": [
+                    {
+                        "type": "api",
+                        "api": {
+                            "name": "浙江信产_集团aWiFi漫游能力",
+                            "command": "httpApi",
+                            "args": [
+                                {
+                                    "name": "name",
+                                    "value": {
+                                        "from": "literal",
+                                        "content": "浙江信产_集团aWiFi漫游能力"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "loop",
+            "mode": "normal",
+            "control": {
+                "name": "浙江信产_集团aWiFi投屏能力",
+                "concurrentLoopNum": 100,
+                "key": {
+                    "from": "literal",
+                    "content": "100"
+                },
+                "steps": [
+                    {
+                        "type": "api",
+                        "api": {
+                            "name": "浙江信产_集团aWiFi投屏能力",
+                            "command": "httpApi",
+                            "args": [
+                                {
+                                    "name": "name",
+                                    "value": {
+                                        "from": "literal",
+                                        "content": "浙江信产_集团aWiFi投屏能力"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "loop",
+            "mode": "normal",
+            "control": {
+                "name": "浙江_可信通信业务提醒",
+                "concurrentLoopNum": 100,
+                "key": {
+                    "from": "literal",
+                    "content": "100"
+                },
+                "steps": [
+                    {
+                        "type": "api",
+                        "api": {
+                            "name": "浙江_可信通信业务提醒",
+                            "command": "httpApi",
+                            "args": [
+                                {
+                                    "name": "name",
+                                    "value": {
+                                        "from": "literal",
+                                        "content": "浙江_可信通信业务提醒"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "loop",
+            "mode": "normal",
+            "control": {
+                "name": "浙江_深度触达呼叫",
+                "concurrentLoopNum": 100,
+                "key": {
+                    "from": "literal",
+                    "content": "100"
+                },
+                "steps": [
+                    {
+                        "type": "api",
+                        "api": {
+                            "name": "浙江_深度触达呼叫",
+                            "command": "httpApi",
+                            "args": [
+                                {
+                                    "name": "name",
+                                    "value": {
+                                        "from": "literal",
+                                        "content": "浙江_深度触达呼叫"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}

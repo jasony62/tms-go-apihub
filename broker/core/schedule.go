@@ -21,7 +21,8 @@ type concurrentLoopOut struct {
 }
 
 type concurrentScheIn struct {
-	task *hub.ScheduleApiDef
+	stack *hub.Stack
+	task  *hub.ScheduleApiDef
 }
 
 type concurrentScheOut struct {
@@ -64,6 +65,8 @@ func copyScheduleStack(src *hub.Stack, task *hub.ScheduleApiDef) *hub.Stack {
 				loop[index] = element
 			}
 			result.Heap[k] = loop
+		case hub.HeapVarsName:
+			/*don't copy this one*/
 		default:
 			result.Heap[k] = v
 		}
@@ -217,10 +220,10 @@ func handleOneScheduleApi(stack *hub.Stack, task *hub.ScheduleApiDef) (result in
 	return result, status
 }
 
-func concurrentScheWorker(stack *hub.Stack, apis chan concurrentScheIn, out chan concurrentScheOut) {
+func concurrentScheWorker(apis chan concurrentScheIn, out chan concurrentScheOut) {
 	for task := range apis {
-		logger.LogS().Infoln(stack.BaseString, "并行运行 type：", task.task.Type)
-		result, _ := handleOneScheduleApi(stack, task.task)
+		logger.LogS().Infoln(task.stack.BaseString, "并行运行 type：", task.task.Type)
+		result, _ := handleOneScheduleApi(task.stack, task.task)
 		out <- concurrentScheOut{task: task.task, result: result}
 	}
 }
@@ -264,8 +267,9 @@ func handleTasks(stack *hub.Stack, apis *[]hub.ScheduleApiDef, concurrentNum int
 		defer close(in)
 		out = make(chan concurrentScheOut, len(*apis))
 		defer close(out)
+
 		for i := 0; i < concurrentNum; i++ {
-			go concurrentScheWorker(stack, in, out)
+			go concurrentScheWorker(in, out)
 		}
 	}
 	if apis == nil {
@@ -279,7 +283,9 @@ func handleTasks(stack *hub.Stack, apis *[]hub.ScheduleApiDef, concurrentNum int
 		if concurrentNum > 1 {
 			if task.Mode == "concurrent" { //多个不同任务
 				logger.LogS().Infoln(stack.BaseString, "准备并行运行 type：", task.Type, ",concurrentNum:", concurrentNum)
-				in <- concurrentScheIn{task: task}
+				tmpStack := copyScheduleStack(stack, task)
+
+				in <- concurrentScheIn{stack: tmpStack, task: task}
 				counter++
 				continue
 			} else {
