@@ -227,6 +227,9 @@ func LoadConf(basePath string) {
 
 func LoadMainFlow(path string) (interface{}, int) {
 	if len(path) > 0 {
+		if path[len(path)-1] != '/' && path[len(path)-1] != '\\' {
+			path = path + "/"
+		}
 		DefaultConfMap.BasePath = path
 	}
 	logger.LogS().Infoln("Load main flow from %s\n", DefaultConfMap.BasePath)
