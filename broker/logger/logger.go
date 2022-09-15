@@ -46,7 +46,8 @@ func InitLogger(conf LogConfigs, logwithlevel bool) error {
 	} else {
 		level = zap.DebugLevel
 	}
-	if logwithlevel {
+
+	if logwithlevel && len(conf.LogFileName) > 0 {
 		errorLog := zap.LevelEnablerFunc(func(lev zapcore.Level) bool { //error级别及以上
 			return lev >= zap.ErrorLevel
 		})
