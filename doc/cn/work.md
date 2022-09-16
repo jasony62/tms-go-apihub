@@ -1,5 +1,6 @@
 ## 近期
 * 在base中记录访问源IP
+* 冒烟测试
 * hystrix-go旨在让 Go 程序员轻松构建具有与基于 Java 的 Hystrix 库类似的执行语义的应用程序。  
 
 *如何在回应json里面增加UUID，修改createJson？
