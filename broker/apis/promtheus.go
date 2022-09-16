@@ -49,6 +49,7 @@ func promStartRun(address string) {
 		logger.LogS().Infoln("Listen and Serve: ", address)
 		if err := http.ListenAndServe(address, nil); err != nil {
 			logger.LogS().Errorln("Error in ListenAndServe: %v", err)
+			panic("ERROR: prometheus ListenAndServe Failed!")
 		}
 	}()
 }
