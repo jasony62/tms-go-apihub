@@ -119,6 +119,7 @@ API网关与API服务配置文件相互分离。一方面，增加了程序部�
 |名称| 用途|
 | -- | -- |
 | main.json | 启动文件 |
+| test.sh | 通过curl调用接口说明 |
 | privates| 文件夹，存放密钥等认证信息，没有暴露在Github|
 | httpapis| 文件夹，存放HTTPAPI定义文件|
 | flows| 文件夹，存放FLOW定义文件|

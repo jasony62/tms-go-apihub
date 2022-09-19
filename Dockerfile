@@ -8,4 +8,4 @@ WORKDIR /home/tms-gah
 
 COPY . .
 
-RUN cd broker;go mod tidy; export CGO_ENABLED=0; go build -buildvcs=false -o tms-gah-broker; ln -s ../example conf
+RUN cd broker;go mod tidy; export CGO_ENABLED=0; go build -buildvcs=false -tags=jsoniter -o tms-gah-broker; ln -s ../example conf
