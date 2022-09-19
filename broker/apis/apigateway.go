@@ -64,7 +64,7 @@ func newStack(c *gin.Context, level string) (*hub.Stack, string) {
 		name = c.Param(`bucket`) + "/" + name
 	}
 
-	base := map[string]interface{}{"root": name, "type": level, "start": strconv.FormatInt(now.Unix(), 10)}
+	base := map[string]interface{}{"root": name, "type": level, "start": strconv.FormatInt(now.Unix(), 10), "src": c.ClientIP()}
 
 	return &hub.Stack{
 		GinContext: c,
