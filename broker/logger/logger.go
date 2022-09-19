@@ -5,7 +5,6 @@ import (
 	"path/filepath"
 	"runtime/debug"
 	"strings"
-	"time"
 
 	"net"
 	"net/http"
@@ -176,21 +175,17 @@ func LogL() *zap.Logger {
 // GinLogger 接收gin框架默认的日志
 func GinLogger() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		start := time.Now()
 		path := c.Request.URL.Path
 		query := c.Request.URL.RawQuery
 		c.Next()
 
-		cost := time.Since(start)
 		zap.L().Info(path,
 			zap.Int("status", c.Writer.Status()),
 			zap.String("method", c.Request.Method),
 			zap.String("path", path),
 			zap.String("query", query),
-			zap.String("ip", c.ClientIP()),
-			zap.String("user-agent", c.Request.UserAgent()),
+			zap.String("src", c.ClientIP()),
 			zap.String("errors", c.Errors.ByType(gin.ErrorTypePrivate).String()),
-			zap.Duration("cost", cost),
 		)
 	}
 }
