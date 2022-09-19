@@ -35,14 +35,6 @@ func isNormalMode(task *hub.ScheduleApiDef) bool {
 	return (mode != "concurrent") && (mode != "background")
 }
 
-func generateStepResult(stack *hub.Stack, args *[]hub.BaseParamDef) interface{} {
-	result := make(map[string]interface{}, len(*args))
-	for _, parameter := range *args {
-		result[parameter.Name], _ = util.GetParameterRawValue(stack, nil, &parameter.Value)
-	}
-	return result
-}
-
 func copyScheduleStack(src *hub.Stack, task *hub.ScheduleApiDef) *hub.Stack {
 	result := hub.Stack{
 		GinContext: src.GinContext,
@@ -53,11 +45,12 @@ func copyScheduleStack(src *hub.Stack, task *hub.ScheduleApiDef) *hub.Stack {
 	for k, v := range src.Heap {
 		switch k {
 		case hub.HeapOriginName:
-			if task.Type == "api" && task.Api.Args != nil {
-				result.Heap[k] = generateStepResult(src, task.Api.Args)
-			} else {
-				result.Heap[k] = v
+			oriLoop := src.Heap[k].(map[string]interface{})
+			loop := make(map[string]interface{}, len(oriLoop))
+			for index, element := range oriLoop {
+				loop[index] = element
 			}
+			result.Heap[k] = loop
 		case hub.HeapLoopName:
 			oriLoop := src.Heap[k].(map[string]int)
 			loop := make(map[string]int, len(oriLoop))
@@ -284,7 +277,6 @@ func handleTasks(stack *hub.Stack, apis *[]hub.ScheduleApiDef, concurrentNum int
 			if task.Mode == "concurrent" { //多个不同任务
 				logger.LogS().Infoln(stack.BaseString, "准备并行运行 type：", task.Type, ",concurrentNum:", concurrentNum)
 				tmpStack := copyScheduleStack(stack, task)
-
 				in <- concurrentScheIn{stack: tmpStack, task: task}
 				counter++
 				continue
