@@ -78,22 +78,23 @@ func getHttpapiArgs(postmanRequest *postman.Request) {
 			}
 		}
 	}
-
-	switch apiHubHttpConf.Method {
-	case "GET":
-		// 解析qury
-		if postmanRequest.URL.Query != nil {
-			parseRequestUrlQuery(postmanRequest.URL.Query)
-		}
-	case "POST":
-		// 解析body
-		if postmanRequest.Body != nil {
-			switch postmanRequest.Body.Mode {
-			case "urlencoded":
-				parseRequestBodyUrlencoded(postmanRequest.Body)
-			case "raw":
-				parseRequestBodyRaw(postmanRequest.Body)
-			default:
+	if postmanRequest.URL != nil {
+		switch apiHubHttpConf.Method {
+		case "GET":
+			// 解析qury
+			if postmanRequest.URL.Query != nil {
+				parseRequestUrlQuery(postmanRequest.URL.Query)
+			}
+		case "POST":
+			// 解析body
+			if postmanRequest.Body != nil {
+				switch postmanRequest.Body.Mode {
+				case "urlencoded":
+					parseRequestBodyUrlencoded(postmanRequest.Body)
+				case "raw":
+					parseRequestBodyRawNew(postmanRequest.Body)
+				default:
+				}
 			}
 		}
 	}

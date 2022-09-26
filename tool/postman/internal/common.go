@@ -17,11 +17,11 @@ type Args struct {
 }
 
 type Value struct {
-	From    string            `json:"from"`
-	Content string            `json:"content,omitempty"`
-	Args    string            `json:"args,omitempty"`
-	Json    map[string]string `json:"json,omitempty"`
-	// Json    *interface{} `json:"json,omitempty"`
+	From    string `json:"from"`
+	Content string `json:"content,omitempty"`
+	Args    string `json:"args,omitempty"`
+	// Json    map[string]string `json:"json,omitempty"`
+	Json interface{} `json:"json,omitempty"`
 }
 
 type ApiHubHttpPrivates struct {

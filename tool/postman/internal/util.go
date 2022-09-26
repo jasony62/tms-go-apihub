@@ -1,6 +1,8 @@
 package postmaninternal
 
-import "strings"
+import (
+	"strings"
+)
 
 func arrcmp(src []string, dest []string) ([]string, []string) {
 	msrc := make(map[string]byte) //按源数组建索引
