@@ -68,6 +68,9 @@ func queryFromHeap(stack *hub.Stack, name string) (string, error) {
 		logger.LogS().Errorln("NOK execute template:", err, " name:", name, "heap:", stack.Heap)
 		return "", err
 	}
+	if buf.String() == "<no value>" {
+		logger.LogS().Errorln("fail to get result:", name)
+	}
 	return buf.String(), err
 }
 
