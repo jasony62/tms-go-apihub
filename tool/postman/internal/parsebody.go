@@ -57,111 +57,91 @@ func parseRequestBodyUrlencoded(postmanRequestBody *postman.Body) {
 }
 
 // 解析body Raw New
-func parseRequestBodyRawNew(postmanRequestBody *postman.Body) {
+func parseRequestBodyRawNew(postmanRequestBody *postman.Body) error {
 	if postmanRequestBody != nil {
 		requestBody := postmanRequestBody
 		if requestBody.Raw != "" {
-			// klog.Infoln("__httpapirequestBody.Raw is : ", requestBody.Raw)
-			// nameString := ""
-			// backNameIndex := 0
-			// contentString := ""
-			// backContentIndex := 0
-			// contentStringFunc := ""
-			// backContentIndexFunc := 0
-			// tempbodyjson := make(map[string]string) // 组建body的json对象
-			// tempRequestRawArray := *new([]string)   // 暂存MD5需要对比的全部body元素
-			// nameList := ""
-			// requestBodyRawJson := strings.Trim(, "\\")
-
 			klog.Infoln("requestBody.Raw: ", requestBody.Raw)
+			if strings.Index(requestBody.Raw, "\r") > 0 { //基本判定为json格式
+				// if !json.Valid([]byte(requestBody.Raw)) { // 含有 \r \n 的json
+				requestBody.Raw = strings.Replace(requestBody.Raw, "\r", "", -1)
+				requestBody.Raw = strings.Replace(requestBody.Raw, "\n", "", -1)
+				requestBody.Raw = strings.Replace(requestBody.Raw, "\u00a0", "", -1)
+				// }
+				requestBody.Raw = strings.Replace(requestBody.Raw, " ", "", -1)
+				requestBody.Raw = strings.Replace(requestBody.Raw, "{{", "\"{{.vars.", -1)
+				requestBody.Raw = strings.Replace(requestBody.Raw, "}}", "}}\"", -1)
 
-			if json.Valid([]byte(requestBody.Raw)) {
-				klog.Infoln("requestBody.Raw: yes")
-			} else {
-				klog.Infoln("requestBody.Raw: no json")
-				requestBody.Raw = strings.Replace(requestBody.Raw, "\\", "", -1)
-				requestBody.Raw = strings.Replace(requestBody.Raw, "\"[", "[", -1)
-				requestBody.Raw = strings.Replace(requestBody.Raw, "]\"", "]", -1)
-			}
+				requestBodyRawMap := make(map[string]string)
+				err := json.Unmarshal([]byte(requestBody.Raw), &requestBodyRawMap)
+				if err != nil {
+					bodyArgs := Args{In: "body", Name: "body", Value: Value{From: "literal", Content: requestBody.Raw}}
+					apiHubHttpConf.Args = append(apiHubHttpConf.Args, bodyArgs)
+					return err
+				}
 
-			/*
-				for i := 0; i < len(requestBody.Raw); i++ {
-					nameString, backNameIndex = getStringBetweenDoubleQuotationMarks(requestBody.Raw[i:])
-					// klog.Infoln("test request raw is :", requestBody.Raw[backNameIndex+i+3:backNameIndex+i+4])
-					if backNameIndex != -1 {
-						_, tempstringflag := getStringBetweenSpecifySymbols(requestBody.Raw[backNameIndex+i:], "\"", ":")
-						_, tempstringflag2 := getStringBetweenSpecifySymbols(requestBody.Raw[backNameIndex+i:], "\"", ",")
-						if tempstringflag != -1 {
-							// 考虑到字符串最后一组没有 ， 增加判断
-							if tempstringflag2 != -1 {
-								contentString, backContentIndex = getStringBetweenDoubleQuotationMarks(requestBody.Raw[backNameIndex+i+tempstringflag : backNameIndex+i+tempstringflag2])
-							} else {
-								contentString, backContentIndex = getStringBetweenDoubleQuotationMarks(requestBody.Raw[backNameIndex+i+tempstringflag:])
-							}
-							contentStringFunc, backContentIndexFunc = getStringBetweenDoubleBrackets(requestBody.Raw[backNameIndex+i+tempstringflag:])
-							// "":""
-							if backContentIndex != -1 {
-								tempbodyjson[nameString] = contentString
-								tempRequestRawArray = append(tempRequestRawArray, contentString)
-								i = backNameIndex + backContentIndex + i + tempstringflag
-							} else if backContentIndexFunc != -1 { // "":{{}} 全局变量或函数
-								tempbodyjson[nameString] = "{{" + ".vars." + contentStringFunc + "}}"
-								tempRequestRawArray = append(tempRequestRawArray, contentStringFunc)
+				nameList := ""
+				tempRequestRawArray := *new([]string) // 暂存MD5需要对比的全部body元素
+				for _, value := range requestBodyRawMap {
+					if strings.Index(value, "vars") > 0 {
+						value = strings.Replace(value, "{{.vars.", "", -1)
+						value = strings.Replace(value, "}}", "", -1)
+						// requestBody.Raw = strings.Replace(requestBody.Raw, "}}", "}}\"", -1)
+					}
+					tempRequestRawArray = append(tempRequestRawArray, value)
 
-								// MD5 特殊，单独处理
-								if coversionFuncMap[contentStringFunc] == "md5" {
-									// 遍历MD5涉及变量
-									for a := range setEnvironmentVariableMD5Array {
-										for n, v := range tempbodyjson {
-											tempstring, tempindex := getStringBetweenSpecifySymbols(v, "vars.", "}}")
-											if tempindex != -1 { //如果是func类型
-												if (setEnvironmentVariableMD5Array[a] == tempstring) && (setEnvironmentVariableMD5Array[a] != contentStringFunc) {
-													nameList = nameList + " " + tempstring
-													break
-												}
-											} else {
-												if (setEnvironmentVariableMD5Array[a] == v) && (v != "") {
-													args := Args{In: "vars", Name: n, Value: Value{From: "literal", Content: v}}
-													apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
-													nameList = nameList + " " + n
-													break
-												}
-											}
-										}
+				}
+				tempbodyjson := requestBodyRawMap
+				for key, value := range requestBodyRawMap {
+					nameString := key
+					contentStringFunc, tempIndex := getStringBetweenSpecifySymbols(value, "vars.", "}}")
+					if tempIndex != -1 && coversionFuncMap[contentStringFunc] == "md5" { // MD5 特殊，单独处理
+						for a := range setEnvironmentVariableMD5Array { // 遍历MD5涉及变量
+							for n, v := range tempbodyjson {
+								tempstring, tempindex := getStringBetweenSpecifySymbols(v, "vars.", "}}")
+								if tempindex != -1 { //如果是func类型
+									if (setEnvironmentVariableMD5Array[a] == tempstring) && (setEnvironmentVariableMD5Array[a] != contentStringFunc) {
+										nameList = nameList + " " + tempstring
+										break
 									}
-									tempLocalMD5Key, _ := arrcmp(tempRequestRawArray, setEnvironmentVariableMD5Array)
-									for x := range tempLocalMD5Key {
-										args := Args{In: "vars", Name: ("key" + strconv.Itoa(x)), Value: Value{From: "literal", Content: tempLocalMD5Key[x]}}
-										apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
-										nameList = nameList + " " + "key" + strconv.Itoa(x)
-									}
-
-									nameList = strings.TrimSpace(nameList)
-									args := Args{In: "vars", Name: nameString, Value: Value{From: "func", Content: coversionFuncMap[contentStringFunc], Args: nameList}}
-									apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
 								} else {
-									args := Args{In: "vars", Name: contentStringFunc, Value: Value{From: "func", Content: coversionFuncMap[contentStringFunc]}}
-									apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
-									// nameList = nameList + " " + coversionFuncMap[contentStringFunc]
+									if (setEnvironmentVariableMD5Array[a] == v) && (v != "") {
+										args := Args{In: "vars", Name: n, Value: Value{From: "literal", Content: v}}
+										apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+										nameList = nameList + " " + n
+										break
+									}
 								}
-								// _ = contentString
-								i = backNameIndex + backContentIndex + i + tempstringflag
-							} else {
-								nameString = ""
-								contentString = ""
-								klog.Infoln("__parseRequestBodyRawError:Format error")
-								break
 							}
 						}
+						tempLocalMD5Key, _ := arrcmp(tempRequestRawArray, setEnvironmentVariableMD5Array)
+						for x := range tempLocalMD5Key {
+							args := Args{In: "vars", Name: ("key" + strconv.Itoa(x)), Value: Value{From: "literal", Content: tempLocalMD5Key[x]}}
+							apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+							nameList = nameList + " " + "key" + strconv.Itoa(x)
+						}
+						nameList = strings.TrimSpace(nameList)
+						args := Args{In: "vars", Name: nameString, Value: Value{From: "func", Content: coversionFuncMap[contentStringFunc], Args: nameList}}
+						apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+					} else if tempIndex != -1 {
+						args := Args{In: "vars", Name: contentStringFunc, Value: Value{From: "func", Content: coversionFuncMap[contentStringFunc]}}
+						apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+						// nameList = nameList + " " + coversionFuncMap[contentStringFunc]
 					}
 				}
-			*/
-			bodyArgs := Args{In: "body", Name: "body", Value: Value{From: "json", Json: requestBody.Raw}}
-			apiHubHttpConf.Args = append(apiHubHttpConf.Args, bodyArgs)
+				bodyArgs := Args{In: "body", Name: "body", Value: Value{From: "json", Json: requestBodyRawMap}}
+				apiHubHttpConf.Args = append(apiHubHttpConf.Args, bodyArgs)
+			} else { // 大概率字符串
+				bodyArgs := Args{In: "body", Name: "body", Value: Value{From: "literal", Content: requestBody.Raw}}
+				apiHubHttpConf.Args = append(apiHubHttpConf.Args, bodyArgs)
+			}
+		} else {
+			klog.Infoln("__parseRequestBodyRawError: Content null")
 		}
 	} else {
 		apiHubHttpConf.Requestcontenttype = ""
 	}
+	return nil
 }
 
 // 解析body Raw
