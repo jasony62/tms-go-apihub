@@ -54,6 +54,7 @@ func newStack(c *gin.Context, level string) (*hub.Stack, string) {
 	} else {
 		value = *inReqData
 	}
+	logger.LogS().Infoln("get input parameters: ", value)
 
 	name := c.Param(`Id`)
 	version := c.Param(`version`)
