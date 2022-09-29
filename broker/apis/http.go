@@ -52,7 +52,11 @@ func postHttpapis(stack *hub.Stack, name string, result string, code int, durati
 	} else {
 		/*TODO real value*/
 		stats["id"] = strconv.FormatInt(int64(code), 10)
-		stats["msg"] = result
+		if len(result) != 0 {
+			stats["msg"] = result
+		} else {
+			stats["msg"] = "nok"
+		}
 		logger.LogS().Errorln("!!!!post HTTPAPI NOK:", stack.BaseString, " name：", name, ", result:", result, " code:", code, " stats:", stats)
 		params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "_HTTPNOK"}}}
 		core.ApiRun(stack, &hub.ApiDef{Name: "HTTPAPI_POST_NOK", Command: "flowApi", Args: &params}, "", true)

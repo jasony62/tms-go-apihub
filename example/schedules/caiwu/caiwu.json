@@ -1,0 +1,210 @@
+{
+    "name": "caiwumain",
+    "description": "caiwumain",
+    "steps": [
+        {
+            "type": "loop",
+            "control": {
+                "name": "循环10次退出",
+                "key": {
+                    "from": "literal",
+                    "content": "10"
+                },
+                "steps": [
+                    {
+                        "type": "api",
+                        "api": {
+                            "name": "全量查询",
+                            "command": "flowApi",
+                            "resultKey": "result_full",
+                            "args": [
+                                {
+                                    "name": "name",
+                                    "value": {
+                                        "from": "literal",
+                                        "content": "ct_yixing_fdata_full_v1"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "type": "loop",
+                        "resultKey": "myloop",
+                        "control": {
+                            "name": "sendsms",
+                            "key": {
+                                "from": "template",
+                                "content": "{{len .result_full.data}}"
+                            },
+                            "steps": [
+                                {
+                                    "type": "api",
+                                    "api": {
+                                        "name": "发送短信",
+                                        "command": "flowApi",
+                                        "resultKey": "full",
+                                        "args": [
+                                            {
+                                                "name": "name",
+                                                "value": {
+                                                    "from": "literal",
+                                                    "content": "ct_send_fsms_v1"
+                                                }
+                                            }
+                                        ],
+                                        "origin": [
+                                            {
+                                                "name": "content",
+                                                "value": {
+                                                    "from": "jsonRaw",
+                                                    "json": {
+                                                        "number": "{{(index .result_full.data .loop.sendsms).reimbursementNo}}",
+                                                        "phone": "15801426781"
+                                                    }
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "type": "api",
+                        "mode": "normal",
+                        "api": {
+                            "name": "休眠",
+                            "command": "pressureSleep",
+                            "args": [
+                                {
+                                    "name": "hour",
+                                    "value": {
+                                        "from": "literal",
+                                        "content": "0"
+                                    }
+                                },
+                                {
+                                    "name": "minute",
+                                    "value": {
+                                        "from": "literal",
+                                        "content": "0"
+                                    }
+                                },
+                                {
+                                    "name": "second",
+                                    "value": {
+                                        "from": "literal",
+                                        "content": "30"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "type": "loop",
+                        "control": {
+                            "name": "循环12次退出",
+                            "key": {
+                                "from": "literal",
+                                "content": "2"
+                            },
+                            "steps": [
+                                {
+                                    "type": "api",
+                                    "api": {
+                                        "name": "增量查询",
+                                        "command": "flowApi",
+                                        "resultKey": "result_part",
+                                        "args": [
+                                            {
+                                                "name": "name",
+                                                "value": {
+                                                    "from": "literal",
+                                                    "content": "ct_yixing_fdata_update_v1"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "type": "loop",
+                                    "resultKey": "myloop",
+                                    "control": {
+                                        "name": "sendsms",
+                                        "key": {
+                                            "from": "template",
+                                            "content": "{{len .result_part.data}}"
+                                        },
+                                        "steps": [
+                                            {
+                                                "type": "api",
+                                                "api": {
+                                                    "name": "发送短信",
+                                                    "command": "flowApi",
+                                                    "resultKey": "full",
+                                                    "args": [
+                                                        {
+                                                            "name": "name",
+                                                            "value": {
+                                                                "from": "literal",
+                                                                "content": "ct_send_fsms_v1"
+                                                            }
+                                                        }
+                                                    ],
+                                                    "origin": [
+                                                        {
+                                                            "name": "content",
+                                                            "value": {
+                                                                "from": "jsonRaw",
+                                                                "json": {
+                                                                    "number": "{{(index .result_part.data .loop.sendsms).reimbursementNo}}",
+                                                                    "phone": "15801426781"
+                                                                }
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "type": "api",
+                                    "mode": "normal",
+                                    "api": {
+                                        "name": "休眠30s",
+                                        "command": "pressureSleep",
+                                        "args": [
+                                            {
+                                                "name": "hour",
+                                                "value": {
+                                                    "from": "literal",
+                                                    "content": "0"
+                                                }
+                                            },
+                                            {
+                                                "name": "minute",
+                                                "value": {
+                                                    "from": "literal",
+                                                    "content": "1"
+                                                }
+                                            },
+                                            {
+                                                "name": "second",
+                                                "value": {
+                                                    "from": "literal",
+                                                    "content": "0"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
