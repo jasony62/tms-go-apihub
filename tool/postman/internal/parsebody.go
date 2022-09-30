@@ -57,7 +57,7 @@ func parseRequestBodyUrlencoded(postmanRequestBody *postman.Body) {
 }
 
 // 解析body Raw New
-func parseRequestBodyRawNew(postmanRequestBody *postman.Body) error {
+func parseRequestBodyRaw(postmanRequestBody *postman.Body) error {
 	if postmanRequestBody != nil {
 		requestBody := postmanRequestBody
 		if requestBody.Raw != "" {
@@ -94,11 +94,11 @@ func parseRequestBodyRawNew(postmanRequestBody *postman.Body) error {
 				tempbodyjson := requestBodyRawMap
 				for key, value := range requestBodyRawMap {
 					nameString := key
-					contentStringFunc, tempIndex := getStringBetweenSpecifySymbols(value, "vars.", "}}")
+					contentStringFunc, tempIndex := GetStringBetweenSpecifySymbols(value, "vars.", "}}")
 					if tempIndex != -1 && coversionFuncMap[contentStringFunc] == "md5" { // MD5 特殊，单独处理
 						for a := range setEnvironmentVariableMD5Array { // 遍历MD5涉及变量
 							for n, v := range tempbodyjson {
-								tempstring, tempindex := getStringBetweenSpecifySymbols(v, "vars.", "}}")
+								tempstring, tempindex := GetStringBetweenSpecifySymbols(v, "vars.", "}}")
 								if tempindex != -1 { //如果是func类型
 									if (setEnvironmentVariableMD5Array[a] == tempstring) && (setEnvironmentVariableMD5Array[a] != contentStringFunc) {
 										nameList = nameList + " " + tempstring
@@ -145,7 +145,7 @@ func parseRequestBodyRawNew(postmanRequestBody *postman.Body) error {
 }
 
 // 解析body Raw
-func parseRequestBodyRaw(postmanRequestBody *postman.Body) {
+func parseRequestBodyRaw_Old(postmanRequestBody *postman.Body) {
 	if postmanRequestBody != nil {
 		requestBody := postmanRequestBody
 		if requestBody.Raw != "" {
@@ -164,8 +164,8 @@ func parseRequestBodyRaw(postmanRequestBody *postman.Body) {
 				nameString, backNameIndex = getStringBetweenDoubleQuotationMarks(requestBody.Raw[i:])
 				// klog.Infoln("test request raw is :", requestBody.Raw[backNameIndex+i+3:backNameIndex+i+4])
 				if backNameIndex != -1 {
-					_, tempstringflag := getStringBetweenSpecifySymbols(requestBody.Raw[backNameIndex+i:], "\"", ":")
-					_, tempstringflag2 := getStringBetweenSpecifySymbols(requestBody.Raw[backNameIndex+i:], "\"", ",")
+					_, tempstringflag := GetStringBetweenSpecifySymbols(requestBody.Raw[backNameIndex+i:], "\"", ":")
+					_, tempstringflag2 := GetStringBetweenSpecifySymbols(requestBody.Raw[backNameIndex+i:], "\"", ",")
 					if tempstringflag != -1 {
 						// 考虑到字符串最后一组没有 ， 增加判断
 						if tempstringflag2 != -1 {
@@ -194,7 +194,7 @@ func parseRequestBodyRaw(postmanRequestBody *postman.Body) {
 								// 遍历MD5涉及变量
 								for a := range setEnvironmentVariableMD5Array {
 									for n, v := range tempbodyjson {
-										tempstring, tempindex := getStringBetweenSpecifySymbols(v, "vars.", "}}")
+										tempstring, tempindex := GetStringBetweenSpecifySymbols(v, "vars.", "}}")
 										if tempindex != -1 { //如果是func类型
 											if (setEnvironmentVariableMD5Array[a] == tempstring) && (setEnvironmentVariableMD5Array[a] != contentStringFunc) {
 												nameList = nameList + " " + tempstring
@@ -263,7 +263,7 @@ func getPostmanEventFunc(postmanItem *postman.Items, preFuncKeyWord []string, ke
 								coversionFuncMap[keyWordString] = preEventFuncReferenceMap[preFuncKeyWord[k]]
 							}
 						case "CryptoJS.MD5":
-							keyWordString, index := getStringBetweenSpecifySymbols(postmanItem.Events[i].Script.Exec[j], "var", "=")
+							keyWordString, index := GetStringBetweenSpecifySymbols(postmanItem.Events[i].Script.Exec[j], "var", "=")
 							keyWordString = strings.TrimSpace(keyWordString)
 							if index != -1 && keyWordString != "" {
 								coversionFuncMap[keyWordString] = preEventFuncReferenceMap[preFuncKeyWord[k]]
@@ -275,7 +275,7 @@ func getPostmanEventFunc(postmanItem *postman.Items, preFuncKeyWord []string, ke
 					}
 					if ((strings.Index(postmanItem.Events[i].Script.Exec[j], keyWordGlobal)) != -1) && ((strings.Index(postmanItem.Events[i].Script.Exec[j], "//")) == -1) {
 						keyWordStringKey, indexKey := getStringBetweenDoubleQuotationMarks(postmanItem.Events[i].Script.Exec[j])
-						keyWordStringValue, indexValue := getStringBetweenSpecifySymbols(postmanItem.Events[i].Script.Exec[j], ",", ")")
+						keyWordStringValue, indexValue := GetStringBetweenSpecifySymbols(postmanItem.Events[i].Script.Exec[j], ",", ")")
 						if indexKey != -1 {
 							preGlobalKeyMap[keyWordStringKey] = keyWordStringKey
 						}
@@ -298,7 +298,7 @@ func getSetEnvironmentVariableMD5(postmanItem *postman.Items, postmanEventScript
 		return
 	}
 
-	tempEnvironmentVariable, _ := getStringBetweenSpecifySymbols(postmanEventScriptExec, "(", ")")
+	tempEnvironmentVariable, _ := GetStringBetweenSpecifySymbols(postmanEventScriptExec, "(", ")")
 	tempEnvironmentVariable = strings.TrimSpace(tempEnvironmentVariable)
 	setEnvironmentVariableMD5 := getStringFromEvent(postmanItem, tempEnvironmentVariable)
 
@@ -313,8 +313,8 @@ func getSetEnvironmentVariableMD5(postmanItem *postman.Items, postmanEventScript
 					i = i + tempIndex
 				}
 			} else {
-				tempString, tempIndex := getStringBetweenSpecifySymbols(setEnvironmentVariableMD5[i:], "+", "+")
-				tempString2, tempIndex2 := getStringBetweenSpecifySymbols(setEnvironmentVariableMD5[i:], "\"", "\"")
+				tempString, tempIndex := GetStringBetweenSpecifySymbols(setEnvironmentVariableMD5[i:], "+", "+")
+				tempString2, tempIndex2 := GetStringBetweenSpecifySymbols(setEnvironmentVariableMD5[i:], "\"", "\"")
 				if tempIndex != -1 {
 					tempString1, tempIndex1 := getStringBetweenDoubleQuotationMarks(tempString)
 					if tempIndex1 != -1 {

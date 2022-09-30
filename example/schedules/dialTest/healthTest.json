@@ -1,7 +1,6 @@
 {
     "name": "pressureArrange",
     "description": "pressureArrange",
-    "concurrentNum": 2,
     "steps": [
         {
             "type": "loop",
@@ -49,67 +48,6 @@
                                     "value": {
                                         "from": "literal",
                                         "content": "1"
-                                    }
-                                },
-                                {
-                                    "name": "second",
-                                    "value": {
-                                        "from": "literal",
-                                        "content": "0"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "type": "loop",
-            "mode": "concurrent",
-            "control": {
-                "name": "pressureTest",
-                "key": {
-                    "from": "literal",
-                    "content": "336"
-                },
-                "steps": [
-                    {
-                        "type": "api",
-                        "mode": "normal",
-                        "api": {
-                            "name": "pressureTest",
-                            "command": "scheduleApi",
-                            "args": [
-                                {
-                                    "name": "name",
-                                    "value": {
-                                        "from": "literal",
-                                        "content": "pressureTest"
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    {
-                        "type": "api",
-                        "mode": "normal",
-                        "api": {
-                            "name": "apiSleep",
-                            "command": "apiSleep",
-                            "args": [
-                                {
-                                    "name": "hour",
-                                    "value": {
-                                        "from": "literal",
-                                        "content": "0"
-                                    }
-                                },
-                                {
-                                    "name": "minute",
-                                    "value": {
-                                        "from": "literal",
-                                        "content": "30"
                                     }
                                 },
                                 {

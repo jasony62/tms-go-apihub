@@ -53,7 +53,7 @@ func convertPostmanFiles(path string) {
 }
 
 // 生成json文件，无法自动创建文件路径中不存在的文件夹
-func generateApiHubJson(postmanBytes *postman.Collection, multipleName string) {
+func generateApiHubJson_Old(postmanBytes *postman.Collection, multipleName string) {
 	if postmanBytes == nil {
 		return
 	}
@@ -83,7 +83,29 @@ func generateApiHubJson(postmanBytes *postman.Collection, multipleName string) {
 	}
 }
 
-func generateApiHubPrivatesJson(postmanBytes *postman.Collection, privateName string) {
+func generateApiHubPrivatesJson(postmanBytes *postman.Collection, multipleName string) {
+
+	fileName := apiHubPrivatesJsonPath + multipleName + ".json"
+
+	byteHttpApi, err := json.Marshal(apiHubHttpPrivates)
+	if err != nil {
+		klog.Errorln("json.Marshal失败!", fileName)
+		return
+	}
+	// ！！！os.Create无法自动创建文件路径中不存在的文件夹
+	f, err := os.Create(fileName)
+	if err != nil {
+		klog.Errorln("创建文件失败!", fileName)
+	} else {
+		defer f.Close()
+		_, err = f.Write(byteHttpApi)
+		if err != nil {
+			klog.Errorln("写入文件失败!", fileName)
+		}
+	}
+}
+
+func generateApiHubJson(postmanBytes *postman.Collection, privateName string) {
 
 	fileName := apiHubPrivatesJsonPath + privateName + ".json"
 
