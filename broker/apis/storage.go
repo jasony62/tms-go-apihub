@@ -37,19 +37,19 @@ func storageStore(stack *hub.Stack, params map[string]string) (interface{}, int)
 	var content string
 	var OK bool
 
-	user, OK = params["user"]
-	if !OK {
-		str := "storageStore缺少user定义"
-		logger.LogS().Errorln(stack.BaseString, str)
-		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusForbidden
-	}
+	// user, OK = params["user"]
+	// if !OK {
+	// 	str := "storageStore缺少user定义"
+	// 	logger.LogS().Errorln(stack.BaseString, str)
+	// 	return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusForbidden
+	// }
 
-	logger.LogS().Infoln("storageStore user: ", user)
-	if len(user) == 0 {
-		str := "storageStore缺少user"
-		logger.LogS().Errorln(stack.BaseString, str)
-		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusForbidden
-	}
+	// logger.LogS().Infoln("storageStore user: ", user)
+	// if len(user) == 0 {
+	// 	str := "storageStore缺少user"
+	// 	logger.LogS().Errorln(stack.BaseString, str)
+	// 	return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusForbidden
+	// }
 
 	key, OK = params["key"]
 	if !OK {
@@ -124,7 +124,6 @@ func storeLocal(stack *hub.Stack, user string, key string, index string, content
 	logger.LogS().Infoln("storeLocal: index:", index, " user:", user, " content:", content)
 	tmp := stack.Heap[hub.HeapOriginName].(map[string]interface{})
 	result := tmp[key]
-	logger.LogS().Infoln("storeLocal: result:", result)
 	byteJson, err := jsonEx.Marshal(result)
 	if err != nil {
 		str := "storeLocal解析失败" + err.Error()
@@ -148,20 +147,48 @@ func loadLocal(stack *hub.Stack, index string, source string, content string) (i
 	logger.LogS().Infoln("loadLocal:", index, " source:", source, " content:", content)
 
 	if val, ok = storeMap.StorageMap[index]; !ok {
-		str := "loadLocal加载失败" + index
-		logger.LogS().Errorln(stack.BaseString, str)
-		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusInternalServerError
+		str := "loadLocal加载" + index + "失败"
+		logger.LogS().Warnln(stack.BaseString, str)
 	}
 
-	logger.LogS().Infoln("loadLocal value:", val)
 	var ret interface{}
 	if content == "json" {
+		if val == "" {
+			str := "加载" + index + "失败"
+			logger.LogS().Errorln(stack.BaseString, str)
+			return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusInternalServerError
+		}
 		jsonEx.Unmarshal([]byte(val), &ret)
 	} else {
-		ret = val
+		if val == "" {
+			ret = content
+		} else {
+			ret = val
+		}
+	}
+	logger.LogS().Infoln("loadLocal value:", val)
+
+	return ret, fasthttp.StatusOK
+}
+
+func storageClear(stack *hub.Stack, params map[string]string) (interface{}, int) {
+	var index string
+	var source string
+	var OK bool
+
+	index, OK = params["index"]
+	if !OK {
+		str := "storageClear缺少index索引"
+		logger.LogS().Errorln(stack.BaseString, str)
+		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusForbidden
+	}
+	source, OK = params["source"]
+	if !OK {
+		source = "local"
 	}
 
-	//	logger.LogS().Infoln("loadLocal ret:", ret)
-	delete(storeMap.StorageMap, index)
-	return ret, fasthttp.StatusOK
+	if source == "local" {
+		delete(storeMap.StorageMap, index)
+	}
+	return nil, fasthttp.StatusOK
 }

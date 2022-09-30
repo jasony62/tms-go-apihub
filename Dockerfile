@@ -2,7 +2,10 @@ FROM golang:1.18.0-alpine3.15
 
 #RUN apk --no-cache add gcc g++ make ca-certificates
 
-RUn go env -w GOPROXY="https://goproxy.cn,direct"
+RUN go env -w GOPROXY="https://goproxy.cn,direct"
+
+ENV TZ=Asia/Shanghai  
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 WORKDIR /home/tms-gah
 
