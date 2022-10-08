@@ -64,13 +64,6 @@
           }
         },
         {
-          "name": "id",
-          "value": {
-            "from": "template",
-            "content": "{{.stats.id}}"
-          }
-        },
-        {
           "name": "msg",
           "value": {
             "from": "template",

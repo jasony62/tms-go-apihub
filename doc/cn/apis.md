@@ -1253,13 +1253,6 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
       }
     },
     {
-      "name": "id",
-      "value": {
-        "from": "template",
-        "content": "{{.stats.id}}"
-      }
-    },
-    {
       "name": "msg",
       "value": {
         "from": "template",

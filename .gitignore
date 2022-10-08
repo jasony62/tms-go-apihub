@@ -22,7 +22,7 @@ log/
 
 test/http-server/http-server
 
-example/httpapis/__INTERNAL/
+example/httpapis/__LOCAL/
 example/schedules/__INTERNAL
 
 tool/postman/cmd/httpapis/

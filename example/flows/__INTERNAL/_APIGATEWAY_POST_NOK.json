@@ -25,8 +25,7 @@
               "uuid": "{{.base.uuid}}",
               "root": "{{.base.root}}",
               "type": "{{.base.type}}",
-              "code": "{{.stats.code}}",
-              "msg": "{{.stats.msg}}"
+              "code": "{{.stats.code}}"
             }
           }
         }
@@ -98,20 +97,6 @@
           "value": {
             "from": "template",
             "content": "{{.stats.duration}}"
-          }
-        },
-        {
-          "name": "id",
-          "value": {
-            "from": "template",
-            "content": "{{.stats.id}}"
-          }
-        },
-        {
-          "name": "msg",
-          "value": {
-            "from": "template",
-            "content": "{{.stats.msg}}"
           }
         }
       ]
