@@ -39,3 +39,5 @@ tool/postman/cmd/test.sh
 example/flows/__INTERNAL
 broker/tms-gah-broker
 
+example/postman/
+tool/schedule/schedule/
