@@ -55,11 +55,14 @@ func md5Func(params []string) string {
 }
 
 func timestampFunc(params []string) string {
-	return time.Now().Format("2006-01-02 15:04:05")
+	//	return time.Now().Format("2006-01-02 15:04:05")
+	var cstZone = time.FixedZone("CST", 8*3600) // 东八
+	return time.Now().In(cstZone).Format("2006-01-02 15:04:05")
 }
 
 func timestampTemplate(args ...interface{}) string {
-	return time.Now().Format("2006-01-02 15:04:05.000")
+	var cstZone = time.FixedZone("CST", 8*3600) // 东八
+	return time.Now().In(cstZone).Format("2006-01-02 15:04:05")
 }
 
 var funcMap map[string]hub.FuncHandler = map[string]hub.FuncHandler{

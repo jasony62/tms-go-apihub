@@ -42,6 +42,7 @@ API列表如下：
 | checkStringsNotEqual  | 检查name、value是否不相等 |
 | storageStore  | 存储数据 |
 | storageLoad  | 加载存储数据 |
+| storageClear | 清除存储数据 |
 | setDefaultAccessRight  | 默认执行权限 |
 | checkRight  | 检查权限 |
 | fillBaseInfo | 添加基本信息 |
@@ -662,7 +663,7 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 | -- | -- | -- | -- | -- |
 | "user" | 可选 | query | "appID" | 用户ID关键字，默认为`""`，可通过外部输入，例如curl请求命令`curl -i -H "Content-Type: application/json" -d '{"city": "北京"}' "http://localhost:8080/flow/amap_city_weather?appID=001"`中`appID=001`为query类型的输入 |
 | "key" | 可选 | literal | "任意" | 索引key，后文origin输入参数中的name |
-| "index" | 可选 | template | {{.}} | 需要存储的索引关键字，`"{{(index .adcodeResult.districts 0).adcode}}"`解析为:`(index .adcodeResult.districts 0)`返回index后面的第一个参数的某个索引对应的元素值，其余的参数为索引值，即返回上文中adcodeResult.districts索引；读取上文adcodeResult.districts索引的0索引值的adcode |
+| "index" | 必选 | template | {{.}} | 需要存储的索引关键字，`"{{(index .adcodeResult.districts 0).adcode}}"`解析为:`(index .adcodeResult.districts 0)`返回index后面的第一个参数的某个索引对应的元素值，其余的参数为索引值，即返回上文中adcodeResult.districts索引；读取上文adcodeResult.districts索引的0索引值的adcode |
 | "source" | 可选 | literal | "local";</br>"mongodb"; | 存储方式 :</br>“local”-本地结构存储;</br>"mongodb"-远程数据库存储 |
 | "content" | 可选 | template | "json";</br>"...";  | 存储的内容，如果是“json”，则需要存储origin中的数据；如果为其他，则直接存储 |
 
@@ -743,28 +744,28 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
   "resultKey": "storaged"
 },
 ```
-### 4.4. 状态码
+### 3.4. 状态码
 | 状态码 | 描述 |
 | -- | -- |
 | 200 | StatusOK，获取信息成功 |
 | 403 | StatusForbidden，获取信息失败 |
 | 500 | StatusInternalServerError，获取信息失败 |
 
-## 5. 加载存储数据（storageLoad API）
-### 5.1. 功能介绍
+## 4. 加载存储数据（storageLoad API）
+### 4.1. 功能介绍
 多租户支持，读取某用户之前存储的数据，用来回复相关用户。
-### 5.2. 位置
+### 4.2. 位置
 ```
 ./broker/apis/storage.go
 ```
-### 5.3. API输入介绍
+### 4.3. API输入介绍
 `storageLoad API`输入数组`args`参数介绍：
 | 参数名称 | 是否必选 | 获参位置 | value内容 | 描述 |
 | -- | -- | -- | -- | -- |
-| "key" | 可选 | literal | "任意" | 索引key |
-| "index" | 可选 | template | {{.}} | 需要读取的索引关键字，`"{{(index .adcodeResult.districts 0).adcode}}"`解析为:`(index .adcodeResult.districts 0)`返回index后面的第一个参数的某个索引对应的元素值，其余的参数为索引值，即返回上文中adcodeResult.districts索引；读取上文adcodeResult.districts索引的0索引值的adcode |
+| "key" | 可不填 | literal | "任意" | 索引key |
+| "index" | 必选 | template | {{.}} | 需要读取的索引关键字，`"{{(index .adcodeResult.districts 0).adcode}}"`解析为:`(index .adcodeResult.districts 0)`返回index后面的第一个参数的某个索引对应的元素值，其余的参数为索引值，即返回上文中adcodeResult.districts索引；读取上文adcodeResult.districts索引的0索引值的adcode |
 | "source" | 可选 | literal | "local";</br>"mongodb"; | 存储方式 :</br>“local”-本地结构存储;</br>"mongodb"-远程数据库存储 |
-| "content" | 可选 | template | {{.}} | 读取的内容，如果是“json”，则需要将读取到内容解析为json；如果为其他，则直接返回 |
+| "content" | 可选 | template | {{.}} | 读取的内容，如果是“json”，则需要将读取到内容解析为json；如果为其他，作为查询不到时的默认值。 |
 
 
 示例：
@@ -779,15 +780,8 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 {
   "name": "storage_load",
   "command": "storageLoad",
-  "description": "查询城市码",
+  "description": "读取城市码",
   "args": [
-    {
-      "name": "key",
-      "value": {
-        "from": "literal",
-        "content": "load_result"
-      }
-    },
     {
       "name": "index",
       "value": {
@@ -813,14 +807,74 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
   "resultKey": "loaded"
 },
 ```
-### 5.4. 状态码
+### 4.4. 状态码
 | 状态码 | 描述 |
 | -- | -- |
 | 200 | StatusOK，获取信息成功 |
 | 403 | StatusForbidden，获取信息失败 |
 | 500 | StatusInternalServerError，获取信息失败 |
 
+## 5. 加载存储数据（storageClear API）
+
+### 5.1. 功能介绍
+
+多租户支持，清除某用户之前存储的数据。
+
+### 5.2. 位置
+
+```
+./broker/apis/storage.go
+```
+
+### 5.3. API输入介绍
+
+`storageClear API`输入数组`args`参数介绍：
+
+| 参数名称 | 是否必选 | 获参位置 | value内容                     | 描述                                                         |
+| -------- | -------- | -------- | ----------------------------- | ------------------------------------------------------------ |
+| "index"  | 必选     | template | {{.}}                         | 需要清除的索引关键字                                         |
+| "source" | 必选     | literal  | "local";</br><br />"mongodb"; | 存储方式 :</br>“local”-本地结构存储;</br>"mongodb"-远程数据库存储 |
+
+
+示例：
+
+```
+
+{
+  "name": "storage_clear",
+  "command": "storageClear",
+  "description": "清除存储的数据",
+  "args": [
+    {
+      "name": "index",
+      "value": {
+        "from": "template",
+        "content": "{{(index .adcodeResult.districts 0).adcode}}"
+      }
+    },
+    {
+      "name": "source",
+      "value": {
+        "from": "literal",
+        "content": "local"
+      }
+    }
+  ]
+},
+```
+
+### 5.4. 状态码
+
+| 状态码 | 描述                                    |
+| ------ | --------------------------------------- |
+| 200    | StatusOK，获取信息成功                  |
+| 403    | StatusForbidden，获取信息失败           |
+| 500    | StatusInternalServerError，获取信息失败 |
+
+## 
+
 ## 6. 默认执行权限（setDefaultAccessRight API）
+
 ### 6.1. 功能介绍
 设置默认执行权限。
 ### 6.2. 位置
