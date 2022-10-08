@@ -17,7 +17,7 @@
 apihub_app="../broker/tms-go-apihub"
 conf_path="./"
 
-postman_collection_app="./postman/APIHUB.postman_collection_0930.json"
+postman_collection_app="./postman/重通服.postman_collection.json"
 postman_environment_app="./postman/34test_0623.postman_environment"
 
 httpserver_app="../test/http-server/http-server"

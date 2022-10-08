@@ -4,37 +4,8 @@ import (
 	"strings"
 
 	"github.com/rbretecher/go-postman-collection"
+	"k8s.io/klog/v2"
 )
-
-/*
-func getPostmanFilesBytes_Old(postmanfileBytes *postman.Collection) {
-	if postmanfileBytes != nil {
-		for i := range postmanfileBytes.Items {
-			if postmanfileBytes.Items[i].Items == nil {
-				converOneRequest(postmanfileBytes.Items[i])
-				if privatesExport {
-					if len(apiHubHttpPrivates.Privates) != 0 {
-						apiHubHttpConf.Private = postmanfileBytes.Info.Name + "_" + postmanfileBytes.Items[i].Name + "_key"
-						generateApiHubPrivatesJson(postmanfileBytes, apiHubHttpConf.Private)
-					}
-				}
-				generateApiHubJson(postmanfileBytes, "")
-			} else {
-				for j := range postmanfileBytes.Items[i].Items {
-					converOneRequest(postmanfileBytes.Items[i].Items[j])
-					if privatesExport {
-						if len(apiHubHttpPrivates.Privates) != 0 {
-							apiHubHttpConf.Private = postmanfileBytes.Info.Name + "_" + postmanfileBytes.Items[i].Name + "_" + postmanfileBytes.Items[i].Items[j].Name + "_key"
-							generateApiHubPrivatesJson(postmanfileBytes, apiHubHttpConf.Private)
-						}
-					}
-					generateApiHubJson(postmanfileBytes, postmanfileBytes.Items[i].Name)
-				}
-			}
-		}
-	}
-}
-*/
 
 func getPostmanFilesBytes(postmanfileBytes *postman.Collection) string {
 	if postmanfileBytes != nil && postmanfileBytes.Items != nil {
@@ -42,8 +13,11 @@ func getPostmanFilesBytes(postmanfileBytes *postman.Collection) string {
 			if (postmanfileBytes.Items[i].Items == nil) && (converOneRequest(postmanfileBytes.Items[i]) == "") { // 若只有一级Items
 				if privatesExport && (len(apiHubHttpPrivates.Privates) != 0) {
 					apiHubHttpConf.Private = postmanfileBytes.Info.Name + "_" + postmanfileBytes.Items[i].Name + "_key"
-					generateApiHubJson(apiHubPrivatesJsonPath, ReplaceName(apiHubHttpConf.Private))
+					apiHubHttpConf.Private = ReplaceName(apiHubHttpConf.Private)
+					generateApiHubJson(apiHubPrivatesJsonPath, apiHubHttpConf.Private)
 				}
+				apiHubHttpConf.ID = strings.Replace(postmanfileBytes.Items[i].Name, " ", "_", -1)
+				klog.Infoln("__request Name : ", apiHubHttpConf.ID)
 				tempName := postmanfileBytes.Info.Name + "_" + postmanfileBytes.Items[i].Name
 				generateApiHubJson(apiHubJsonPath, ReplaceName(tempName))
 			} else {
@@ -51,8 +25,11 @@ func getPostmanFilesBytes(postmanfileBytes *postman.Collection) string {
 					if (postmanfileBytes.Items[i].Items[j].Items == nil) && (converOneRequest(postmanfileBytes.Items[i].Items[j]) == "") { // 两级Items
 						if privatesExport && (len(apiHubHttpPrivates.Privates) != 0) {
 							apiHubHttpConf.Private = postmanfileBytes.Info.Name + "_" + postmanfileBytes.Items[i].Name + "_" + postmanfileBytes.Items[i].Items[j].Name + "_key"
-							generateApiHubJson(apiHubPrivatesJsonPath, ReplaceName(apiHubHttpConf.Private))
+							apiHubHttpConf.Private = ReplaceName(apiHubHttpConf.Private)
+							generateApiHubJson(apiHubPrivatesJsonPath, apiHubHttpConf.Private)
 						}
+						apiHubHttpConf.ID = strings.Replace(postmanfileBytes.Items[i].Name+"_"+postmanfileBytes.Items[i].Items[j].Name, " ", "_", -1)
+						klog.Infoln("__request Name : ", apiHubHttpConf.ID)
 						tempName := postmanfileBytes.Info.Name + "_" + postmanfileBytes.Items[i].Name + "_" + postmanfileBytes.Items[i].Items[j].Name
 						generateApiHubJson(apiHubJsonPath, ReplaceName(tempName))
 					} else {
@@ -60,8 +37,11 @@ func getPostmanFilesBytes(postmanfileBytes *postman.Collection) string {
 							if (postmanfileBytes.Items[i].Items[j].Items[k].Items == nil) && (converOneRequest(postmanfileBytes.Items[i].Items[j].Items[k]) == "") { // 三级Items
 								if privatesExport && (len(apiHubHttpPrivates.Privates) != 0) {
 									apiHubHttpConf.Private = postmanfileBytes.Info.Name + "_" + postmanfileBytes.Items[i].Name + "_" + postmanfileBytes.Items[i].Items[j].Name + "_" + postmanfileBytes.Items[i].Items[j].Items[k].Name + "_key"
-									generateApiHubJson(apiHubPrivatesJsonPath, ReplaceName(apiHubHttpConf.Private))
+									apiHubHttpConf.Private = ReplaceName(apiHubHttpConf.Private)
+									generateApiHubJson(apiHubPrivatesJsonPath, apiHubHttpConf.Private)
 								}
+								apiHubHttpConf.ID = strings.Replace(postmanfileBytes.Items[i].Items[j].Name+"_"+postmanfileBytes.Items[i].Items[j].Items[k].Name, " ", "_", -1)
+								klog.Infoln("__request Name : ", apiHubHttpConf.ID)
 								tempName := postmanfileBytes.Info.Name + "_" + postmanfileBytes.Items[i].Name + "_" + postmanfileBytes.Items[i].Items[j].Name + "_" + postmanfileBytes.Items[i].Items[j].Items[k].Name
 								generateApiHubJson(apiHubJsonPath, ReplaceName(tempName))
 							} else {
@@ -69,10 +49,27 @@ func getPostmanFilesBytes(postmanfileBytes *postman.Collection) string {
 									if (postmanfileBytes.Items[i].Items[j].Items[k].Items[x].Items == nil) && (converOneRequest(postmanfileBytes.Items[i].Items[j].Items[k].Items[x]) == "") { // 三级Items
 										if privatesExport && (len(apiHubHttpPrivates.Privates) != 0) {
 											apiHubHttpConf.Private = postmanfileBytes.Info.Name + "_" + postmanfileBytes.Items[i].Name + "_" + postmanfileBytes.Items[i].Items[j].Name + "_" + postmanfileBytes.Items[i].Items[j].Items[k].Name + "_" + postmanfileBytes.Items[i].Items[j].Items[k].Items[x].Name + "_key"
-											generateApiHubJson(apiHubPrivatesJsonPath, ReplaceName(apiHubHttpConf.Private))
+											apiHubHttpConf.Private = ReplaceName(apiHubHttpConf.Private)
+											generateApiHubJson(apiHubPrivatesJsonPath, apiHubHttpConf.Private)
 										}
+										apiHubHttpConf.ID = strings.Replace(postmanfileBytes.Items[i].Items[j].Items[k].Name+"_"+postmanfileBytes.Items[i].Items[j].Items[k].Items[x].Name, " ", "_", -1)
+										klog.Infoln("__request Name : ", apiHubHttpConf.ID)
 										tempName := postmanfileBytes.Info.Name + "_" + postmanfileBytes.Items[i].Name + "_" + postmanfileBytes.Items[i].Items[j].Name + "_" + postmanfileBytes.Items[i].Items[j].Items[k].Name + "_" + postmanfileBytes.Items[i].Items[j].Items[k].Items[x].Name
 										generateApiHubJson(apiHubJsonPath, ReplaceName(tempName))
+									} else {
+										for y := range postmanfileBytes.Items[i].Items[j].Items[k].Items[x].Items {
+											if (postmanfileBytes.Items[i].Items[j].Items[k].Items[x].Items[y].Items == nil) && (converOneRequest(postmanfileBytes.Items[i].Items[j].Items[k].Items[x].Items[y]) == "") { // 四级Items
+												if privatesExport && (len(apiHubHttpPrivates.Privates) != 0) {
+													apiHubHttpConf.Private = postmanfileBytes.Info.Name + "_" + postmanfileBytes.Items[i].Name + "_" + postmanfileBytes.Items[i].Items[j].Name + "_" + postmanfileBytes.Items[i].Items[j].Items[k].Name + "_" + postmanfileBytes.Items[i].Items[j].Items[k].Items[x].Name + "_" + postmanfileBytes.Items[i].Items[j].Items[k].Items[x].Items[y].Name + "_key"
+													apiHubHttpConf.Private = ReplaceName(apiHubHttpConf.Private)
+													generateApiHubJson(apiHubPrivatesJsonPath, apiHubHttpConf.Private)
+												}
+												apiHubHttpConf.ID = strings.Replace(postmanfileBytes.Items[i].Items[j].Items[k].Items[x].Name+"_"+postmanfileBytes.Items[i].Items[j].Items[k].Items[x].Items[y].Name, " ", "_", -1)
+												klog.Infoln("__request Name : ", apiHubHttpConf.ID)
+												tempName := postmanfileBytes.Info.Name + "_" + postmanfileBytes.Items[i].Name + "_" + postmanfileBytes.Items[i].Items[j].Name + "_" + postmanfileBytes.Items[i].Items[j].Items[k].Name + "_" + postmanfileBytes.Items[i].Items[j].Items[k].Items[x].Name + "_" + postmanfileBytes.Items[i].Items[j].Items[k].Items[x].Items[y].Name
+												generateApiHubJson(apiHubJsonPath, ReplaceName(tempName))
+											}
+										}
 									}
 								}
 							}
