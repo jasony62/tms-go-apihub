@@ -1,10 +1,11 @@
 {
     "name": "postmanpressure",
     "description": "Postman_Pressure",
+    "concurrentNum": 16,
     "steps": [
         {
             "type": "loop",
-            "mode": "normal",
+            "mode": "concurrent",
             "control": {
                 "name": "天津_查询mo",
                 "concurrentLoopNum": 100,
@@ -34,7 +35,7 @@
         },
         {
             "type": "loop",
-            "mode": "normal",
+            "mode": "concurrent",
             "control": {
                 "name": "天津_查询报告",
                 "concurrentLoopNum": 100,
@@ -64,7 +65,7 @@
         },
         {
             "type": "loop",
-            "mode": "normal",
+            "mode": "concurrent",
             "control": {
                 "name": "天津_查询余额",
                 "concurrentLoopNum": 100,
@@ -94,7 +95,7 @@
         },
         {
             "type": "loop",
-            "mode": "normal",
+            "mode": "concurrent",
             "control": {
                 "name": "天津_发送接口",
                 "concurrentLoopNum": 100,
@@ -124,7 +125,7 @@
         },
         {
             "type": "loop",
-            "mode": "normal",
+            "mode": "concurrent",
             "control": {
                 "name": "信元_5G新增手机终端画像_5G开关实时变化模型（数据自注册-Android）接口",
                 "concurrentLoopNum": 100,
@@ -154,7 +155,7 @@
         },
         {
             "type": "loop",
-            "mode": "normal",
+            "mode": "concurrent",
             "control": {
                 "name": "信元_5G新增手机终端画像_卡槽实时变化模型（数据自注册-Android）接口",
                 "concurrentLoopNum": 100,
@@ -184,7 +185,7 @@
         },
         {
             "type": "loop",
-            "mode": "normal",
+            "mode": "concurrent",
             "control": {
                 "name": "信元_5G新增手机终端画像_全量用户标签（数据自注册-Android）接口",
                 "concurrentLoopNum": 100,
@@ -214,7 +215,7 @@
         },
         {
             "type": "loop",
-            "mode": "normal",
+            "mode": "concurrent",
             "control": {
                 "name": "信元_5G新增手机终端画像_首注册模型（ES自注册-苹果）接口",
                 "concurrentLoopNum": 100,
@@ -244,7 +245,7 @@
         },
         {
             "type": "loop",
-            "mode": "normal",
+            "mode": "concurrent",
             "control": {
                 "name": "信元_5G新增手机终端画像_首注册模型（IMS自注册）接口",
                 "concurrentLoopNum": 100,
@@ -274,7 +275,7 @@
         },
         {
             "type": "loop",
-            "mode": "normal",
+            "mode": "concurrent",
             "control": {
                 "name": "信元_5G新增手机终端画像_首注册模型（数据自注册-Android）接口",
                 "concurrentLoopNum": 100,
@@ -304,7 +305,7 @@
         },
         {
             "type": "loop",
-            "mode": "normal",
+            "mode": "concurrent",
             "control": {
                 "name": "信元_5G新增手机终端画像_异网全量用户标签（数据自注册-Android）接口",
                 "concurrentLoopNum": 100,
@@ -334,7 +335,7 @@
         },
         {
             "type": "loop",
-            "mode": "normal",
+            "mode": "concurrent",
             "control": {
                 "name": "信元_5G新增手机终端画像_主流量卡切换模型（数据自注册-Android）接口",
                 "concurrentLoopNum": 100,
@@ -364,7 +365,7 @@
         },
         {
             "type": "loop",
-            "mode": "normal",
+            "mode": "concurrent",
             "control": {
                 "name": "浙江信产_集团aWiFi漫游能力",
                 "concurrentLoopNum": 100,
@@ -394,7 +395,7 @@
         },
         {
             "type": "loop",
-            "mode": "normal",
+            "mode": "concurrent",
             "control": {
                 "name": "浙江信产_集团aWiFi投屏能力",
                 "concurrentLoopNum": 100,
@@ -424,7 +425,7 @@
         },
         {
             "type": "loop",
-            "mode": "normal",
+            "mode": "concurrent",
             "control": {
                 "name": "浙江_可信通信业务提醒",
                 "concurrentLoopNum": 100,
@@ -454,7 +455,7 @@
         },
         {
             "type": "loop",
-            "mode": "normal",
+            "mode": "concurrent",
             "control": {
                 "name": "浙江_深度触达呼叫",
                 "concurrentLoopNum": 100,

@@ -1,6 +1,8 @@
 package postmaninternal
 
-import "strings"
+import (
+	"strings"
+)
 
 func arrcmp(src []string, dest []string) ([]string, []string) {
 	msrc := make(map[string]byte) //按源数组建索引
@@ -51,14 +53,14 @@ func delHttpapiPrivates(httpapiPrivatesLen int) {
 }
 
 func getStringBetweenDoubleQuotationMarks(inputStrings string) (outputString string, outputIndex int) {
-	return getStringBetweenSpecifySymbols(inputStrings, "\"", "\"")
+	return GetStringBetweenSpecifySymbols(inputStrings, "\"", "\"")
 }
 func getStringBetweenDoubleBrackets(inputStrings string) (outputString string, outputIndex int) {
-	return getStringBetweenSpecifySymbols(inputStrings, "{{", "}}")
+	return GetStringBetweenSpecifySymbols(inputStrings, "{{", "}}")
 }
 
 // 获取指定字符中间的字符串，并返回字符串最右的索引值，backIndex = -1表示错误
-func getStringBetweenSpecifySymbols(inputStrings string, specifySymbolBefore string, specifySymbolAfter string) (outputString string, outputIndex int) {
+func GetStringBetweenSpecifySymbols(inputStrings string, specifySymbolBefore string, specifySymbolAfter string) (outputString string, outputIndex int) {
 	currentIndex := strings.Index(inputStrings, specifySymbolBefore)
 	if currentIndex != -1 {
 		nextIndex := strings.Index(inputStrings[currentIndex+len(specifySymbolBefore):], specifySymbolAfter)

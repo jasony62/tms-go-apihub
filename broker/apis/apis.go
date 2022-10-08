@@ -29,6 +29,6 @@ func ApisInit() {
 		"promStart":             promStart,
 		"promHttpCounterInc":    promHttpCounterInc,
 		"logOutput":             logOutput,
-		"pressureSleep":         pressureSleep,
+		"apiSleep":              apiSleep,
 	})
 }
