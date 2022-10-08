@@ -18,8 +18,14 @@ func parseRequestUrlQuery(postmanRequestURLQuery interface{}) {
 			valuename := httpapiQueryArg.(map[string]interface{})["key"]
 			valuecontent := httpapiQueryArg.(map[string]interface{})["value"]
 			// args := Args{In: "query", Name: valuename.(string), Value: Value{From: "query", Content: valuename.(string)}}
-			args := Args{In: "query", Name: valuename.(string), Value: Value{From: "literal", Content: valuecontent.(string)}}
-			apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+			if valuecontent != nil {
+				args := Args{In: "query", Name: valuename.(string), Value: Value{From: "literal", Content: valuecontent.(string)}}
+				apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+			} else {
+				args := Args{In: "query", Name: valuename.(string), Value: Value{From: "literal", Content: ""}}
+				apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+			}
+
 			// klog.Infoln("__httpapiQueryArgs valuename is : ", valuename.(string))
 			// klog.Infoln("__httpapiQueryArgs valuecontent is : ", valuecontent.(string))
 		}
@@ -132,6 +138,9 @@ func parseRequestBodyRaw(postmanRequestBody *postman.Body) error {
 				bodyArgs := Args{In: "body", Name: "body", Value: Value{From: "json", Json: requestBodyRawMap}}
 				apiHubHttpConf.Args = append(apiHubHttpConf.Args, bodyArgs)
 			} else { // 大概率字符串
+				requestBody.Raw = strings.Replace(requestBody.Raw, "\r", "", -1)
+				requestBody.Raw = strings.Replace(requestBody.Raw, "\n", "", -1)
+				requestBody.Raw = strings.Replace(requestBody.Raw, "\u00a0", "", -1)
 				bodyArgs := Args{In: "body", Name: "body", Value: Value{From: "literal", Content: requestBody.Raw}}
 				apiHubHttpConf.Args = append(apiHubHttpConf.Args, bodyArgs)
 			}

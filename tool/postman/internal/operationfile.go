@@ -83,15 +83,24 @@ func generateApiHubJson_Old(postmanBytes *postman.Collection, multipleName strin
 	}
 }
 
-func generateApiHubPrivatesJson(postmanBytes *postman.Collection, multipleName string) {
-
-	fileName := apiHubPrivatesJsonPath + multipleName + ".json"
-
-	byteHttpApi, err := json.Marshal(apiHubHttpPrivates)
-	if err != nil {
-		klog.Errorln("json.Marshal失败!", fileName)
-		return
+func generateApiHubJson(apiHubJsonPath string, multipleName string) {
+	var byteHttpApi []byte
+	var err error
+	fileName := apiHubJsonPath + multipleName + ".json"
+	if strings.Contains(multipleName, "key") {
+		byteHttpApi, err = json.Marshal(apiHubHttpPrivates)
+		if err != nil {
+			klog.Errorln("json.Marshal失败!", fileName)
+			return
+		}
+	} else {
+		byteHttpApi, err = json.Marshal(apiHubHttpConf)
+		if err != nil {
+			klog.Errorln("json.Marshal失败!", fileName)
+			return
+		}
 	}
+
 	// ！！！os.Create无法自动创建文件路径中不存在的文件夹
 	f, err := os.Create(fileName)
 	if err != nil {
@@ -105,9 +114,9 @@ func generateApiHubPrivatesJson(postmanBytes *postman.Collection, multipleName s
 	}
 }
 
-func generateApiHubJson(postmanBytes *postman.Collection, privateName string) {
+func generateApiHubPrivatesJson(postmanBytes *postman.Collection, multipleName string) {
 
-	fileName := apiHubPrivatesJsonPath + privateName + ".json"
+	fileName := apiHubPrivatesJsonPath + multipleName + ".json"
 
 	byteHttpApi, err := json.Marshal(apiHubHttpPrivates)
 	if err != nil {

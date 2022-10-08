@@ -77,3 +77,10 @@ func GetStringBetweenSpecifySymbols(inputStrings string, specifySymbolBefore str
 	}
 	return outputString, outputIndex
 }
+
+func ReplaceName(inputName string) string {
+	inputName = strings.Replace(inputName, " ", "_", -1)
+	inputName = strings.Replace(inputName, "/", "或", -1)
+
+	return inputName
+}
