@@ -6,7 +6,7 @@ import (
 	"github.com/rbretecher/go-postman-collection"
 )
 
-func getPostmanFilesBytes(postmanfileBytes *postman.Collection) {
+func getPostmanFilesBytes_Old(postmanfileBytes *postman.Collection) {
 	if postmanfileBytes != nil {
 		for i := range postmanfileBytes.Items {
 			if postmanfileBytes.Items[i].Items == nil {
@@ -34,10 +34,62 @@ func getPostmanFilesBytes(postmanfileBytes *postman.Collection) {
 	}
 }
 
+func getPostmanFilesBytes(postmanfileBytes *postman.Collection) {
+	if postmanfileBytes != nil && postmanfileBytes.Items != nil {
+		for i := range postmanfileBytes.Items {
+			if postmanfileBytes.Items[i].Items == nil {
+				if converOneRequest(postmanfileBytes.Items[i]) == "" {
+					if privatesExport {
+						if len(apiHubHttpPrivates.Privates) != 0 {
+							apiHubHttpConf.Private = postmanfileBytes.Info.Name + "_" + postmanfileBytes.Items[i].Name + "_key"
+							apiHubHttpConf.Private = strings.Replace(apiHubHttpConf.Private, " ", "_", -1)
+							apiHubHttpConf.Private = strings.Replace(apiHubHttpConf.Private, "/", "或", -1)
+							generateApiHubPrivatesJson(postmanfileBytes, apiHubHttpConf.Private)
+						}
+					}
+					generateApiHubJson(postmanfileBytes, "")
+				}
+			} else {
+				for j := range postmanfileBytes.Items[i].Items {
+					if postmanfileBytes.Items[i].Items[j].Items == nil {
+						if converOneRequest(postmanfileBytes.Items[i].Items[j]) == "" {
+							if privatesExport {
+								if len(apiHubHttpPrivates.Privates) != 0 {
+									apiHubHttpConf.Private = postmanfileBytes.Info.Name + "_" + postmanfileBytes.Items[i].Name + "_" + postmanfileBytes.Items[i].Items[j].Name + "_key"
+									apiHubHttpConf.Private = strings.Replace(apiHubHttpConf.Private, " ", "_", -1)
+									apiHubHttpConf.Private = strings.Replace(apiHubHttpConf.Private, "/", "或", -1)
+									generateApiHubPrivatesJson(postmanfileBytes, apiHubHttpConf.Private)
+								}
+							}
+							postmanfileBytes.Items[i].Name = strings.Replace(postmanfileBytes.Items[i].Name, " ", "_", -1)
+							generateApiHubJson(postmanfileBytes, postmanfileBytes.Items[i].Name)
+						}
+					} else {
+						for k := range postmanfileBytes.Items[i].Items[j].Items {
+							if converOneRequest(postmanfileBytes.Items[i].Items[j].Items[k]) == "" {
+								if privatesExport {
+									if len(apiHubHttpPrivates.Privates) != 0 {
+										apiHubHttpConf.Private = postmanfileBytes.Info.Name + "_" + postmanfileBytes.Items[i].Name + "_" + postmanfileBytes.Items[i].Items[j].Name + "_" + postmanfileBytes.Items[i].Items[j].Items[k].Name + "_key"
+										apiHubHttpConf.Private = strings.Replace(apiHubHttpConf.Private, " ", "_", -1)
+										apiHubHttpConf.Private = strings.Replace(apiHubHttpConf.Private, "/", "或", -1)
+										generateApiHubPrivatesJson(postmanfileBytes, apiHubHttpConf.Private)
+									}
+								}
+								postmanfileBytes.Items[i].Name = strings.Replace(postmanfileBytes.Items[i].Name, " ", "_", -1)
+								generateApiHubJson(postmanfileBytes, postmanfileBytes.Items[i].Name+"_"+postmanfileBytes.Items[i].Items[k].Name)
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 // 转换postman collection中一个request
-func converOneRequest(postmanItem *postman.Items) {
+func converOneRequest(postmanItem *postman.Items) string {
 	if postmanItem == nil {
-		return
+		return "postmanItem nil"
 	}
 	httpapiArgsLen := len(apiHubHttpConf.Args)
 	delHttpapiConfArgs(httpapiArgsLen)
@@ -52,6 +104,11 @@ func converOneRequest(postmanItem *postman.Items) {
 	getPostmanEventFunc(postmanItem, preEventFuncKeyMap, keyWordGlobal)
 	getHttpapiArgs(postmanItem.Request)
 
+	if apiHubHttpConf.URL == "" {
+		return "URL nil, invalid api"
+	}
+
+	return ""
 }
 
 // 获取Args
@@ -74,26 +131,33 @@ func getHttpapiArgs(postmanRequest *postman.Request) {
 				}
 			} else if postmanRequest.Header[i].Key == "Content-Type" {
 				headerindex := strings.Index(postmanRequest.Header[i].Value, "/")
-				apiHubHttpConf.Requestcontenttype = postmanRequest.Header[i].Value[headerindex+1:]
+				if strings.Index("json,form,origin,none,text", postmanRequest.Header[i].Value[headerindex+1:]) > 0 {
+					apiHubHttpConf.Requestcontenttype = postmanRequest.Header[i].Value[headerindex+1:]
+				}
 			}
 		}
 	}
-
-	switch apiHubHttpConf.Method {
-	case "GET":
-		// 解析qury
-		if postmanRequest.URL.Query != nil {
-			parseRequestUrlQuery(postmanRequest.URL.Query)
-		}
-	case "POST":
-		// 解析body
-		if postmanRequest.Body != nil {
-			switch postmanRequest.Body.Mode {
-			case "urlencoded":
-				parseRequestBodyUrlencoded(postmanRequest.Body)
-			case "raw":
-				parseRequestBodyRaw(postmanRequest.Body)
-			default:
+	if postmanRequest.URL != nil {
+		switch apiHubHttpConf.Method {
+		case "GET":
+			// 解析qury
+			if postmanRequest.URL.Query != nil {
+				parseRequestUrlQuery(postmanRequest.URL.Query)
+			}
+		case "POST":
+			// 解析qury
+			if postmanRequest.URL.Query != nil {
+				parseRequestUrlQuery(postmanRequest.URL.Query)
+			}
+			// 解析body
+			if postmanRequest.Body != nil {
+				switch postmanRequest.Body.Mode {
+				case "urlencoded":
+					parseRequestBodyUrlencoded(postmanRequest.Body)
+				case "raw":
+					parseRequestBodyRaw(postmanRequest.Body)
+				default:
+				}
 			}
 		}
 	}

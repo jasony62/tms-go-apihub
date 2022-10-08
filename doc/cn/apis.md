@@ -42,6 +42,7 @@ API列表如下：
 | checkStringsNotEqual  | 检查name、value是否不相等 |
 | storageStore  | 存储数据 |
 | storageLoad  | 加载存储数据 |
+| storageClear | 清除存储数据 |
 | setDefaultAccessRight  | 默认执行权限 |
 | checkRight  | 检查权限 |
 | fillBaseInfo | 添加基本信息 |
@@ -102,7 +103,7 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 ```
 ### 1.3. API输入介绍
 `welcome API` 输入数组`args`参数介绍：
-| 输入name | 是否必选 | 获参位置 | value内容 | 描述 |
+| 参数名称 | 是否必选 | 获参位置 | value内容 | 描述 |
 | -- | -- | -- | -- | -- |
 | "content" | 可选 | literal | 输出字符串 | 输出打印字符串`"welcome to use apihub"` ` |
 
@@ -130,7 +131,7 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 | 200 | StatusOK，获取信息成功 |
 | 403 | StatusForbidden，获取信息失败 |
 | 500 | StatusInternalServerError，获取信息失败 |
-## 2. schema检查（confValidator API）（完善中）
+## 2. schema检查（confValidator API）
 ### 2.1 功能介绍
 对所有需要导入的json文件进行json和json schema检查
 ### 2.2. 位置
@@ -139,7 +140,7 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 ```
 ### 2.3. API输入介绍
 `confValidator API` 输入数组`args`参数介绍：
-| 输入name | 是否必选 | 获参位置 | value内容 | 描述 |
+| 参数名称 | 是否必选 | 获参位置 | value内容 | 描述 |
 | -- | -- | -- | -- | -- |
 | "schem" | 必选 | literal | Path | json schema文件夹路径，默认代码库主目录位置。即"../schema" |
 
@@ -176,7 +177,7 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 ```
 ### 3.3. API输入介绍
 `loadConf API`输入数组`args`参数介绍：
-| 输入name | 是否必选 | 获参位置 | value内容 | 描述 |
+| 参数名称 | 是否必选 | 获参位置 | value内容 | 描述 |
 | -- | -- | -- | -- | -- |
 | 无 | 必选 | 无 | 无 | 无 |
 
@@ -206,7 +207,7 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 ```
 ### 4.3. API输入介绍
 `apiGateway API`输入数组`args`参数介绍：
-| 输入name | 是否必选 | 获参位置 | value内容 | 描述 |
+| 参数名称 | 是否必选 | 获参位置 | value内容 | 描述 |
 | -- | -- | -- | -- | -- |
 | "host" | 可选 | literal | 0.0.0.0 ~ 255.255.255.255 | 监听地址默认0.0.0.0 |
 | "port" | 可选 | literal | 1024 ~ 65535 | 监听端口默认8080 |
@@ -255,7 +256,7 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 无
 ### 5.3. API输入介绍
 `downloadConf API`输入数组`args`参数介绍：
-| 输入name | 是否必选 | 获参位置 | value内容 | 描述 |
+| 参数名称 | 是否必选 | 获参位置 | value内容 | 描述 |
 | -- | -- | -- | -- | -- |
 | url | 必选 | literal | Addr | 远端Conf文件地址 | 
 ### 5.4. 状态码
@@ -273,7 +274,7 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 ### 6.3. API输入介绍
 
 `decompressZip API`输入数组`args`参数介绍：
-| 输入name | 是否必选 | 获参位置 | value内容 | 描述 |
+| 参数名称 | 是否必选 | 获参位置 | value内容 | 描述 |
 | -- | -- | -- | -- | -- |
 | file | 必选 | literal | 解压文件名 | 需要解压的文件名称，通常与downloadConf这个中url中的文件名一致，均为.zip格式 | 
 | password | 可选 | literal | 密码字符串 | 解压密码 | 
@@ -295,7 +296,7 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 ```
 ### 1.3. API输入介绍
 `httpApi API`输入数组`args`参数介绍：
-| 输入name | 是否必选 | 获参位置 | value内容 | 描述 |
+| 参数名称 | 是否必选 | 获参位置 | value内容 | 描述 |
 | -- | -- | -- | -- | -- |
 | "name" | 必选 | literal | "httpapi文件名" | httpapi名称，详见./example/httpapis/*.json，例如"amap_district"，指向amap_district.json文件 |
 | "internal" | 可选 | literal | "true";</br>"false"; | 判断是否为内部API |
@@ -334,7 +335,7 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 ```
 ### 2.3. API输入介绍
 `httpResponse API`输入数组`args`参数介绍：
-| 输入name | 是否必选 | 获参位置 | value内容 | 描述 |
+| 参数名称 | 是否必选 | 获参位置 | value内容 | 描述 |
 | -- | -- | -- | -- | -- |
 | "type" | 可选 | literal | "json";</br>"html";</br>"其他"; | http response名称 |
 | "key" | 可选 | literal | "NOK_result";</br>"httpapi_result";</br>"merge_result";</br>"..." | 上文"resultKey"获取，type为json时key转换为String，其他则直接按照string发送 |
@@ -387,7 +388,7 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 ```
 ### 3.3. API输入介绍
 `flowApi API`输入数组`args`参数介绍：
-| 输入name | 是否必选 | 获参位置 | value内容 | 描述 |
+| 参数名称 | 是否必选 | 获参位置 | value内容 | 描述 |
 | -- | -- | -- | -- | -- |
 | "name" | 必选 | literal | "flow文件名" | flow名称，详见./example/flows/*.json，例如"amap_city_weather_base"，指向amap_city_weather_base.json文件 |
 | internal | 可选 | literal | "true";</br>"false"; | 判断是否为内部API |
@@ -428,7 +429,7 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 ```
 ### 4.3. API输入介绍
 `scheduleApi API`输入数组`args`参数介绍：
-| 输入name | 是否必选 | 获参位置 | value内容 | 描述 |
+| 参数名称 | 是否必选 | 获参位置 | value内容 | 描述 |
 | -- | -- | -- | -- | -- |
 | "name" | 必选 | literal | "schedule文件名" | scheduleApi名称，详见./example/schedules/*.json |
 | private | 可选  | literal | "密钥文件名" | schedule密钥文件名称 |
@@ -453,12 +454,12 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 ```
 ### 5.3. API输入介绍
 `createJson API`输入数组`args`参数介绍：
-| 输入name | 是否必选 | 获参位置 | value内容 | 描述 |
+| 参数名称 | 是否必选 | 获参位置 | value内容 | 描述 |
 | -- | -- | -- | -- | -- |
-| "key" | 必选 | literal | "merge_result";</br>任意; | 后文origin的name名称 |
+| "key" | 必选 | literal | "merge_result";</br>任意; | origin字段中的name |
 
 `createJson API`输入数组`origin`参数介绍：
-| 输入name | 是否必选 | 获参位置 | value内容 | 描述 |
+| 参数名称 | 是否必选 | 获参位置 | value内容 | 描述 |
 | -- | -- | -- | -- | -- |
 | "上文content内容" | 必选 | jsonRaw | json内容 | 根据json内容生成json结构体 |
 
@@ -516,7 +517,7 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 ```
 ### 6.3. API输入介绍
 `createHtml API`输入数组`args`参数介绍：
-| 输入name | 是否必选 | 获参位置 | value内容 | 描述 |
+| 参数名称 | 是否必选 | 获参位置 | value内容 | 描述 |
 | -- | -- | -- | -- | -- |
 | "type" | 必选 | literal | "local";</br>"resource" | local表示从content中获取;</br>resource表示从resource目录获取; |
 | "content" | 必选 | literal | html内容或者resource文件名 |
@@ -565,7 +566,7 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 ```
 ### 1.3. API输入介绍
 `checkStringsEqual API`输入数组`args`参数介绍：
-| 输入name | 是否必选 | 获参位置 | value内容 | 描述 |
+| 参数名称 | 是否必选 | 获参位置 | value内容 | 描述 |
 | -- | -- | -- | -- | -- |
 | "0";</br>"任意" | 必选 | -- | "sendResult.errcode";</br>"任意" | 检查数组中所有name和value是否都相等，例如"name":"0"，与本json文件上文resultKey获取的sendResult.errcode对比，若sendResult.errcode与"0"相等，则API调用成功 |
 
@@ -607,7 +608,7 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 ```
 ### 2.3. API输入介绍
 `checkStringsNotEqual API`输入数组`args`参数介绍：
-| 输入name | 是否必选 | 获参位置 | value内容 | 描述 |
+| 参数名称 | 是否必选 | 获参位置 | value内容 | 描述 |
 | -- | -- | -- | -- | -- |
 | "";</br>"任意" | 可选 | heap | "tokenResult.access_token";</br>"任意" | 检查数组中所有name和value是否不相等，例如"name":""，与本json文件上文resultKey获取的tokenResult.access_token对比，若tokenResult.access_token不为""，则API返回的token有值，即token获取成功 |
 
@@ -658,16 +659,16 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 ```
 ### 3.3. API输入介绍
 `storageStore API`输入数组`args`参数介绍：
-| 输入name | 是否必选 | 获参位置 | value内容 | 描述 |
+| 参数名称 | 是否必选 | 获参位置 | value内容 | 描述 |
 | -- | -- | -- | -- | -- |
 | "user" | 可选 | query | "appID" | 用户ID关键字，默认为`""`，可通过外部输入，例如curl请求命令`curl -i -H "Content-Type: application/json" -d '{"city": "北京"}' "http://localhost:8080/flow/amap_city_weather?appID=001"`中`appID=001`为query类型的输入 |
 | "key" | 可选 | literal | "任意" | 索引key，后文origin输入参数中的name |
-| "index" | 可选 | template | {{.}} | 需要存储的索引关键字，`"{{(index .adcodeResult.districts 0).adcode}}"`解析为:`(index .adcodeResult.districts 0)`返回index后面的第一个参数的某个索引对应的元素值，其余的参数为索引值，即返回上文中adcodeResult.districts索引；读取上文adcodeResult.districts索引的0索引值的adcode |
+| "index" | 必选 | template | {{.}} | 需要存储的索引关键字，`"{{(index .adcodeResult.districts 0).adcode}}"`解析为:`(index .adcodeResult.districts 0)`返回index后面的第一个参数的某个索引对应的元素值，其余的参数为索引值，即返回上文中adcodeResult.districts索引；读取上文adcodeResult.districts索引的0索引值的adcode |
 | "source" | 可选 | literal | "local";</br>"mongodb"; | 存储方式 :</br>“local”-本地结构存储;</br>"mongodb"-远程数据库存储 |
 | "content" | 可选 | template | "json";</br>"...";  | 存储的内容，如果是“json”，则需要存储origin中的数据；如果为其他，则直接存储 |
 
 `storageStore API`输入`origin`参数介绍
-| 输入name | 是否必选 | 获参位置 | value内容 | 描述 |
+| 参数名称 | 是否必选 | 获参位置 | value内容 | 描述 |
 | -- | -- | -- | -- | -- |
 | "上文content内容" | 必选 | jsonRaw | json内容 | 根据json内容生成json结构体 |
 
@@ -743,28 +744,28 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
   "resultKey": "storaged"
 },
 ```
-### 4.4. 状态码
+### 3.4. 状态码
 | 状态码 | 描述 |
 | -- | -- |
 | 200 | StatusOK，获取信息成功 |
 | 403 | StatusForbidden，获取信息失败 |
 | 500 | StatusInternalServerError，获取信息失败 |
 
-## 5. 加载存储数据（storageLoad API）
-### 5.1. 功能介绍
+## 4. 加载存储数据（storageLoad API）
+### 4.1. 功能介绍
 多租户支持，读取某用户之前存储的数据，用来回复相关用户。
-### 5.2. 位置
+### 4.2. 位置
 ```
 ./broker/apis/storage.go
 ```
-### 5.3. API输入介绍
+### 4.3. API输入介绍
 `storageLoad API`输入数组`args`参数介绍：
-| 输入name | 是否必选 | 获参位置 | value内容 | 描述 |
+| 参数名称 | 是否必选 | 获参位置 | value内容 | 描述 |
 | -- | -- | -- | -- | -- |
-| "key" | 可选 | literal | "任意" | 索引key |
-| "index" | 可选 | template | {{.}} | 需要读取的索引关键字，`"{{(index .adcodeResult.districts 0).adcode}}"`解析为:`(index .adcodeResult.districts 0)`返回index后面的第一个参数的某个索引对应的元素值，其余的参数为索引值，即返回上文中adcodeResult.districts索引；读取上文adcodeResult.districts索引的0索引值的adcode |
+| "key" | 可不填 | literal | "任意" | 索引key |
+| "index" | 必选 | template | {{.}} | 需要读取的索引关键字，`"{{(index .adcodeResult.districts 0).adcode}}"`解析为:`(index .adcodeResult.districts 0)`返回index后面的第一个参数的某个索引对应的元素值，其余的参数为索引值，即返回上文中adcodeResult.districts索引；读取上文adcodeResult.districts索引的0索引值的adcode |
 | "source" | 可选 | literal | "local";</br>"mongodb"; | 存储方式 :</br>“local”-本地结构存储;</br>"mongodb"-远程数据库存储 |
-| "content" | 可选 | template | {{.}} | 读取的内容，如果是“json”，则需要将读取到内容解析为json；如果为其他，则直接返回 |
+| "content" | 可选 | template | {{.}} | 读取的内容，如果是“json”，则需要将读取到内容解析为json；如果为其他，作为查询不到时的默认值。 |
 
 
 示例：
@@ -779,15 +780,8 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 {
   "name": "storage_load",
   "command": "storageLoad",
-  "description": "查询城市码",
+  "description": "读取城市码",
   "args": [
-    {
-      "name": "key",
-      "value": {
-        "from": "literal",
-        "content": "load_result"
-      }
-    },
     {
       "name": "index",
       "value": {
@@ -813,14 +807,74 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
   "resultKey": "loaded"
 },
 ```
-### 5.4. 状态码
+### 4.4. 状态码
 | 状态码 | 描述 |
 | -- | -- |
 | 200 | StatusOK，获取信息成功 |
 | 403 | StatusForbidden，获取信息失败 |
 | 500 | StatusInternalServerError，获取信息失败 |
 
+## 5. 加载存储数据（storageClear API）
+
+### 5.1. 功能介绍
+
+多租户支持，清除某用户之前存储的数据。
+
+### 5.2. 位置
+
+```
+./broker/apis/storage.go
+```
+
+### 5.3. API输入介绍
+
+`storageClear API`输入数组`args`参数介绍：
+
+| 参数名称 | 是否必选 | 获参位置 | value内容                     | 描述                                                         |
+| -------- | -------- | -------- | ----------------------------- | ------------------------------------------------------------ |
+| "index"  | 必选     | template | {{.}}                         | 需要清除的索引关键字                                         |
+| "source" | 必选     | literal  | "local";</br><br />"mongodb"; | 存储方式 :</br>“local”-本地结构存储;</br>"mongodb"-远程数据库存储 |
+
+
+示例：
+
+```
+
+{
+  "name": "storage_clear",
+  "command": "storageClear",
+  "description": "清除存储的数据",
+  "args": [
+    {
+      "name": "index",
+      "value": {
+        "from": "template",
+        "content": "{{(index .adcodeResult.districts 0).adcode}}"
+      }
+    },
+    {
+      "name": "source",
+      "value": {
+        "from": "literal",
+        "content": "local"
+      }
+    }
+  ]
+},
+```
+
+### 5.4. 状态码
+
+| 状态码 | 描述                                    |
+| ------ | --------------------------------------- |
+| 200    | StatusOK，获取信息成功                  |
+| 403    | StatusForbidden，获取信息失败           |
+| 500    | StatusInternalServerError，获取信息失败 |
+
+## 
+
 ## 6. 默认执行权限（setDefaultAccessRight API）
+
 ### 6.1. 功能介绍
 设置默认执行权限。
 ### 6.2. 位置
@@ -829,7 +883,7 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 ```
 ### 6.3. API输入介绍
 `setDefaultAccessRight API`输入数组`args`参数介绍：
-| 输入name | 是否必选 | 获参位置 | value内容 | 描述 |
+| 参数名称 | 是否必选 | 获参位置 | value内容 | 描述 |
 | -- | -- | -- | -- | -- |
 | "default" | 可选 | literal | "access";</br>"deny"; | 设置默认执行权限，默认“access”，如果设置为“deny”，则拒绝访问 |
 
@@ -852,7 +906,7 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 ```
 ### 7.3. API输入介绍
 `checkRight API`输入数组`args`参数介绍：
-| 输入name | 是否必选 | 获参位置 | value内容 | 描述 |
+| 参数名称 | 是否必选 | 获参位置 | value内容 | 描述 |
 | -- | -- | -- | -- | -- |
 | "user" | 可选 | literal | "appID" | 查询参数中的用户id关键字 |
 | "name" | 可选 | template |  {{.*.*}} | template规范的httpapi，flow，schedule名 |
@@ -905,7 +959,7 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 ```
 ### 8.3. API输入介绍
 `fillBaseInfo API`输入数组`args`参数介绍：
-| 输入name | 是否必选 | 获参位置 | value内容 | 描述 |
+| 参数名称 | 是否必选 | 获参位置 | value内容 | 描述 |
 | -- | -- | -- | -- | -- |
 | user | 可选 | query | "appID" | 用户ID关键字,query类型数据，为外部输入，例如curl请求命令`curl -i -H "Content-Type: application/json" -d '{"city": "北京"}' "http://localhost:8080/flow/amap_city_weather?appID=001"`中appID=001为query类型的输入 |
 | uuid | 可选 | header | "uuid" | uuid请求关键字，可输入，也可默认，默认自动创建唯一标识字符串，例如`"0e67c5cf-ef93-4a49-8aad-c2dabe7ea20d"`，方便回溯调用情况 |
@@ -957,7 +1011,7 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 
 `logToFile API`输入数组`args`参数介绍：
 
-| 输入name       | 是否必选 | 获参位置 | value内容                                                    | 描述                                                         |
+| 参数名称       | 是否必选 | 获参位置 | value内容                                                    | 描述                                                         |
 | -------------- | -------- | -------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | filepath       | 可选     | literal  | 日志写入文件的路径                                           | 默认../log/目录                                              |
 | filename       | 可选     | literal  | 日志文件名称                                                 | 默认不写日志，将content字段置位空                            |
@@ -1064,14 +1118,14 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 
 ## 1. 普罗米修斯启动（promStart API）
 ### 1.1. 功能介绍
-启动prometheus（普罗米修斯）服务并注册`counter`和`histogram`。
+启动prometheus（普罗米修斯）服务并注册`counter`和`histogram`。注意如果不需要promtheus功能，需要同时删除main.json里的启动和下文介绍的四个flow中增加统计的API。
 ### 1.2. 位置
 ```
 ./broker/apis/prometheus.go
 ```
 ### 1.3. API输入介绍
 `promStart API`输入数组`args`参数介绍：
-| 输入name | 是否必选 | 获参位置 | value内容 | 描述 |
+| 参数名称 | 是否必选 | 获参位置 | value内容 | 描述 |
 | -- | -- | -- | -- | -- |
 | host | 可选 | literal | 0.0.0.0 ~ 255.255.255.255 | prometheus默认监听地址0.0.0.0 |
 | port | 可选 | literal | 1024 ~ 65535 | prometheus默认监听端口8000 |
@@ -1122,7 +1176,7 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
 ```
 ### 2.3. API输入介绍
 `promHttpCounterInc API`输入数组`args`参数介绍：
-| 输入name | 是否必选 | 获参位置 | value内容 | 描述 |
+| 参数名称 | 是否必选 | 获参位置 | value内容 | 描述 |
 | -- | -- | -- | -- | -- |
 | "httpInOut" | 可选 | literal | "httpIn";</br>"httpOut"; | 设置httpin或者httpout类型的统计，apigateway进入或出去的请求数目 |
 | "duration" | 可选 | template | {{}} | http_in_duration_sec:apigateway进入的请求处理时间，0-10秒，每秒一个桶; </br>http_out_duration_sec:apigateway出去的请求处理时间，0-10秒，每秒一个桶；|
@@ -1196,13 +1250,6 @@ apihub程序启动后，首次调用conf配置文件夹时，屏幕打印输`出
       "value": {
         "from": "template",
         "content": "{{.stats.duration}}"
-      }
-    },
-    {
-      "name": "id",
-      "value": {
-        "from": "template",
-        "content": "{{.stats.id}}"
       }
     },
     {

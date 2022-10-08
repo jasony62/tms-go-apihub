@@ -18,7 +18,7 @@ import (
 	jsoniter "github.com/json-iterator/go"
 )
 
-//json反序列化是造成整数的精度丢失，所以使用一个扩展的json工具做反序列化
+// json反序列化是造成整数的精度丢失，所以使用一个扩展的json工具做反序列化
 var jsonEx = jsoniter.Config{
 	UseNumber: true,
 }.Froze()
@@ -52,7 +52,11 @@ func postHttpapis(stack *hub.Stack, name string, result string, code int, durati
 	} else {
 		/*TODO real value*/
 		stats["id"] = strconv.FormatInt(int64(code), 10)
-		stats["msg"] = result
+		if len(result) != 0 {
+			stats["msg"] = result
+		} else {
+			stats["msg"] = "nok"
+		}
 		logger.LogS().Errorln("!!!!post HTTPAPI NOK:", stack.BaseString, " name：", name, ", result:", result, " code:", code, " stats:", stats)
 		params := []hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "_HTTPNOK"}}}
 		core.ApiRun(stack, &hub.ApiDef{Name: "HTTPAPI_POST_NOK", Command: "flowApi", Args: &params}, "", true)
@@ -451,7 +455,7 @@ func httpResponse(stack *hub.Stack, params map[string]string) (interface{}, int)
 
 	result := stack.Heap[key]
 	if result == nil {
-		str := "缺少api名称"
+		str := "缺少httpapi result"
 		logger.LogS().Errorln(stack.BaseString, str)
 		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusBadRequest
 	} else {

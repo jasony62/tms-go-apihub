@@ -22,7 +22,7 @@ func ApiHubStartMainFlow(path string) {
 	stack.BaseString = " base: main. "
 	stack.StartTime = time.Now()
 	base := map[string]interface{}{"root": "main", "type": "flow", "start": strconv.FormatInt(time.Now().Unix(), 10)}
-	stack.Heap = map[string]interface{}{hub.HeapOriginName: "main", hub.HeapBaseName: base}
+	stack.Heap = map[string]interface{}{hub.HeapOriginName: map[string]interface{}{"name": "main"}, hub.HeapBaseName: base}
 
 	ApiRun(&stack, &hub.ApiDef{Name: "main", Command: "flowApi",
 		Args: &[]hub.BaseParamDef{{Name: "name", Value: hub.BaseValueDef{From: "literal", Content: "main"}}}}, "", false)

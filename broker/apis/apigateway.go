@@ -54,6 +54,7 @@ func newStack(c *gin.Context, level string) (*hub.Stack, string) {
 	} else {
 		value = *inReqData
 	}
+	logger.LogS().Infoln("get input parameters: ", value)
 
 	name := c.Param(`Id`)
 	version := c.Param(`version`)
@@ -64,7 +65,7 @@ func newStack(c *gin.Context, level string) (*hub.Stack, string) {
 		name = c.Param(`bucket`) + "/" + name
 	}
 
-	base := map[string]interface{}{"root": name, "type": level, "start": strconv.FormatInt(now.Unix(), 10)}
+	base := map[string]interface{}{"root": name, "type": level, "start": strconv.FormatInt(now.Unix(), 10), "src": c.ClientIP()}
 
 	return &hub.Stack{
 		GinContext: c,

@@ -1,0 +1,36 @@
+{
+    "name": "postmanpressure",
+    "description": "Postman_Pressure",
+    "steps": [
+        {
+            "type": "loop",
+            "mode": "normal",
+            "control": {
+                "name": "信元_5G新增手机终端画像_异网全量用户标签（数据自注册-Android）接口",
+                "concurrentLoopNum": 100,
+                "key": {
+                    "from": "literal",
+                    "content": "100"
+                },
+                "steps": [
+                    {
+                        "type": "api",
+                        "api": {
+                            "name": "信元_5G新增手机终端画像_异网全量用户标签（数据自注册-Android）接口",
+                            "command": "httpApi",
+                            "args": [
+                                {
+                                    "name": "name",
+                                    "value": {
+                                        "from": "literal",
+                                        "content": "信元_5G新增手机终端画像_异网全量用户标签（数据自注册-Android）接口"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}

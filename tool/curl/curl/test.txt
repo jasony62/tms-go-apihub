@@ -85,17 +85,16 @@ curl -i -X POST -d '{"text":"中国中央电视台是国家电视台"}'  "http:/
 echo "\r\npostman转json文件,号码归属地查询:\r\n"
 curl -i -H "Content-Type: application/json" "http://localhost:8080/httpapi/手机归属地_mobile?tel=18888888888"
 
-#财务发送短信：
-echo "\r\n三网短信接口。phone：接收手机号,number：报账单号。httpapi调用"
+#中国电信三网消息平台三网短信接口，短信发送。phone填写接收短信手机号；template_id默认填写558408。
+#558407：您好，您发起的报账单处理状态有更新，请及时登录报销系统处理。
+#558408：您好，您发起的报账单{param1}尚未收到对应的纸质票据，请您尽快递送。如果在48小时内仍未收到纸质票据，将会退回您的报账申请。
 curl -X POST -d '{"content":{"number":"xxx,"phone":"1xxxxxxxxxx"}}' "http://localhost:8080/httpapi/ct_send_fsms"
-
-echo "\r\n三网短信接口。phone：接收手机号,number：报账单号。flow调用"
+#BZ-HNJR2209090002
 curl -X POST -d '{"content":{"number":"xxx","phone":"1xxxxxxxxxx"}}' "http://localhost:8080/flow/ct_send_fsms/v1"
 
+
 #翼行获取短信信息接口，全量获取
-echo "\r\n翼行获取短信信息接口，全量获取"
 curl "http://localhost:8080/flow/ct_yixing_fdata_full/v1"
 
 #翼行获取短信信息接口，增量获取
-echo "\r\n翼行获取短信信息接口，增量获取"
 curl "http://localhost:8080/flow/ct_yixing_fdata_update/v1"

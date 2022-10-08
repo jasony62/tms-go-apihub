@@ -21,6 +21,7 @@ func ApisInit() {
 		"checkRight":            checkRight,
 		"storageStore":          storageStore,
 		"storageLoad":           storageLoad,
+		"storageClear":          storageClear,
 		"confValidator":         confValidator,
 		"downloadConf":          downloadConf,
 		"decompressZip":         decompressZip,
@@ -28,6 +29,6 @@ func ApisInit() {
 		"promStart":             promStart,
 		"promHttpCounterInc":    promHttpCounterInc,
 		"logOutput":             logOutput,
-		"pressureSleep":         pressureSleep,
+		"apiSleep":              apiSleep,
 	})
 }

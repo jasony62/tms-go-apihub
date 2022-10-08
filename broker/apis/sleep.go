@@ -9,7 +9,7 @@ import (
 	"github.com/jasony62/tms-go-apihub/logger"
 )
 
-func pressureSleep(stack *hub.Stack, params map[string]string) (interface{}, int) {
+func apiSleep(stack *hub.Stack, params map[string]string) (interface{}, int) {
 	hour := params["hour"]
 	minute := params["minute"]
 	second := params["second"]

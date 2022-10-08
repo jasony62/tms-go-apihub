@@ -12,8 +12,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-var httpInPromCounter *prometheus.CounterVec
-var httpOutPromCounter *prometheus.CounterVec
 var httpInDurationPromHistogram *prometheus.HistogramVec
 var httpOutDurationPromHistogram *prometheus.HistogramVec
 
@@ -49,6 +47,7 @@ func promStartRun(address string) {
 		logger.LogS().Infoln("Listen and Serve: ", address)
 		if err := http.ListenAndServe(address, nil); err != nil {
 			logger.LogS().Errorln("Error in ListenAndServe: %v", err)
+			panic("ERROR: prometheus ListenAndServe Failed!")
 		}
 	}()
 }
@@ -75,10 +74,8 @@ func promHttpCounterInc(stack *hub.Stack, params map[string]string) (interface{}
 
 	if params["httpInOut"] == "httpIn" {
 		httpInDurationPromHistogram.With(promLabels).Observe(duration)
-		httpInPromCounter.With(promLabels).Inc()
 	} else if params["httpInOut"] == "httpOut" {
 		httpOutDurationPromHistogram.With(promLabels).Observe(duration)
-		httpOutPromCounter.With(promLabels).Inc()
 	} else {
 		str := "httpInOut参数配置错误！"
 		logger.LogS().Errorln(stack.BaseString, str)
@@ -88,21 +85,7 @@ func promHttpCounterInc(stack *hub.Stack, params map[string]string) (interface{}
 }
 
 func promInitData() {
-	//Init total counter and histogram
-	httpInPromCounter = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Name: "http_in_total",
-			Help: "api hub http in counter",
-		},
-		[]string{"code", "child", "root", "type"},
-	)
-	httpOutPromCounter = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Name: "http_out_total",
-			Help: "api hub http out counter",
-		},
-		[]string{"code", "child", "root", "type"},
-	)
+	//Init total histogram
 	httpInDurationPromHistogram = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Name:    "http_in_duration_second",
@@ -119,8 +102,6 @@ func promInitData() {
 		},
 		[]string{"code", "child", "root", "type"},
 	)
-	prometheus.MustRegister(httpInPromCounter)
-	prometheus.MustRegister(httpOutPromCounter)
 	prometheus.MustRegister(httpInDurationPromHistogram)
 	prometheus.MustRegister(httpOutDurationPromHistogram)
 }

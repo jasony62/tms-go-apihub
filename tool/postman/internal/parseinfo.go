@@ -1,6 +1,8 @@
 package postmaninternal
 
 import (
+	"strings"
+
 	"github.com/rbretecher/go-postman-collection"
 	"k8s.io/klog/v2"
 )
@@ -9,8 +11,7 @@ func getHttpapiInfo(postmanItem *postman.Items) {
 	if postmanItem == nil {
 		return
 	}
-
-	apiHubHttpConf.ID = postmanItem.Name
+	apiHubHttpConf.ID = strings.Replace(postmanItem.Name, " ", "_", -1)
 	klog.Infoln("__request Name : ", apiHubHttpConf.ID)
 	apiHubHttpConf.Description = postmanItem.Name
 	klog.Infoln("__request Description : ", apiHubHttpConf.Description)
