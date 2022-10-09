@@ -14,5 +14,8 @@ curl -i -X POST  "http://localhost:8080/httpapi/天津_查询余额"
 echo "\r\npostman转json文件,浙江信产_集团aWiFi漫游能力:\r\n"
 curl -i -H "Content-Type: application/json" "http://localhost:8080/httpapi/浙江信产_集团aWiFi漫游能力"
 
+curl -i -H "Content-Type: application/json" "http://localhost:8080/schedule/healthCheck"
 
+curl -i -H "Content-Type: application/json" "http://localhost:8080/schedule/pressureTest"
 
+curl -i -H "Content-Type: application/json" "http://localhost:8080/schedule/pressureArrange"

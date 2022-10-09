@@ -16,7 +16,7 @@ func getPostmanFilesBytes(postmanfileBytes *postman.Collection) string {
 					apiHubHttpConf.Private = ReplaceName(apiHubHttpConf.Private)
 					generateApiHubJson(apiHubPrivatesJsonPath, apiHubHttpConf.Private)
 				}
-				apiHubHttpConf.ID = strings.Replace(postmanfileBytes.Items[i].Name, " ", "_", -1)
+				apiHubHttpConf.ID = strings.Replace(postmanfileBytes.Info.Name+"_"+postmanfileBytes.Items[i].Name, " ", "_", -1)
 				klog.Infoln("__request Name : ", apiHubHttpConf.ID)
 				tempName := postmanfileBytes.Info.Name + "_" + postmanfileBytes.Items[i].Name
 				generateApiHubJson(apiHubJsonPath, ReplaceName(tempName))

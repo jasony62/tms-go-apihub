@@ -18,7 +18,7 @@ type Args struct {
 
 type Value struct {
 	From    string `json:"from"`
-	Content string `json:"content"`
+	Content string `json:"content,omitempty"`
 	Args    string `json:"args,omitempty"`
 	// Json    map[string]string `json:"json,omitempty"`
 	Json interface{} `json:"json,omitempty"`
