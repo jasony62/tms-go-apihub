@@ -2,30 +2,32 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
 	"os"
 	"postmaninternal"
+	"strconv"
 	"strings"
 
 	"k8s.io/klog/v2"
 )
 
-var curlPath string
-var httpapis string
+var curl_path string
+var httpapis_path string
 var apiHubHttpConf postmaninternal.ApiHubHttpConf
 
 func init() {
-	flag.StringVar(&curlPath, "curlfrom", "./curl/", "指定curl文件路径")
-	flag.StringVar(&httpapis, "curlto", "./httpapis/", "指定httpaps文件路径")
+	flag.StringVar(&curl_path, "curlfrom", "./curl/", "指定curl文件路径")
+	flag.StringVar(&httpapis_path, "curlto", "./httpapis/", "指定httpaps文件路径")
 }
 
 /*
  * main function
  */
 func main() {
-	convertCurl(curlPath)
+	convertCurl(curl_path)
 }
 
 func convertCurl(path string) error {
@@ -57,8 +59,12 @@ func convertCurl(path string) error {
 			}
 
 			for i := 0; i < len(lineStringArray); i++ {
+				apiHubHttpConf.Args = append(apiHubHttpConf.Args[:0], apiHubHttpConf.Args[len(apiHubHttpConf.Args):]...)
 				if strings.Contains(lineStringArray[i], "curl") && (strings.Index(lineStringArray[i], "#") != 0) {
-					pareCurlLine(lineStringArray[i])
+					parseCurlCmd(lineStringArray[i])
+					apiHubHttpConf.ID = "Curl_Line_Number" + strconv.Itoa(i)
+					apiHubHttpConf.Description = "Curl_Line_Number" + strconv.Itoa(i)
+					generateApiHubJson(httpapis_path, "Curl_Line_Number"+strconv.Itoa(i))
 				}
 			}
 		}
@@ -66,27 +72,116 @@ func convertCurl(path string) error {
 	return nil
 }
 
-func pareCurlLine(line string) {
-	if strings.Contains(line, "POST") { //POST
-		apiHubHttpConf.Method = "POST"
-	} else { // GET
-		apiHubHttpConf.Method = "GET"
+func generateApiHubJson(apiHubJsonPath string, multipleName string) {
+	var byteHttpApi []byte
+	var err error
+	fileName := apiHubJsonPath + multipleName + ".json"
+
+	byteHttpApi, err = json.Marshal(apiHubHttpConf)
+	if err != nil {
+		klog.Errorln("json.Marshal失败!", fileName)
+		return
+	}
+
+	// ！！！os.Create无法自动创建文件路径中不存在的文件夹
+	f, err := os.Create(fileName)
+	if err != nil {
+		klog.Errorln("创建文件失败!", fileName)
+	} else {
+		defer f.Close()
+		_, err = f.Write(byteHttpApi)
+		if err != nil {
+			klog.Errorln("写入文件失败!", fileName)
+		}
+	}
+}
+
+func parseCurlCmd(line string) {
+
+	apiHubHttpConf.Method = "POST"
+
+	if strings.Contains(line, "-d") {
+		hContent, hIndex := postmaninternal.GetStringBetweenSpecifySymbols(line[strings.Index(line, "-d"):], "{", "}")
+		if hIndex != -1 {
+			hContent = "{" + hContent + "}"
+			dataMap := make(map[string]string)
+			err := json.Unmarshal([]byte(hContent), &dataMap)
+			if err != nil {
+				fmt.Println("Umarshal failed:", err)
+				return
+			}
+			args := postmaninternal.Args{In: "body", Name: "body", Value: postmaninternal.Value{From: "json", Json: dataMap}}
+			apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+		}
 	}
 
 	if strings.Contains(line, "-H") {
 		hContent, hIndex := postmaninternal.GetStringBetweenSpecifySymbols(line[strings.Index(line, "-H"):], "\"", "\"")
 		if (hIndex != -1) && (strings.Contains(hContent, "application/json")) {
 			apiHubHttpConf.Requestcontenttype = "json"
+		} else {
+			apiHubHttpConf.Requestcontenttype = "json" // default to application/json
 		}
 	}
 
-	if strings.Contains(line, "-d") {
-		hContent, hIndex := postmaninternal.GetStringBetweenSpecifySymbols(line[strings.Index(line, "-d"):], "{", "}")
-		hContent = "{" + hContent + "}"
+	if strings.Contains(line, "\"http") {
+		apiHubHttpConf.URL = line[strings.Index(line, "\"http"):]
+		hContent, hIndex := postmaninternal.GetStringBetweenSpecifySymbols(apiHubHttpConf.URL, "\"", "\"")
 		if hIndex != -1 {
-
+			// apiHubHttpConf.URL = strings.Replace(hContent, "\u0026", "&", -1)
+			apiHubHttpConf.URL = hContent
 		}
+		/*
+			if hIndex != -1 {
+				if strings.Contains(hContent, "?") {
+					apiHubHttpConf.URL = hContent[:strings.Index(hContent, "?")]
+					if strings.Contains(hContent, "&") {
+						tempflag := 0
+						for strings.Contains(hContent, "&") {
+							if tempflag == 0 {
+								tempQuery, tempIndex := postmaninternal.GetStringBetweenSpecifySymbols(hContent, "?", "&")
+								tempflag = 1
+								tempkey, tempvalue := parseGetContent(tempQuery)
+								args := postmaninternal.Args{In: "query", Name: tempkey, Value: postmaninternal.Value{From: "lietral", Content: tempvalue}}
+								apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+								hContent = hContent[tempIndex:]
+							} else {
+								tempQuery, tempIndex := postmaninternal.GetStringBetweenSpecifySymbols(hContent, "&", "&")
+								tempkey, tempvalue := parseGetContent(tempQuery)
+								args := postmaninternal.Args{In: "query", Name: tempkey, Value: postmaninternal.Value{From: "lietral", Content: tempvalue}}
+								apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+								if tempIndex == -1 {
+									hContent = hContent[1:]
+									break
+								}
+								hContent = hContent[tempIndex:]
+							}
+						}
+						_ = hContent
+					} else {
+						tempQuery, tempIndex := postmaninternal.GetStringBetweenSpecifySymbols(hContent, "?", "\"")
+						if tempIndex != -1 {
+							tempkey, tempvalue := parseGetContent(tempQuery)
+							args := postmaninternal.Args{In: "query", Name: tempkey, Value: postmaninternal.Value{From: "lietral", Content: tempvalue}}
+							apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+						}
+					}
+				} else {
+					apiHubHttpConf.URL = hContent
+				}
+			}
+		*/
 	}
+
+}
+
+func parseGetContent(content string) (string, string) {
+	if strings.Contains(content, "=") {
+		key := content[:strings.Index(content, "=")]
+		value := content[strings.Index(content, "=")+1:]
+		return key, value
+	}
+	return "", ""
 }
 
 func lineByLine(file string) ([]string, error) {

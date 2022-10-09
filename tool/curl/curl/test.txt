@@ -1,5 +1,11 @@
 #!/bin/sh
 
+curl -i -H "Content-Type: application/json" -d '{"keywords": "北京"}' "https://restapi.amap.com/v3/config/district?user=001&key=bf03f44e27f42c38c4b0af77b1b0eeef&subdistrict=0"
+
+curl -i -H "Content-Type: application/json" -d '{"user":"001","key":"bf03f44e27f42c38c4b0af77b1b0eeef","subdistrict":"0","keywords": "北京"}' "https://restapi.amap.com/v3/config/district"
+
+curl -i -H "Content-Type: application/json" -d '{"city": "110100","key":"bf03f44e27f42c38c4b0af77b1b0eeef"}' "https://restapi.amap.com/v3/weather/weatherInfo"
+
 echo "\r\n高德地图:"
 echo "\r\n查询城市区域编码(进行多租户管理):\r\n"
 curl -i -H "Content-Type: application/json" -d '{"city": "北京"}' "http://localhost:8080/httpapi/amap_district?appID=001"

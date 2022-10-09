@@ -20,6 +20,9 @@
         },
         {
             "path": "tool/curl"
+        },
+        {
+            "path": "tool/schedule"
         }
     ],
     "launch": {
@@ -63,6 +66,14 @@
                 "mode": "auto",
                 "program": "${fileDirname}",
                 "args": ["--curlfrom", "./curl/", "--curlto", "./httpapis/"],
+            },
+            {
+                "name": "Go Schedule Launch",
+                "type": "go",
+                "request": "launch",
+                "mode": "auto",
+                "program": "${fileDirname}",
+                "args": ["--from", "../../example/httpapis/__INTERNAL/", "--to", "./schedule/"],
             },
         ]
     },

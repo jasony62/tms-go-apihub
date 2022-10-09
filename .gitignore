@@ -39,3 +39,5 @@ broker/tms-gah-broker
 
 example/postman/
 tool/schedule/schedule/
+tool/postman/cmd/__INTERNAL/
+tool/curl/httpapis/
