@@ -26,8 +26,14 @@ func readWasmPostman(stringflows string) ([]string, error) {
 }
 
 func getPostmanFilesBytesWasm(postmanfileBytes *postman.Collection) ([]string, error) {
+	return getPostmanFilesBytes(postmanfileBytes, "wasm")
+}
+
+/*
+func getPostmanFilesBytesWasm(postmanfileBytes *postman.Collection) ([]string, error) {
 	var outputJsonArray []string
 	if postmanfileBytes != nil && postmanfileBytes.Items != nil {
+		outputJsonFailedString := "outputJsonString failed: "
 		for i := range postmanfileBytes.Items {
 			if (postmanfileBytes.Items[i].Items == nil) && (converOneRequest(postmanfileBytes.Items[i]) == "") { // 若只有一级Items
 
@@ -35,7 +41,7 @@ func getPostmanFilesBytesWasm(postmanfileBytes *postman.Collection) ([]string, e
 				apiHubHttpConf.ID = ReplaceName(apiHubHttpConf.ID)
 				tempString, err := outputJsonString()
 				if err != nil {
-					klog.Errorln("outputJsonString failed:", err)
+					klog.Errorln(outputJsonFailedString, err)
 				}
 				outputJsonArray = append(outputJsonArray, tempString)
 
@@ -46,7 +52,7 @@ func getPostmanFilesBytesWasm(postmanfileBytes *postman.Collection) ([]string, e
 						apiHubHttpConf.ID = ReplaceName(apiHubHttpConf.ID)
 						tempString, err := outputJsonString()
 						if err != nil {
-							klog.Errorln("outputJsonString failed:", err)
+							klog.Errorln(outputJsonFailedString, err)
 						}
 						outputJsonArray = append(outputJsonArray, tempString)
 					} else {
@@ -56,7 +62,7 @@ func getPostmanFilesBytesWasm(postmanfileBytes *postman.Collection) ([]string, e
 								apiHubHttpConf.ID = ReplaceName(apiHubHttpConf.ID)
 								tempString, err := outputJsonString()
 								if err != nil {
-									klog.Errorln("outputJsonString failed:", err)
+									klog.Errorln(outputJsonFailedString, err)
 								}
 								outputJsonArray = append(outputJsonArray, tempString)
 							} else {
@@ -66,7 +72,7 @@ func getPostmanFilesBytesWasm(postmanfileBytes *postman.Collection) ([]string, e
 										apiHubHttpConf.ID = ReplaceName(apiHubHttpConf.ID)
 										tempString, err := outputJsonString()
 										if err != nil {
-											klog.Errorln("outputJsonString failed:", err)
+											klog.Errorln(outputJsonFailedString, err)
 										}
 										outputJsonArray = append(outputJsonArray, tempString)
 									} else {
@@ -76,7 +82,7 @@ func getPostmanFilesBytesWasm(postmanfileBytes *postman.Collection) ([]string, e
 												apiHubHttpConf.ID = ReplaceName(apiHubHttpConf.ID)
 												tempString, err := outputJsonString()
 												if err != nil {
-													klog.Errorln("outputJsonString failed:", err)
+													klog.Errorln(outputJsonFailedString, err)
 												}
 												outputJsonArray = append(outputJsonArray, tempString)
 											}
@@ -93,6 +99,7 @@ func getPostmanFilesBytesWasm(postmanfileBytes *postman.Collection) ([]string, e
 
 	return outputJsonArray, nil
 }
+*/
 
 func outputJsonString() (string, error) {
 	byteHttpApi, err := json.Marshal(apiHubHttpConf)

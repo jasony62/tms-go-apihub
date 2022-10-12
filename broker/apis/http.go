@@ -454,11 +454,9 @@ func httpResponse(stack *hub.Stack, params map[string]string) (interface{}, int)
 	}
 
 	result := stack.Heap[key]
-	if result == nil {
-		str := "缺少httpapi result"
-		logger.LogS().Errorln(stack.BaseString, str)
-		return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusBadRequest
-	} else {
+
+	tialTest := false // 拨测开关
+	if tialTest {
 		switch name {
 		case "html":
 			stack.GinContext.Header("Content-Type", "text/html; charset=utf-8")
@@ -469,6 +467,24 @@ func httpResponse(stack *hub.Stack, params map[string]string) (interface{}, int)
 			stack.GinContext.Header("Content-Type", name)
 			stack.GinContext.String(code, "%s", result)
 		}
+	} else {
+		if result == nil {
+			str := "缺少httpapi result"
+			logger.LogS().Errorln(stack.BaseString, str)
+			return util.CreateTmsError(hub.TmsErrorApisId, str, nil), http.StatusBadRequest
+		} else {
+			switch name {
+			case "html":
+				stack.GinContext.Header("Content-Type", "text/html; charset=utf-8")
+				stack.GinContext.String(code, "%s", result)
+			case "json":
+				stack.GinContext.IndentedJSON(code, result)
+			default:
+				stack.GinContext.Header("Content-Type", name)
+				stack.GinContext.String(code, "%s", result)
+			}
+		}
 	}
+
 	return nil, fasthttp.StatusOK
 }

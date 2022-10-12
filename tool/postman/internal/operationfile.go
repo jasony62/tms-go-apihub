@@ -47,9 +47,17 @@ func convertPostmanFiles(path string) {
 				klog.Errorln(err)
 				panic(err)
 			}
-			getPostmanFilesBytes(postmanfileBytes)
+			err = getPostmanFilesBytesCMD(postmanfileBytes)
+			if err != nil {
+				klog.Errorln(err)
+			}
 		}
 	}
+}
+
+func getPostmanFilesBytesCMD(postmanfileBytes *postman.Collection) error {
+	_, err := getPostmanFilesBytes(postmanfileBytes, "cmd")
+	return err
 }
 
 func generateApiHubJson(apiHubJsonPath string, multipleName string) {

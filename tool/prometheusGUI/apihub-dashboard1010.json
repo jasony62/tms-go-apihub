@@ -1,0 +1,566 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 1,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "jtY_SNIVz"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "noValue": "1",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "{child=\"AAA-溯源_New_Request\", code=\"200\"}"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "logmin",
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true,
+          "sortBy": "Max",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "YxM1XWM4k"
+          },
+          "editorMode": "code",
+          "expr": "sum(irate(http_out_duration_second_sum{child=~\"$child\"}[5m]))  by (child,code)\r\n/\r\nsum(irate(http_out_duration_second_count{child=~\"$child\"}[5m])) by (child,code)",
+          "hide": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "请求时间",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "jtY_SNIVz"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "pps"
+        },
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "{child=\"AAA-溯源_New_Request\",code=\"200\"}"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 8,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "YxM1XWM4k"
+          },
+          "editorMode": "code",
+          "expr": "irate(http_out_duration_second_count{child=~\"$child\"}[5m]) * 15",
+          "hide": false,
+          "legendFormat": "{child=\"{{ child }}\",code=\"{{ code }}\"}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "请求速率",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "jtY_SNIVz"
+      },
+      "description": "采样结果被量化为一个 0 到 1之间的数值即 “Apdex 指数”，0 代表没有满意用户，1则代表所有用户都满意。",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto",
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "在返回时间上限接口请求占比(低于0.95表示有问题)"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 365
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 12
+      },
+      "id": 2,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "响应码"
+          }
+        ]
+      },
+      "pluginVersion": "9.1.8",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "YxM1XWM4k"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "histogram_quantile(0.9, sum(rate(http_out_duration_second_bucket{child=~\"$child\"}[5m])) by (child,code,le))",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "",
+          "range": false,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "YxM1XWM4k"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "histogram_quantile(0.95, sum(rate(http_out_duration_second_bucket{child=~\"$child\"}[5m])) by (child,code,le))",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "",
+          "range": false,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "YxM1XWM4k"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "histogram_quantile(0.99, sum(rate(http_out_duration_second_bucket{child=~\"$child\"}[5m])) by (child,code,le))",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "",
+          "range": false,
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "YxM1XWM4k"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum(rate(http_out_duration_second_sum{child=~\"$child\"}[5m]))  by (child,code)\r\n/\r\nsum(rate(http_out_duration_second_count{child=~\"$child\"}[5m])) by (child,code)",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "",
+          "range": false,
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "YxM1XWM4k"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum(rate(http_out_duration_second_bucket{child=~\"$child\",le=~\"$le\"}[5m]))by(child,code)/sum(rate(http_out_duration_second_count{child=~\"$child\"}[5m]))by(child,code)",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "",
+          "range": false,
+          "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "YxM1XWM4k"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "(sum(rate(http_out_duration_second_bucket{child=~\"$child\",le=~\"$le\"}[5m])) by (child) + sum(rate(http_out_duration_second_bucket{child=~\"$child\",le=\"4.0\"}[5m])) by (child)) / 2 / sum(rate(http_out_duration_second_count{child=~\"$child\"}[5m])) by (child)",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "",
+          "range": false,
+          "refId": "F"
+        }
+      ],
+      "title": "接口返回监测图表",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {},
+            "renameByName": {
+              "Value #A": "90分位请求耗时",
+              "Value #B": "95分位请求耗时",
+              "Value #C": "99分位请求耗时",
+              "Value #D": "最近5分钟内的平均请求持续时间",
+              "Value #E": "在返回时间上限接口请求占比(低于0.95表示有问题)",
+              "Value #F": "APDEX分数",
+              "child": "接口",
+              "code": "响应码"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 37,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "AAA-溯源_New_Request"
+          ],
+          "value": [
+            "AAA-溯源_New_Request"
+          ]
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "jtY_SNIVz"
+        },
+        "definition": "label_values(http_out_duration_second_bucket{},child)",
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "name": "child",
+        "options": [],
+        "query": {
+          "query": "label_values(http_out_duration_second_bucket{},child)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "1.0",
+          "value": "1.0"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "jtY_SNIVz"
+        },
+        "definition": "label_values(http_out_duration_second_bucket{},le)",
+        "description": "返回时间上限",
+        "hide": 0,
+        "includeAll": false,
+        "label": "返回时间上限",
+        "multi": false,
+        "name": "le",
+        "options": [],
+        "query": {
+          "query": "label_values(http_out_duration_second_bucket{},le)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "/[0-9]/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "jtY_SNIVz"
+        },
+        "filters": [],
+        "hide": 0,
+        "name": "Filters",
+        "skipUrlSync": false,
+        "type": "adhoc"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-5m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "111New dashboard Copy",
+  "uid": "SGzQIZI4z",
+  "version": 4,
+  "weekStart": ""
+}

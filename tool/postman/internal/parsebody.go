@@ -17,13 +17,27 @@ func parseRequestUrlQuery(postmanRequestURLQuery interface{}) {
 			httpapiQueryArg := httpapiQuery[i]
 			valuename := httpapiQueryArg.(map[string]interface{})["key"]
 			valuecontent := httpapiQueryArg.(map[string]interface{})["value"]
+			valuedisabled := httpapiQueryArg.(map[string]interface{})["disabled"]
 			// args := Args{In: "query", Name: valuename.(string), Value: Value{From: "query", Content: valuename.(string)}}
-			if valuecontent != nil {
-				args := Args{In: "query", Name: valuename.(string), Value: Value{From: "literal", Content: valuecontent.(string)}}
-				apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+			if valuedisabled != nil {
+				if valuedisabled == true {
+					if (valuename != "") && (valuecontent != "") {
+						args := Args{In: "query", Name: valuename.(string), Value: Value{From: "literal", Content: valuecontent.(string)}}
+						apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+					} else {
+						args := Args{In: "query", Name: valuename.(string), Value: Value{From: "literal", Content: ""}}
+						apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+					}
+				}
 			} else {
-				args := Args{In: "query", Name: valuename.(string), Value: Value{From: "literal", Content: ""}}
-				apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+
+				if (valuename != "") && (valuecontent != "") {
+					args := Args{In: "query", Name: valuename.(string), Value: Value{From: "literal", Content: valuecontent.(string)}}
+					apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+				} else {
+					args := Args{In: "query", Name: valuename.(string), Value: Value{From: "literal", Content: ""}}
+					apiHubHttpConf.Args = append(apiHubHttpConf.Args, args)
+				}
 			}
 
 			// klog.Infoln("__httpapiQueryArgs valuename is : ", valuename.(string))

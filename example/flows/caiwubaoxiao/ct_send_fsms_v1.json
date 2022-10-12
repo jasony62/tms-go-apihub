@@ -1,0 +1,98 @@
+{
+  "name": "ct_send_fsms",
+  "description": "中国电信三网消息平台三网短信发送接口",
+  "steps": [
+   {
+      "name": "send_sms",
+      "command": "httpApi",
+      "description": "短信发送",
+      "args": [
+        {
+          "name": "name",
+          "value": {
+            "from": "literal",
+            "content": "ct_send_fsms"
+          }
+        }
+      ],
+	  "origin": [
+	    {
+		  "name": "template_id",
+		  "value": {
+			"from": "literal",
+			"content": "558408"
+		  }
+		},
+        {
+		  "name": "template_param",
+		  "value": {
+			"from": "template",
+			"content": "{\"param1\":\"{{.origin.content.number}}\"}"
+		  }
+		}		
+	  ],
+      "resultKey": "sms_result"
+    },
+    {
+      "name": "checkResult",
+      "description": "检查返回值",
+      "command": "checkStringsEqual",
+      "args": [
+        {
+          "name": "Success",
+          "value": {
+            "from": "heap",
+            "content": "sms_result.res_message"
+          }
+        }
+      ]
+    },
+    {
+      "name": "merge_result",
+      "command": "createJson",
+      "description": "合并收到的结果",
+      "resultKey": "merged",
+      "args": [
+        {
+          "name": "key",
+          "value": {
+            "from": "literal",
+            "content": "merge_result"
+          }
+        }
+      ],
+      "origin": [
+        {
+          "name": "merge_result",
+          "value": {
+            "from": "jsonRaw",
+            "json": {
+              "idertifier": "{{.sms_result.idertifier}}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "response",
+      "command": "httpResponse",
+      "description": "返回结果",    
+      "args": [
+        {
+          "name": "type",
+          "value": {
+            "from": "literal",
+            "content": "json"
+          }
+        },
+        {
+          "name": "key",
+          "value": {
+            "from": "literal",
+            "content": "merged"
+          }
+        }        
+      ]
+    }
+  ]
+}
