@@ -7575,7 +7575,7 @@
 							"script": {
 								"exec": [
 									"// pm.environment.get(\"city\");\r",
-									"pm.environment.set(\"touser\", \"YangYue\");\r",
+									"pm.environment.set(\"touser\", \"XXXXX\");\r",
 									"pm.environment.set(\"msgtype\", \"text\");\r",
 									"pm.environment.set(\"agentid\", \"1000002\");\r",
 									"pm.environment.set(\"content\", \"试试企业微信\");"
@@ -7694,7 +7694,7 @@
 							"script": {
 								"exec": [
 									"// pm.environment.get(\"city\");\r",
-									"pm.environment.set(\"touser\", \"YangYue\");\r",
+									"pm.environment.set(\"touser\", \"XXXXX\");\r",
 									"pm.environment.set(\"msgtype\", \"text\");\r",
 									"pm.environment.set(\"agentid\", \"1000002\");\r",
 									"pm.environment.set(\"content\", \"来，聊5毛钱的\");"
