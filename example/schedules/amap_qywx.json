@@ -1,231 +1,231 @@
 {
-    "name": "amap_qywx",
-    "description": "处理输入并发送微信",
-    "concurrentNum": 2,
-    "steps": [
-        {
-            "type": "loop",
-            "mode": "concurrent",
+  "name": "amap_qywx",
+  "description": "处理输入并发送微信",
+  "concurrentNum": 2,
+  "steps": [
+    {
+      "type": "loop",
+      "mode": "concurrent",
+      "control": {
+        "name": "city_loop",
+        "resultKey": "myloop",
+        "concurrentLoopNum": 2,
+        "key": {
+          "from": "template",
+          "content": "{{len .origin.cities}}"
+        },
+        "steps": [
+          {
+            "type": "switch",
             "control": {
-                "name": "city_loop",
-                "resultKey": "myloop",
-                "concurrentLoopNum": 2,
-                "key": {
-                    "from": "template",
-                    "content": "{{len .origin.cities}}"
+              "name": "check city map",
+              "key": {
+                "from": "template",
+                "content": "{{index .origin.cities .loop.myloop}}"
+              },
+              "cases": [
+                {
+                  "value": "sh",
+                  "steps": [
+                    {
+                      "type": "api",
+                      "api": {
+                        "name": "shanghai weather",
+                        "command": "flowApi",
+                        "resultKey": "weather",
+                        "args": [
+                          {
+                            "name": "name",
+                            "value": {
+                              "from": "literal",
+                              "content": "amap_city_weather_base"
+                            }
+                          }
+                        ],
+                        "origin": [
+                          {
+                            "name": "city",
+                            "value": {
+                              "from": "literal",
+                              "content": "上海"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
                 },
-                "steps": [
+                {
+                  "value": "bj",
+                  "steps": [
                     {
-                        "type": "switch",
-                        "control": {
-                            "name": "check city map",
-                            "key": {
-                                "from": "template",
-                                "content": "{{index .origin.cities .loop.myloop}}"
-                            },
-                            "cases": [
-                                {
-                                    "value": "sh",
-                                    "steps": [
-                                        {
-                                            "type": "api",
-                                            "api": {
-                                                "name": "shanghai weather",
-                                                "command": "flowApi",
-                                                "resultKey": "weather",
-                                                "args": [
-                                                    {
-                                                        "name": "name",
-                                                        "value": {
-                                                            "from": "literal",
-                                                            "content": "amap_city_weather_base"
-                                                        }
-                                                    }
-                                                ],
-                                                "origin": [
-                                                    {
-                                                        "name": "city",
-                                                        "value": {
-                                                            "from": "literal",
-                                                            "content": "上海"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    ]
-                                },
-                                {
-                                    "value": "bj",
-                                    "steps": [
-                                        {
-                                            "type": "api",
-                                            "api": {
-                                                "name": "beijing weather",
-                                                "command": "flowApi",
-                                                "resultKey": "weather",
-                                                "args": [
-                                                    {
-                                                        "name": "name",
-                                                        "value": {
-                                                            "from": "literal",
-                                                            "content": "amap_city_weather_base"
-                                                        }
-                                                    }
-                                                ],
-                                                "origin": [
-                                                    {
-                                                        "name": "city",
-                                                        "value": {
-                                                            "from": "literal",
-                                                            "content": "北京"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    ]
-                                },
-                                {
-                                    "value": "ls",
-                                    "steps": [
-                                        {
-                                            "type": "api",
-                                            "api": {
-                                                "name": "lasa weather",
-                                                "command": "flowApi",
-                                                "resultKey": "weather",
-                                                "args": [
-                                                    {
-                                                        "name": "name",
-                                                        "value": {
-                                                            "from": "literal",
-                                                            "content": "amap_city_weather_base"
-                                                        }
-                                                    }
-                                                ],
-                                                "origin": [
-                                                    {
-                                                        "name": "city",
-                                                        "value": {
-                                                            "from": "literal",
-                                                            "content": "拉萨"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    ]
-                                },
-                                {
-                                    "value": "sz",
-                                    "steps": [
-                                        {
-                                            "type": "api",
-                                            "api": {
-                                                "name": "shenzhen weather",
-                                                "command": "flowApi",
-                                                "resultKey": "weather",
-                                                "args": [
-                                                    {
-                                                        "name": "name",
-                                                        "value": {
-                                                            "from": "literal",
-                                                            "content": "amap_city_weather_base"
-                                                        }
-                                                    }
-                                                ],
-                                                "origin": [
-                                                    {
-                                                        "name": "city",
-                                                        "value": {
-                                                            "from": "literal",
-                                                            "content": "深圳"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
+                      "type": "api",
+                      "api": {
+                        "name": "beijing weather",
+                        "command": "flowApi",
+                        "resultKey": "weather",
+                        "args": [
+                          {
+                            "name": "name",
+                            "value": {
+                              "from": "literal",
+                              "content": "amap_city_weather_base"
+                            }
+                          }
+                        ],
+                        "origin": [
+                          {
+                            "name": "city",
+                            "value": {
+                              "from": "literal",
+                              "content": "北京"
+                            }
+                          }
+                        ]
+                      }
                     }
-                ]
+                  ]
+                },
+                {
+                  "value": "ls",
+                  "steps": [
+                    {
+                      "type": "api",
+                      "api": {
+                        "name": "lasa weather",
+                        "command": "flowApi",
+                        "resultKey": "weather",
+                        "args": [
+                          {
+                            "name": "name",
+                            "value": {
+                              "from": "literal",
+                              "content": "amap_city_weather_base"
+                            }
+                          }
+                        ],
+                        "origin": [
+                          {
+                            "name": "city",
+                            "value": {
+                              "from": "literal",
+                              "content": "拉萨"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                {
+                  "value": "sz",
+                  "steps": [
+                    {
+                      "type": "api",
+                      "api": {
+                        "name": "shenzhen weather",
+                        "command": "flowApi",
+                        "resultKey": "weather",
+                        "args": [
+                          {
+                            "name": "name",
+                            "value": {
+                              "from": "literal",
+                              "content": "amap_city_weather_base"
+                            }
+                          }
+                        ],
+                        "origin": [
+                          {
+                            "name": "city",
+                            "value": {
+                              "from": "literal",
+                              "content": "深圳"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ]
             }
-        },
-        {
-            "type": "api",
-            "mode": "concurrent",
-            "api": {
-                "name": "baidu_image_classify",
-                "command": "flowApi",
-                "resultKey": "image",
-                "args": [
-                    {
-                        "name": "name",
-                        "value": {
-                            "from": "literal",
-                            "content": "baidu_image_classify_base"
-                        }
-                    }
-                ],
-                "origin": [
-                    {
-                        "name": "content",
-                        "value": {
-                            "from": "origin",
-                            "content": "image"
-                        }
-                    }
-                ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "api",
+      "mode": "concurrent",
+      "api": {
+        "name": "baidu_image_classify",
+        "command": "flowApi",
+        "resultKey": "image",
+        "args": [
+          {
+            "name": "name",
+            "value": {
+              "from": "literal",
+              "content": "baidu_image_classify_base"
             }
-        },
-        {
-            "type": "api",
-            "api": {
-                "name": "qyxw_send_result",
-                "command": "flowApi",
-                "args": [
-                    {
-                        "name": "name",
-                        "value": {
-                            "from": "literal",
-                            "content": "qywx_message_send"
-                        }
-                    }
-                ],
-                "origin": [
-                    {
-                        "name": "content",
-                        "value": {
-                            "from": "template",
-                            "content": "{{range $i,$v := .myloop}}{{if $i}},{{end}}{{$v.data.region}} weather is {{$v.data.weather}}{{end}}, and image is {{(index .image.result 0).name}}"
-                        }
-                    },
-                    {
-                        "name": "touser",
-                        "value": {
-                            "from": "literal",
-                            "content": "YangYue"
-                        }
-                    },
-                    {
-                        "name": "msgtype",
-                        "value": {
-                            "from": "literal",
-                            "content": "text"
-                        }
-                    },
-                    {
-                        "name": "agentid",
-                        "value": {
-                            "from": "literal",
-                            "content": "1000002"
-                        }
-                    }
-                ]
+          }
+        ],
+        "origin": [
+          {
+            "name": "content",
+            "value": {
+              "from": "origin",
+              "content": "image"
             }
-        }
-    ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "api",
+      "api": {
+        "name": "qyxw_send_result",
+        "command": "flowApi",
+        "args": [
+          {
+            "name": "name",
+            "value": {
+              "from": "literal",
+              "content": "qywx_message_send"
+            }
+          }
+        ],
+        "origin": [
+          {
+            "name": "content",
+            "value": {
+              "from": "template",
+              "content": "{{range $i,$v := .myloop}}{{if $i}},{{end}}{{$v.data.region}} weather is {{$v.data.weather}}{{end}}, and image is {{(index .image.result 0).name}}"
+            }
+          },
+          {
+            "name": "touser",
+            "value": {
+              "from": "literal",
+              "content": "XXXXX"
+            }
+          },
+          {
+            "name": "msgtype",
+            "value": {
+              "from": "literal",
+              "content": "text"
+            }
+          },
+          {
+            "name": "agentid",
+            "value": {
+              "from": "literal",
+              "content": "1000002"
+            }
+          }
+        ]
+      }
+    }
+  ]
 }

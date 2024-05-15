@@ -34,7 +34,7 @@ echo "\r\n企业微信:"
 #curl -i "http://localhost:8080/httpapi/qywx_gettoken"
 
 echo "\r\n发送消息\r\n"
-curl -i -X POST -d '{"touser": "YangYue","msgtype": "text","agentid": "1000002", "content": "试试企业微信" }' "http://localhost:8080/flow/qywx_message_send"
+curl -i -X POST -d '{"touser": "XXXXX","msgtype": "text","agentid": "1000002", "content": "试试企业微信" }' "http://localhost:8080/flow/qywx_message_send"
 
 
 #echo "\r\n查询百度图片分类token"
