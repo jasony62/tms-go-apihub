@@ -1,0 +1,153 @@
+{
+  "name": "ct_yixing_fdata_full",
+  "description": "中国电信获取全部财务数据",
+  "steps": [
+	{
+		"name": "storage_store",
+		"command": "storageStore",
+		"description": "保存当前UTC时间",
+		"args": [
+			{
+			  "name": "key",
+			  "value": {
+				"from": "literal",
+				"content": "lastTime"
+			  }
+			},
+			{
+			  "name": "index",
+			  "value": {
+				"from": "literal",
+				"content": "lastTime"
+			  }
+			},
+			{
+			  "name": "source",
+			  "value": {
+				"from": "literal",
+				"content": "local"
+			  }
+			},
+			{
+			  "name": "content",
+			  "value": {
+				"from": "func",
+				"content": "utc"
+			  }
+			}
+		],   
+		"resultKey": "storaged"
+	},
+	{
+		"name": "storageLoad",
+		"command": "storageLoad",
+		"description": "读取当前UTC时间",
+		"args": [
+		{
+		  "name": "index",
+		  "value": {
+			"from": "literal",
+			"content": "lastTime"
+		  }
+		},
+		{
+		  "name": "source",
+		  "value": {
+			"from": "literal",
+			"content": "local"
+		  }
+		},
+		{
+		  "name": "content",
+		  "value": {
+			"from": "literal",
+			"content": "utc"
+		  }
+		}
+		],   
+		"resultKey": "end_time"
+	},
+   {
+      "name": "ct_yixing_fdata_full",
+      "command": "httpApi",
+      "description": "获取全部财务数据",
+      "args": [
+        {
+          "name": "name",
+          "value": {
+            "from": "literal",
+            "content": "ct_yixing_fdata_full"
+          }
+        }
+      ],
+	  "origin": [
+        {
+          "name": "lastTime",
+          "value": {
+            "from": "heap",
+            "content": "end_time"
+          }
+        }
+	  ],
+      "resultKey": "fdata"
+    },
+    {
+      "name": "merge_result",
+      "command": "createJson",
+      "description": "合并收到的结果",
+      "resultKey": "merged",
+      "args": [
+	    {
+          "name": "type",
+          "value": {
+            "from": "literal",
+            "content": "json"
+          }
+        },
+        {
+          "name": "key",
+          "value": {
+            "from": "literal",
+            "content": "merge_result"
+          }
+        }
+      ],
+      "origin": [
+        {
+          "name": "merge_result",
+          "value": {
+            "from": "jsonRaw",
+            "json": {
+			  "message": "{{.fdata.message}}",
+			  "comment": "{{$count := 0}}财务初审催收纸质单(04)的收件人电话和报账单号",
+			  "data": [
+				"{{range $i,$v := .fdata.data.list}}{{if eq $v.flag \"04\"}}{{if $count}},{{end}}{{$count = 1}}{\"recipientPhone\":\"{{$v.recipientPhone}}\" ,\"reimbursementNo\":\"{{$v.reimbursementNo}}\",\"createTime\":\"{{$v.createTime}}\"}{{end}}{{end}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+	    {
+      "name": "response",
+      "command": "httpResponse",
+      "description": "返回结果",    
+      "args": [
+        {
+          "name": "type",
+          "value": {
+            "from": "literal",
+            "content": "json"
+          }
+        },
+        {
+          "name": "key",
+          "value": {
+            "from": "literal",
+            "content": "merged"
+          }
+        }        
+      ]
+    }
+  ]
+}

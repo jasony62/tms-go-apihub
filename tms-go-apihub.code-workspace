@@ -23,6 +23,12 @@
         },
         {
             "path": "tool/schedule"
+        },
+        {
+            "path": "tool/swagger"
+        },
+        {
+            "path": "tool/postman/wasm"
         }
     ],
     "launch": {

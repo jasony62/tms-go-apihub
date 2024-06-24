@@ -1,14 +1,17 @@
 ## 近期
-* 在base中记录访问源IP
-* 冒烟测试
-* hystrix-go旨在让 Go 程序员轻松构建具有与基于 Java 的 Hystrix 库类似的执行语义的应用程序。  
-
+* 支持熔断，Sentinel或者hystrix-go。  
 *如何在回应json里面增加UUID，修改createJson？
-
-* 根据http response content type查看是否需要分解json
+*支持动态普罗米修斯标签
 * error code转错误码+错误信息
+* 增加retry policy json配置，支持http请求retry，timeout(实现放到httpapi中，配置放到flow，schedule中？)
+ - "timeoutPolicy": "TIME_OUT_WF",
+ - "retryLogic": "FIXED",
+ - "retryDelaySeconds": 600,
+ - "responseTimeoutSeconds": 3600
+* 性能分析
 * 防止fasthttp出错
   Use this brilliant tool - race detector - for detecting and eliminating data races in your program. If you detected data race related to fasthttp in your program, then there is high probability you forgot calling TimeoutError before returning from RequestHandler.
+* 对json文件进行预处理，加快执行速度,string转换成enum和指针
 ## 需求  
 | 一级 | 二级 | 三级 | 描述 |  开发 | 测试 |   
 | -- | -- | -- | -- | -- | -- | -- | -- |
@@ -129,11 +132,6 @@
 *根据openapi定义，支持更多认证方式
 Defines a security scheme that can be used by the operations. Supported schemes are HTTP authentication, an API key (either as a header, a cookie parameter or as a query parameter), OAuth2's common flows (implicit, password, client credentials and authorization code) as defined in RFC6749, and OpenID Connect Discovery.
 
-* 支持http请求retry，timeout(实现放到httpapi中，配置放到flow，schedule中？)
- - "timeoutPolicy": "TIME_OUT_WF",
- - "retryLogic": "FIXED",
- - "retryDelaySeconds": 600,
- - "responseTimeoutSeconds": 3600
 * 支持更好的http error msg返回
 * 支持query数组转json数组
 * http put
@@ -167,7 +165,7 @@ https://goframe.org/pages/viewpage.action?pageId=1114270
 ## 需要考虑
 * Opentracing，Skywalking
 * 多SSL证书
-* 熔断，降级
+* 降级
 * API健康检查
 * 支持API调用websocket，gRPC，Dubbo，redis，kafka
 * Open API ：支持使用open api配置网关
@@ -188,6 +186,9 @@ https://goframe.org/pages/viewpage.action?pageId=1114270
 * 支持导入openapi 3.0（swagger 2.0不需要）
 * 支持导入postman脚本到httpapi
 * 增加plugin框架，并支持Prometheus，企业微信报警
+* 在base中记录访问源IP
+* 冒烟测试
+
 
 ###schedule
 * schedule支持SWITCH/loop循环命令
